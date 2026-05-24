@@ -81,7 +81,7 @@
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
 #define DP_ZERO_DISP_LIMIT_HIGH		(1.9)
-
+#define MAX_SUPPORTED_DP			2
 //***********************************************************************************
 
 static volatile bool main_b_cdc_enable = false;
@@ -133,7 +133,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				740  //means 7.40
+#define SOFT_VER				750  //means 7.50
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -638,7 +638,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP_AUTO_CAL_FLAG				(DP2_ALM_SENSE_TIME_ADDR+1)
 #define LCD_BRIGHT_CNT_ADDR				(DP_AUTO_CAL_FLAG+1)
 #define DP_SW_FACT_ADDR					(LCD_BRIGHT_CNT_ADDR+1)
-#define DP_FACT_ENB_ADDR				(DP_SW_FACT_ADDR+2)
+#define DP_FACT_ENB_ADDR				(DP_SW_FACT_ADDR+10)
 #define RELAY_STAT_ADDR					(DP_FACT_ENB_ADDR+2)
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
@@ -1489,7 +1489,7 @@ unsigned char mode=NORMAL_MODE;
 unsigned char keybyte=0;
 unsigned char debounce=DEBOUNCE;
 
-float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor=0;
+float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor[5]={0,0,0,0,0};
 short tempshort=0;
 unsigned char tempchar=0;
 unsigned char a1=0,a2=0,a3=0;
@@ -1540,7 +1540,7 @@ unsigned long LowEpoch=0,MidEpoch=0,MidEpoch1=0,HighEpoch=0,MidLogInd=0;
 unsigned long InitLogInd=0,LastLogInd=0,StartEpoch=0,EndEpoch=0,StartEpochTime=0,EndEpochTime=0,TotalLog=0,StartLogInd=0,EndLogInd=0;
 
 unsigned short logtransfer=0;
-signed short su16_dp_sw_factor=0;
+signed short su16_dp_sw_factor[5]={0,0,0,0,0};
 
 volatile unsigned long templong=0;
 volatile unsigned short flash24_StartInd=0,flash24_EndInd=0;
@@ -6489,6 +6489,7 @@ void ServePCMsg(unsigned char SrcPort)
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
+	unsigned char index=0;
 	
 	b.paraIdNotValid=0;
 	
@@ -6713,8 +6714,8 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			case DP_SW_FACT_ID:
 			
-				tempshort = findValue(&RxBuffer[5],5);
-				if(RxBuffer[4]=='-') tempshort *= (-1);	
+				tempshort = findValue(&RxBuffer[6],5);
+				if(RxBuffer[5]=='-') tempshort *= (-1);	
 				
 			break;
 			
@@ -7230,9 +7231,14 @@ void ServePCMsg(unsigned char SrcPort)
 			
 				if(b.CustmerCalibrationOn==1)
 				{
-					su16_dp_sw_factor=tempshort;
-					f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
-					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+					index=RxBuffer[4]-'0';
+					
+					if(index<MAX_SUPPORTED_DP)
+					{	
+						su16_dp_sw_factor[index]=tempshort;
+						f32_dp_sw_factor[index]=(float)su16_dp_sw_factor[index]/100.0;
+						eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(index*2)),su16_dp_sw_factor[index]);
+					}
 				}	
 				
 			break;
@@ -7305,9 +7311,9 @@ void ServePCMsg(unsigned char SrcPort)
 					DP1_Cal_Value_C = 0;
 					DP1_Cal_float_Value_C = 0;
 					
-					su16_dp_sw_factor=0;
-					f32_dp_sw_factor=0.0;
-					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+					su16_dp_sw_factor[0]=0;
+					f32_dp_sw_factor[0]=0.0;
+					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor[0]);
 					
 				}
 				else if(b.CustmerCalibrationOn==1)
@@ -7408,9 +7414,9 @@ void ServePCMsg(unsigned char SrcPort)
 					DP2_Cal_Value_C = 0;
 					DP2_Cal_float_Value_C = 0;
 					
-					su16_dp_sw_factor=0;
-					f32_dp_sw_factor=0.0;
-					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+					su16_dp_sw_factor[1]=0;
+					f32_dp_sw_factor[1]=0.0;
+					eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+2),su16_dp_sw_factor[1]);
 					
 				}
 				else if(b.CustmerCalibrationOn==1)
@@ -8027,7 +8033,13 @@ void ServePCMsg(unsigned char SrcPort)
 			case RHMAX_ID:		tempshort = RH_Max*100;					break;
 			case TMUNT_ID:		tempshort = TM_Unit;					break;
 			case DP_SW_FACT_ID:
-				tempshort = su16_dp_sw_factor;
+			
+				index=RxBuffer[4]-'0';
+				if(index<MAX_SUPPORTED_DP)
+				{	
+					tempshort = su16_dp_sw_factor[index];
+				}
+				
 			break;
 			case DP1CAL_ID:		
 					if(b.FactoryCalibrationOn==1)
@@ -9277,15 +9289,15 @@ void ReadDiffPressure1(void)
 			{
 				if(!gu8_dp_sw_enb)
 				{
-					if(Dpressure1>-1.0) Dpressure1 += f32_dp_sw_factor; //MINUS LIMIT
-					else Dpressure1 -= f32_dp_sw_factor;
+					if(Dpressure1>-1.0) Dpressure1 += f32_dp_sw_factor[0]; //MINUS LIMIT
+					else Dpressure1 -= f32_dp_sw_factor[0];
 				}
 				else
 				{
 					if((Dpressure1>0.03) || (Dpressure1<-0.03))
 					{
-						if(Dpressure1>0.03) Dpressure1 += f32_dp_sw_factor;
-						if(Dpressure1<-0.03) Dpressure1 -= f32_dp_sw_factor;
+						if(Dpressure1>0.03) Dpressure1 += f32_dp_sw_factor[0];
+						if(Dpressure1<-0.03) Dpressure1 -= f32_dp_sw_factor[0];
 					}
 				}
 			}
@@ -9678,15 +9690,15 @@ void ReadDiffPressure2(void)
 			{
 				if(!gu8_dp_sw_enb)
 				{
-					if(Dpressure2>-1.0) Dpressure2 += f32_dp_sw_factor;  //MINUS LIMIT 2
-					else Dpressure2 -= f32_dp_sw_factor;
+					if(Dpressure2>-1.0) Dpressure2 += f32_dp_sw_factor[1];  //MINUS LIMIT 2
+					else Dpressure2 -= f32_dp_sw_factor[1];
 				}
 				else
 				{
 					if((Dpressure2>0.03) || (Dpressure2<-0.03))
 					{
-						if(Dpressure2>0.03) Dpressure2 += f32_dp_sw_factor;
-						if(Dpressure2<-0.03) Dpressure2 -= f32_dp_sw_factor;
+						if(Dpressure2>0.03) Dpressure2 += f32_dp_sw_factor[1];
+						if(Dpressure2<-0.03) Dpressure2 -= f32_dp_sw_factor[1];
 					}
 				}
 			}
@@ -10543,7 +10555,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 4;
+	data[6] = 5;
 						
 	disp_value();
 	
@@ -21172,10 +21184,13 @@ void boot_data(void)
 		gu8_rly_stat = 0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RELAY_STAT_ADDR,gu8_rly_stat);
 		
-		su16_dp_sw_factor=0;
-		f32_dp_sw_factor=0.0;
-		eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
-		
+		for(unsigned char i=0; i<MAX_SUPPORTED_DP; i++)
+		{
+			su16_dp_sw_factor[i]=0;
+			f32_dp_sw_factor[i]=0.0;
+			eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(i*2)),su16_dp_sw_factor[i]);
+		}
+
 		if(gu16_parameterWord & ENABLE_TEMP)
 		{
 			//Temperature Parameter -----------------------------------------------------
@@ -21704,13 +21719,16 @@ void boot_data(void)
 			eeprom_busy_wait();  eeprom_write_byte((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
 		}
 		
-		su16_dp_sw_factor  = eeprom_read_word ((unsigned int*)DP_SW_FACT_ADDR);
-		if((su16_dp_sw_factor<-10000) && (su16_dp_sw_factor>10000))
-		{	
-			su16_dp_sw_factor=0;
-			eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+		for(unsigned char i=0; i<MAX_SUPPORTED_DP; i++)
+		{
+			su16_dp_sw_factor[i]  = eeprom_read_word ((unsigned int*)(DP_SW_FACT_ADDR+(i*2)));
+			if((su16_dp_sw_factor[i]<-10000) && (su16_dp_sw_factor[i]>10000))
+			{	
+				su16_dp_sw_factor[i]=0;
+				eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(i*2)),su16_dp_sw_factor[i]);
+			}
+			f32_dp_sw_factor[i]=(float)su16_dp_sw_factor[i]/100.0;
 		}
-		f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
 		
 		if(gu16_parameterWord & ENABLE_TEMP)
 		{
