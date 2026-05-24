@@ -71,9 +71,10 @@
 
 #define SMALL_FONT_DISPLAY_OLD		0
 #define SMALL_FONT_DISPLAY_NEW		1
-#define BIG_FONT_DISPLAY_OLD		2
-#define BIG_FONT_DISPLAY_NEW		3
-#define DISPLAY_MODE				BIG_FONT_DISPLAY_OLD
+#define SMALL_FONT_DISPLAY_COLOR	2
+#define BIG_FONT_DISPLAY_OLD		3
+#define BIG_FONT_DISPLAY_NEW		4
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -102,7 +103,7 @@ static volatile bool main_b_cdc_enable = false;
 #define ENABLE_M3LOG		0x1000
 
 
-#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 
 	#define NO_DIGIT	13
 	#define PARAMETER_WORD	(ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_LCD | ENABLE_ALERT)
@@ -129,7 +130,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				670  //means 6.70
+#define SOFT_VER				680  //means 6.80
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -877,6 +878,153 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 	//-------------------------------------------------
 
 	#define BATT_on 			LCD_DATA16 |= BIT7
+
+#elif DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR
+
+	//************************************************************************/
+	// SMALL FONT SEGMENT LCD CONSTANT DEFINATIONS
+	//************************************************************************/
+	#define RH_A1_on 			LCD_DATA0 |= BIT1
+	#define RH_B1_on 			LCD_DATA5 |= BIT1
+	#define RH_C1_on 			LCD_DATA10 |= BIT1
+	#define RH_D1_on 			LCD_DATA15 |= BIT1
+	#define RH_F1_on 			LCD_DATA5 |= BIT0
+	#define RH_G1_on 			LCD_DATA10 |= BIT0
+	#define RH_E1_on 			LCD_DATA15 |= BIT0
+
+	#define RH_A2_on 			LCD_DATA0 |= BIT3
+	#define RH_B2_on 			LCD_DATA5 |= BIT3
+	#define RH_C2_on 			LCD_DATA10 |= BIT3
+	#define RH_D2_on 			LCD_DATA15 |= BIT3
+	#define RH_F2_on 			LCD_DATA5 |= BIT2
+	#define RH_G2_on 			LCD_DATA10 |= BIT2
+	#define RH_E2_on 			LCD_DATA15 |= BIT2
+	#define RH_H2_on			LCD_DATA0 |= BIT4
+
+	#define RH_A3_on 			LCD_DATA0 |= BIT5
+	#define RH_B3_on 			LCD_DATA5 |= BIT5
+	#define RH_C3_on 			LCD_DATA10 |= BIT5
+	#define RH_D3_on 			LCD_DATA15 |= BIT5
+	#define RH_F3_on 			LCD_DATA5 |= BIT4
+	#define RH_G3_on 			LCD_DATA10 |= BIT4
+	#define RH_E3_on 			LCD_DATA15 |= BIT4
+
+	#define RH_ALM_on			LCD_DATA0 |= BIT0
+	#define LINE2_on			LCD_DATA0 |= BIT7
+	#define RH_UNIT_on 			LCD_DATA15 |= BIT7
+	//-------------------------------------------------
+
+	#define TM_A1_on 			LCD_DATA16 |= BIT4
+	#define TM_B1_on 			LCD_DATA11 |= BIT4
+	#define TM_C1_on 			LCD_DATA6 |= BIT4
+	#define TM_D1_on 			LCD_DATA1 |= BIT4
+	#define TM_F1_on 			LCD_DATA16 |= BIT5
+	#define TM_G1_on 			LCD_DATA11 |= BIT5
+	#define TM_E1_on 			LCD_DATA6 |= BIT5
+
+	#define TM_A2_on 			LCD_DATA16 |= BIT2
+	#define TM_B2_on 			LCD_DATA11 |= BIT2
+	#define TM_C2_on 			LCD_DATA6 |= BIT2
+	#define TM_D2_on 			LCD_DATA1 |= BIT2
+	#define TM_F2_on 			LCD_DATA16 |= BIT3
+	#define TM_G2_on 			LCD_DATA11 |= BIT3
+	#define TM_E2_on 			LCD_DATA6 |= BIT3
+	#define TM_H2_on 			LCD_DATA1 |= BIT1
+
+	#define TM_A3_on 			LCD_DATA16 |= BIT0
+	#define TM_B3_on 			LCD_DATA11 |= BIT0
+	#define TM_C3_on 			LCD_DATA6 |= BIT0
+	#define TM_D3_on 			LCD_DATA1 |= BIT0
+	#define TM_F3_on 			LCD_DATA16 |= BIT1
+	#define TM_G3_on 			LCD_DATA11 |= BIT1
+	#define TM_E3_on 			LCD_DATA6 |= BIT1
+
+	#define TM_ALM_on			LCD_DATA1 |= BIT3
+	#define TM_MIN_on			LCD_DATA1 |= BIT5
+	#define TM_C_on 			LCD_DATA5 |= BIT7
+	#define TM_F_on 			LCD_DATA10 |= BIT7
+	#define TM_UNIT_on 			LCD_DATA11 |= BIT6
+	
+	//-------------------------------------------------
+
+	#define DP_A1_on 			LCD_DATA3 |= BIT2
+	#define DP_B1_on 			LCD_DATA8 |= BIT2
+	#define DP_C1_on 			LCD_DATA13 |= BIT2
+	#define DP_D1_on 			LCD_DATA18 |= BIT2
+	#define DP_F1_on 			LCD_DATA3 |= BIT3
+	#define DP_G1_on 			LCD_DATA8 |= BIT3
+	#define DP_E1_on 			LCD_DATA13 |= BIT3
+
+	#define DP_A2_on 			LCD_DATA3 |= BIT0
+	#define DP_B2_on 			LCD_DATA8 |= BIT0
+	#define DP_C2_on 			LCD_DATA13 |= BIT0
+	#define DP_D2_on 			LCD_DATA18 |= BIT0
+	#define DP_F2_on 			LCD_DATA3 |= BIT1
+	#define DP_G2_on 			LCD_DATA8 |= BIT1
+	#define DP_E2_on 			LCD_DATA13 |= BIT1
+	#define DP_H2_on 			LCD_DATA17 |= BIT7
+
+	#define DP_A3_on 			LCD_DATA2 |= BIT6
+	#define DP_B3_on 			LCD_DATA7 |= BIT6
+	#define DP_C3_on 			LCD_DATA12 |= BIT6
+	#define DP_D3_on 			LCD_DATA17 |= BIT6
+	#define DP_F3_on 			LCD_DATA2 |= BIT7
+	#define DP_G3_on 			LCD_DATA7 |= BIT7
+	#define DP_E3_on 			LCD_DATA12 |= BIT7
+
+	#define DP_ALM_on			LCD_DATA18 |= BIT1
+	#define DP_MIN_on			LCD_DATA18 |= BIT3
+	#define DP_UNIT_on 			LCD_DATA12 |= BIT5
+	#define DP_ABS_on 			LCD_DATA17 |= BIT0
+	#define DP_DIFF_on 			LCD_DATA17 |= BIT5
+	//#define P2_on				LCD_DATA18 |= BIT2
+		
+	#define LINE1_on			LCD_DATA16 |= BIT6
+	//-------------------------------------------------
+
+	#define RTC_BC1_on 			LCD_DATA17 |= BIT4
+
+	#define RTC_A2_on 			LCD_DATA2 |= BIT3
+	#define RTC_B2_on 			LCD_DATA7 |= BIT3
+	#define RTC_C2_on 			LCD_DATA12 |= BIT3
+	#define RTC_D2_on 			LCD_DATA17 |= BIT3
+	#define RTC_F2_on 			LCD_DATA2 |= BIT4
+	#define RTC_G2_on 			LCD_DATA7 |= BIT4
+	#define RTC_E2_on 			LCD_DATA12 |= BIT4
+
+	#define RTC_A3_on 			LCD_DATA2 |= BIT1
+	#define RTC_B3_on 			LCD_DATA7 |= BIT1
+	#define RTC_C3_on 			LCD_DATA12 |= BIT1
+	#define RTC_D3_on 			LCD_DATA17 |= BIT1
+	#define RTC_F3_on 			LCD_DATA2 |= BIT2
+	#define RTC_G3_on 			LCD_DATA7 |= BIT2
+	#define RTC_E3_on 			LCD_DATA12 |= BIT2
+
+	#define RTC_A4_on 			LCD_DATA1 |= BIT7
+	#define RTC_B4_on 			LCD_DATA6 |= BIT7
+	#define RTC_C4_on 			LCD_DATA11 |= BIT7
+	#define RTC_D4_on 			LCD_DATA16 |= BIT7
+	#define RTC_F4_on 			LCD_DATA2 |= BIT0
+	#define RTC_G4_on 			LCD_DATA7 |= BIT0
+	#define RTC_E4_on 			LCD_DATA12 |= BIT0
+
+	#define RTC_COL_on			LCD_DATA17 |= BIT2
+	#define RTC_AM_on 			LCD_DATA2 |= BIT5
+	#define RTC_PM_on 			LCD_DATA7 |= BIT5
+
+	//-------------------------------------------------
+
+	#define MIN_on 				LCD_DATA6 |= BIT6
+	#define MAX_on 				LCD_DATA0 |= BIT2
+	#define MEAN_on 			LCD_DATA1 |= BIT6
+	#define SET_on 				LCD_DATA0 |= BIT6
+	#define ACK_on 				LCD_DATA5 |= BIT6
+	#define ID_on 				LCD_DATA10 |= BIT6
+	#define LOGO_on 			LCD_DATA15 |= BIT6
+
+	//-------------------------------------------------
+
+	//#define BATT_on 			LCD_DATA16 |= BIT7
 	
 #elif DISPLAY_MODE==BIG_FONT_DISPLAY_OLD
 	
@@ -2929,7 +3077,7 @@ void CheckUpDnKey(void)
 				dispMinMaxMeanLogInd=0;
 				progTimeout=60;
 				
-				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 				if(MinMaxMeanDayLogInd) dispMinMaxMeanLogInd=MinMaxMeanDayLogInd-1;
 				else dispMinMaxMeanLogInd=TOTAL_MIN_MAX_MEAN_LOG-1;
 				#endif
@@ -3141,7 +3289,7 @@ void CheckUpDnKey(void)
 				{
 					Normal_para_cnt++;
 						
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					if(Normal_para_cnt==5)
 					#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 					if(!(gu16_parameterWord & ENABLE_DP1) && (Normal_para_cnt==3)) Normal_para_cnt=5; 
@@ -3164,7 +3312,7 @@ void CheckUpDnKey(void)
 						}
 					}
 					
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					if(Normal_para_cnt>5)
 					#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 					if(Normal_para_cnt>11)
@@ -3192,7 +3340,7 @@ void CheckUpDnKey(void)
 			
 				progTimeout=60;
 				
-				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 				
 					autoCal_para_cnt=1;
 					
@@ -3212,7 +3360,7 @@ void CheckUpDnKey(void)
 			
 				progTimeout=60;
 				
-				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 				
 					min_max_mean_page_disp_cnt++;
 					if(min_max_mean_page_disp_cnt>60)
@@ -3366,7 +3514,7 @@ void CheckUpDnKey(void)
 			
 				progTimeout=60;
 			
-				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 			
 					mean_hr_page_disp_cnt++;
 					if(mean_hr_page_disp_cnt>24)
@@ -3459,7 +3607,7 @@ void CheckUpDnKey(void)
 				if(!PARA_SELECT_KEY)
 				{
 					//opstr(0,"\r\nProg Mode + Up Key + Para_Select key pressed\r\n");
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					
 					prog_para_cnt++;
 					
@@ -3778,7 +3926,7 @@ void CheckUpDnKey(void)
 				{
 					progTimeout=60;
 					
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					
 					switch(prog_para_cnt)
 					{
@@ -3962,7 +4110,7 @@ void CheckUpDnKey(void)
 			
 				/*progTimeout=60;
 				
-				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+				#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 				
 					autoCal_para_cnt=1;
 				
@@ -3995,7 +4143,7 @@ void CheckUpDnKey(void)
 				if(!PARA_SELECT_KEY)
 				{
 					//opstr(0,"\r\nProg Mode + Down Key + Para_Select key pressed\r\n");
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					
 					if(prog_para_cnt)prog_para_cnt--;
 					
@@ -4189,7 +4337,7 @@ void CheckUpDnKey(void)
 				{
 					progTimeout=60;
 				
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 				
 					switch(prog_para_cnt)
 					{
@@ -4384,7 +4532,7 @@ void keyboard(void)
 			{
 				case NORMAL_MODE:
 				
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					if(Normal_para_cnt==5)
 					#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 					if(Normal_para_cnt==11)
@@ -4447,7 +4595,7 @@ void keyboard(void)
 				
 					cli();			//Global Interrupt Disable
 					
-					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+					#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 					
 					switch(Lastpara_cnt)
 					{
@@ -5615,7 +5763,7 @@ void EraseWholeFlash(void)
 	{
 		AllSegment(OFF);
 	
-		#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+		#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 
 			data[1] = BLANK;
 			data[2] = BLANK;
@@ -9928,7 +10076,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 16;
-	data[6] = 7;
+	data[6] = 8;
 						
 	disp_value();
 	
@@ -11797,7 +11945,1693 @@ void AllSegment(unsigned char state)
 		}
 	}//END OF FUNCTION
 
-#elif DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW
+#elif (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR)
+
+	void disp_value(void)
+	{
+		for(unsigned char i=1;i<NO_DIGIT;i++) disp_buffer[i]=seg_code[data[i]];
+	
+		if(disp_buffer[1] & 0x01) RTC_A2_on;
+		if(disp_buffer[1] & 0x02) RTC_B2_on;
+		if(disp_buffer[1] & 0x04) RTC_C2_on;
+		if(disp_buffer[1] & 0x08) RTC_D2_on;
+		if(disp_buffer[1] & 0x10) RTC_E2_on;
+		if(disp_buffer[1] & 0x20) RTC_F2_on;
+		if(disp_buffer[1] & 0x40) RTC_G2_on;
+	
+		if(disp_buffer[2] & 0x01) RTC_A3_on;
+		if(disp_buffer[2] & 0x02) RTC_B3_on;
+		if(disp_buffer[2] & 0x04) RTC_C3_on;
+		if(disp_buffer[2] & 0x08) RTC_D3_on;
+		if(disp_buffer[2] & 0x10) RTC_E3_on;
+		if(disp_buffer[2] & 0x20) RTC_F3_on;
+		if(disp_buffer[2] & 0x40) RTC_G3_on;
+	
+		if(disp_buffer[3] & 0x01) RTC_A4_on;
+		if(disp_buffer[3] & 0x02) RTC_B4_on;
+		if(disp_buffer[3] & 0x04) RTC_C4_on;
+		if(disp_buffer[3] & 0x08) RTC_D4_on;
+		if(disp_buffer[3] & 0x10) RTC_E4_on;
+		if(disp_buffer[3] & 0x20) RTC_F4_on;
+		if(disp_buffer[3] & 0x40) RTC_G4_on;
+	
+		if(disp_buffer[4] & 0x01) DP_A1_on;
+		if(disp_buffer[4] & 0x02) DP_B1_on;
+		if(disp_buffer[4] & 0x04) DP_C1_on;
+		if(disp_buffer[4] & 0x08) DP_D1_on;
+		if(disp_buffer[4] & 0x10) DP_E1_on;
+		if(disp_buffer[4] & 0x20) DP_F1_on;
+		if(disp_buffer[4] & 0x40) DP_G1_on;
+	
+		if(disp_buffer[5] & 0x01) DP_A2_on;
+		if(disp_buffer[5] & 0x02) DP_B2_on;
+		if(disp_buffer[5] & 0x04) DP_C2_on;
+		if(disp_buffer[5] & 0x08) DP_D2_on;
+		if(disp_buffer[5] & 0x10) DP_E2_on;
+		if(disp_buffer[5] & 0x20) DP_F2_on;
+		if(disp_buffer[5] & 0x40) DP_G2_on;
+		if(disp_buffer[5] & 0x80) DP_H2_on;
+	
+		if(disp_buffer[6] & 0x01) DP_A3_on;
+		if(disp_buffer[6] & 0x02) DP_B3_on;
+		if(disp_buffer[6] & 0x04) DP_C3_on;
+		if(disp_buffer[6] & 0x08) DP_D3_on;
+		if(disp_buffer[6] & 0x10) DP_E3_on;
+		if(disp_buffer[6] & 0x20) DP_F3_on;
+		if(disp_buffer[6] & 0x40) DP_G3_on;
+	
+		if(disp_buffer[7] & 0x01) TM_A1_on;
+		if(disp_buffer[7] & 0x02) TM_B1_on;
+		if(disp_buffer[7] & 0x04) TM_C1_on;
+		if(disp_buffer[7] & 0x08) TM_D1_on;
+		if(disp_buffer[7] & 0x10) TM_E1_on;
+		if(disp_buffer[7] & 0x20) TM_F1_on;
+		if(disp_buffer[7] & 0x40) TM_G1_on;
+	
+		if(disp_buffer[8] & 0x01) TM_A2_on;
+		if(disp_buffer[8] & 0x02) TM_B2_on;
+		if(disp_buffer[8] & 0x04) TM_C2_on;
+		if(disp_buffer[8] & 0x08) TM_D2_on;
+		if(disp_buffer[8] & 0x10) TM_E2_on;
+		if(disp_buffer[8] & 0x20) TM_F2_on;
+		if(disp_buffer[8] & 0x40) TM_G2_on;
+		if(disp_buffer[8] & 0x80) TM_H2_on;
+	
+		if(disp_buffer[9] & 0x01) TM_A3_on;
+		if(disp_buffer[9] & 0x02) TM_B3_on;
+		if(disp_buffer[9] & 0x04) TM_C3_on;
+		if(disp_buffer[9] & 0x08) TM_D3_on;
+		if(disp_buffer[9] & 0x10) TM_E3_on;
+		if(disp_buffer[9] & 0x20) TM_F3_on;
+		if(disp_buffer[9] & 0x40) TM_G3_on;
+	
+		if(disp_buffer[10] & 0x01) RH_A1_on;
+		if(disp_buffer[10] & 0x02) RH_B1_on;
+		if(disp_buffer[10] & 0x04) RH_C1_on;
+		if(disp_buffer[10] & 0x08) RH_D1_on;
+		if(disp_buffer[10] & 0x10) RH_E1_on;
+		if(disp_buffer[10] & 0x20) RH_F1_on;
+		if(disp_buffer[10] & 0x40) RH_G1_on;
+	
+		if(disp_buffer[11] & 0x01) RH_A2_on;
+		if(disp_buffer[11] & 0x02) RH_B2_on;
+		if(disp_buffer[11] & 0x04) RH_C2_on;
+		if(disp_buffer[11] & 0x08) RH_D2_on;
+		if(disp_buffer[11] & 0x10) RH_E2_on;
+		if(disp_buffer[11] & 0x20) RH_F2_on;
+		if(disp_buffer[11] & 0x40) RH_G2_on;
+		if(disp_buffer[11] & 0x80) RH_H2_on;
+	
+		if(disp_buffer[12] & 0x01) RH_A3_on;
+		if(disp_buffer[12] & 0x02) RH_B3_on;
+		if(disp_buffer[12] & 0x04) RH_C3_on;
+		if(disp_buffer[12] & 0x08) RH_D3_on;
+		if(disp_buffer[12] & 0x10) RH_E3_on;
+		if(disp_buffer[12] & 0x20) RH_F3_on;
+		if(disp_buffer[12] & 0x40) RH_G3_on;
+	}
+	
+	void conv_value(void)
+	{
+		AllSegment(OFF);
+		
+		if(gu16_parameterWord & ENABLE_LOGO)
+		{
+			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
+			{
+				if(b.led_toggle)
+				{
+					LOGO_on;
+				}
+			}
+			else
+			{
+				LOGO_on;
+			}
+		}
+		
+		for(unsigned char i=1;i<NO_DIGIT;i++) data[i] = BLANK;
+		
+		switch(mode)
+		{
+			case NORMAL_MODE:
+			
+				if(gu16_parameterWord & ENABLE_RTC)
+				{
+					if(!rtcValid)
+					{
+						if(b.mec500_blink_flag)
+						{
+							convert_char(rtc.minute,&data[2],2);
+						
+							if(b.AM_PM_Flag)
+							{
+								RTC_AM_on;
+								convert_char(rtc.hour,&data[0],2);
+							}
+							else
+							{
+								RTC_PM_on;
+							
+								if(rtc.hour>12)
+								convert_char(rtc.hour-12,&data[0],2);
+								else
+								convert_char(rtc.hour,&data[0],2);
+							}
+							if(data[0] == 1) RTC_BC1_on;
+						
+							RTC_COL_on;
+						}
+					}
+					else
+					{
+						convert_char(rtc.minute,&data[2],2);
+					
+						if(b.AM_PM_Flag)
+						{
+							RTC_AM_on;
+							convert_char(rtc.hour,&data[0],2);
+						}
+						else
+						{
+							RTC_PM_on;
+						
+							if(rtc.hour>12)
+							convert_char(rtc.hour-12,&data[0],2);
+							else
+							convert_char(rtc.hour,&data[0],2);
+						}
+						if(data[0] == 1) RTC_BC1_on;
+					
+						if(b.Sec_blink_flag) RTC_COL_on;
+					}
+				}
+				
+				switch(Normal_para_cnt)
+				{
+					case 0:
+					
+						if(gu16_parameterWord & ENABLE_DP2)
+						{
+							if(b.DP2_NC)
+							{
+								data[4]=E;
+								data[5]=r;
+								data[6]=r;
+							}
+							else
+							{
+								if(DP2_Alrm_ON) DP_ALM_on;
+							
+								//----------------------------------------------------
+								tempfloat = Dpressure2;
+							
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									DP_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[5],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[4],1);
+								}
+								else
+								{
+									convert_float(tempfloat,&data[4],0);
+								}
+							
+								//----------------------------------------------------
+							}
+							DP_UNIT_on;
+							DP_DIFF_on;
+						}
+					
+						LINE1_on;
+					
+						if(gu16_parameterWord & ENABLE_TEMP)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[7]=E;
+								data[8]=r;
+								data[9]=r;
+							}
+							else
+							{
+								if(TM_Alrm_ON) TM_ALM_on;
+							
+								//----------------------------------------------------
+								if(!TM_Unit)
+								{
+									tempfloat = temperatureC;
+								}
+								else
+								{
+									tempfloat = temperatureF;
+								}
+							
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									TM_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[8],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[7],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[7],0);
+								}
+								//----------------------------------------------------
+							}
+							if(!TM_Unit)
+							{
+								TM_C_on;
+							}
+							else
+							{
+								TM_F_on;
+							}
+							//TM_H2_on;
+							TM_UNIT_on;
+						}
+					
+						LINE2_on;
+					
+						if(gu16_parameterWord & ENABLE_RH)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[10]=E;
+								data[11]=r;
+								data[12]=r;
+							}
+							else
+							{
+								if(RH_Alrm_ON) RH_ALM_on;
+							
+								//----------------------------------------------------
+								tempfloat = humidityRH;
+							
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[11],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[10],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[10],0);
+								}
+								//----------------------------------------------------
+							}
+							
+							//RH_H2_PER_on;
+							RH_UNIT_on;
+						}
+					
+					break;
+					
+					case 1:
+					
+						ID_on;
+						convert_char(DeviceID,&data[4],3);
+					
+					break;
+					
+					case 2:
+					
+						data[10] = B;
+						data[11] = D;
+						data[12] = r;
+					
+						switch(UART_BaudRate)
+						{
+							case BAUD_1200:		convert_char(1200,&data[4],4);		break;
+							case BAUD_2400:		convert_char(2400,&data[4],4);		break;
+							case BAUD_4800:		convert_char(4800,&data[4],4);		break;
+							case BAUD_9600:		convert_char(9600,&data[4],4);		break;
+							case BAUD_14400:	convert_char(14400,&data[4],5);		break;
+							case BAUD_19200:	convert_char(19200,&data[4],5);		break;
+							case BAUD_28800:	convert_char(28800,&data[4],5);		break;
+							case BAUD_38400:	convert_char(38400,&data[4],5);		break;
+							case BAUD_57600:	convert_char(57600,&data[4],5);		break;
+							case BAUD_115200:	convert_float(115200,&data[1],0);	break;
+						}
+					
+					break;
+					
+					case 3:
+					
+						MIN_on;
+					
+						if(gu16_parameterWord & ENABLE_DP2)
+						{
+							if(b.DP2_NC)
+							{
+								data[4]=E;
+								data[5]=r;
+								data[6]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								tempfloat = DP2_Min;
+							
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									DP_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[5],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[4],1);
+								}
+								else
+								{
+									convert_float(tempfloat,&data[4],0);
+								}
+							
+								//----------------------------------------------------
+							}
+							DP_UNIT_on;
+							DP_DIFF_on;
+						}
+					
+						LINE1_on;
+					
+						if(gu16_parameterWord & ENABLE_TEMP)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[7]=E;
+								data[8]=r;
+								data[9]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								if(!TM_Unit)
+								{
+									tempfloat = TM_Min;
+								}
+								else
+								{
+									tempfloat = (TM_Min * 1.8) + 32.0;
+								}
+							
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									TM_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[8],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[7],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[7],0);
+								}
+								//----------------------------------------------------
+
+								if(!TM_Unit)
+								{
+									TM_C_on;
+								}
+								else
+								{
+									TM_F_on;
+								}
+								//TM_H2_on;
+								TM_UNIT_on;
+							}
+						}
+						
+						LINE2_on;
+						
+						if(gu16_parameterWord & ENABLE_RH)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[10]=E;
+								data[11]=r;
+								data[12]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								tempfloat = RH_Min;
+								
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[11],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[10],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[10],0);
+								}
+								//----------------------------------------------------
+							}
+							//RH_H2_PER_on;
+							RH_UNIT_on;
+						}
+						
+					break;
+						
+					case 4:
+						
+						MAX_on;
+						
+						if(gu16_parameterWord & ENABLE_DP2)
+						{
+							if(b.DP2_NC)
+							{
+								data[4]=E;
+								data[5]=r;
+								data[6]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								tempfloat = DP2_Max;
+								
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									DP_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[5],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[4],1);
+								}
+								else
+								{
+									convert_float(tempfloat,&data[4],0);
+								}
+								
+								//----------------------------------------------------
+							}
+							DP_UNIT_on;
+							DP_DIFF_on;
+						}
+						
+						LINE1_on;
+						
+						if(gu16_parameterWord & ENABLE_TEMP)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[7]=E;
+								data[8]=r;
+								data[9]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								if(!TM_Unit)
+								{
+									tempfloat = TM_Max;
+								}
+								else
+								{
+									tempfloat = (TM_Max * 1.8) + 32.0;
+								}
+								
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+									TM_MIN_on;
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[8],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[7],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[7],0);
+								}
+								//----------------------------------------------------
+							}
+							if(!TM_Unit)
+							{
+								TM_C_on;
+							}
+							else
+							{
+								TM_F_on;
+							}
+							//TM_H2_on;
+							TM_UNIT_on;
+						}
+						
+						LINE2_on;
+						
+						if(gu16_parameterWord & ENABLE_RH)
+						{
+							if(b.RH_TEMP_NC)
+							{
+								data[10]=E;
+								data[11]=r;
+								data[12]=r;
+							}
+							else
+							{
+								//----------------------------------------------------
+								tempfloat = RH_Max;
+								
+								if(tempfloat<0.0)
+								{
+									tempfloat *= (-1.0);
+								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[11],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[10],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[10],0);
+								}
+								//----------------------------------------------------
+							}
+							//RH_H2_PER_on;
+							RH_UNIT_on;
+						}
+						
+					break;
+						
+					case 5:
+						
+						ACK_on;
+						convert_char(dummy1,&data[4],2);
+						if(b.SetACKPwd==2)
+						{
+							convert_char(dummy,&data[10],3);
+						}
+						
+						if(b.SetACKPwd)SET_on;
+						
+					break;
+				}
+				
+			break;	
+			
+			case DP_AUTO_CAL_MODE:
+			
+				data[4] = A;
+				data[5] = U;
+				data[6] = t;
+				
+				data[7] = C;
+				data[8] = A;
+				data[9] = L;
+				
+				DP_H2_on;
+				DP_DIFF_on;
+			
+			break;
+			
+			case MIN_MAX_MEAN_MODE:
+			
+				switch(min_max_mean_page_disp_cnt)
+				{
+					case 0:
+				
+						data[4] = P;
+						data[5] = A;
+						data[6] = 9;
+						data[7] = E;
+					
+						MIN_on;
+						MAX_on;
+						MEAN_on;
+				
+					break;
+				
+					case 1:
+					case 5:
+					case 9:
+					case 13:
+					case 17:
+					case 21:
+					case 25:
+					case 29:
+					case 33:
+					case 37:
+					case 41:
+					case 45:
+					case 49:
+					case 53:
+					case 57:
+				
+						convert_char(dispLogInd,&data[2],2);
+						
+						data[4] = D;
+						data[5] = t;
+						
+						convert_char(rtc2.day,&data[7],2);
+						convert_char(rtc2.month,&data[10],2);
+				
+					break;
+				
+					case 2:
+					case 6:
+					case 10:
+					case 14:
+					case 18:
+					case 22:
+					case 26:
+					case 30:
+					case 34:
+					case 38:
+					case 42:
+					case 46:
+					case 50:
+					case 54:
+					case 58:
+				
+						MIN_on;
+						memcpy(&tempfloat,&MinMaxMeanDayLogArr4Disp[4],4);
+						memcpy(&tempfloat1,&MinMaxMeanDayLogArr4Disp1[4],4);
+						memcpy(&tempfloat2,&MinMaxMeanDayLogArr4Disp2[4],4);
+				
+					break;
+				
+					case 3:
+					case 7:
+					case 11:
+					case 15:
+					case 19:
+					case 23:
+					case 27:
+					case 31:
+					case 35:
+					case 39:
+					case 43:
+					case 47:
+					case 51:
+					case 55:
+					case 59:
+				
+						MAX_on;
+						memcpy(&tempfloat,&MinMaxMeanDayLogArr4Disp[8],4);
+						memcpy(&tempfloat1,&MinMaxMeanDayLogArr4Disp1[8],4);
+						memcpy(&tempfloat2,&MinMaxMeanDayLogArr4Disp2[8],4);
+						
+					break;
+				
+					case 4:
+					case 8:
+					case 12:
+					case 16:
+					case 20:
+					case 24:
+					case 28:
+					case 32:
+					case 36:
+					case 40:
+					case 44:
+					case 48:
+					case 52:
+					case 56:
+					case 60:
+				
+						MEAN_on;
+						memcpy(&tempfloat,&MinMaxMeanDayLogArr4Disp[12],4);
+						memcpy(&tempfloat1,&MinMaxMeanDayLogArr4Disp1[12],4);
+						memcpy(&tempfloat2,&MinMaxMeanDayLogArr4Disp2[12],4);
+						
+					break;
+				}
+			
+				if((min_max_mean_page_disp_cnt>0) && ((min_max_mean_page_disp_cnt-1)%4))
+				{
+					//DP2 ------------------------------
+					if(gu16_parameterWord & ENABLE_DP2)
+					{
+						if(b.noData)
+						{
+							data[4]=DASH;
+							data[5]=DASH;
+							data[6]=DASH;
+						}
+						else
+						{
+							if(tempfloat<0.0)
+							{
+								tempfloat *= (-1.0);
+								DP_MIN_on;
+							}
+						
+							if(tempfloat < 10.0)
+							{
+								convert_float(tempfloat,&data[5],1);
+							}
+							else if(tempfloat < 100.0)
+							{
+								convert_float(tempfloat,&data[4],1);
+							}
+							else
+							{
+								convert_float(tempfloat,&data[4],0);
+							}
+						}
+						DP_DIFF_on;
+					}
+				
+					LINE1_on;
+				
+					//Temperature ------------------------------
+					if(gu16_parameterWord & ENABLE_TEMP)
+					{
+						if(b.noData)
+						{
+							data[7]=DASH;
+							data[8]=DASH;
+							data[9]=DASH;
+						}
+						else
+						{
+							if(TM_Unit)
+							{
+								tempfloat1 = (tempfloat1 * 1.8) + 32.0;
+							}
+						
+							if(tempfloat1<0.0)
+							{
+								tempfloat1 *= (-1.0);
+								TM_MIN_on;
+							}
+							//----------------------------------------------------
+							if(tempfloat1 < 10.0)
+							{
+								convert_float(tempfloat1,&data[8],1);
+							}
+							else if(tempfloat < 100.0)
+							{
+								convert_float(tempfloat1,&data[7],1);
+							}
+							else
+							{
+								convert_float(99.9,&data[7],0);
+							}
+						}
+						//----------------------------------------------------
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+						//TM_H2_on;
+						TM_UNIT_on;
+					}
+				
+					LINE2_on;
+				
+					// RH -----------------------------
+					if(gu16_parameterWord & ENABLE_RH)
+					{
+						if(b.noData)
+						{
+							data[10]=DASH;
+							data[11]=DASH;
+							data[12]=DASH;
+						}
+						else
+						{
+							if(tempfloat2<0.0)
+							{
+								tempfloat2 *= (-1.0);
+							}
+							//----------------------------------------------------
+							if(tempfloat2 < 10.0)
+							{
+								convert_float(tempfloat2,&data[11],1);
+							}
+							else if(tempfloat2 < 100.0)
+							{
+								convert_float(tempfloat2,&data[10],1);
+							}
+							else
+							{
+								convert_float(99.9,&data[10],0);
+							}
+							//----------------------------------------------------
+						}
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+					}
+				}
+			
+			break;
+			
+			case MEAN_HOUR_MODE:
+			
+				if(!mean_hr_page_disp_cnt)
+				{
+					data[4] = P;
+					data[5] = A;
+					data[6] = 9;
+					data[7] = E;
+				
+					data[10] = M;
+					data[11] = N;
+				}
+				else if((mean_hr_page_disp_cnt>=1) && (mean_hr_page_disp_cnt<=24))
+				{
+					convert_char(dispMinMaxMeanLogInd,&data[2],2);
+				
+					if(gu16_parameterWord & ENABLE_DP2)
+					{
+						if(b.DP2_NC)
+						{
+							data[4]=E;
+							data[5]=r;
+							data[6]=r;
+						}
+						else
+						{
+							if(tempfloat<0.0)
+							{
+								tempfloat *= (-1.0);
+								DP_MIN_on;
+							}
+							//----------------------------------------------------
+							if(tempfloat < 10.0)
+							{
+								convert_float(tempfloat,&data[5],1);
+							}
+							else if(tempfloat < 100.0)
+							{
+								convert_float(tempfloat,&data[4],1);
+							}
+							else
+							{
+								convert_float(tempfloat,&data[4],0);
+							}
+						
+							//----------------------------------------------------
+						}
+						DP_UNIT_on;
+						DP_DIFF_on;
+					}
+					LINE1_on;
+					//--------------------------------------------------
+					if(gu16_parameterWord & ENABLE_TEMP)
+					{
+						if(b.RH_TEMP_NC)
+						{
+							data[7]=E;
+							data[8]=r;
+							data[9]=r;
+						}
+						else
+						{
+							if(tempfloat1<0.0)
+							{
+								tempfloat1 *= (-1.0);
+								TM_MIN_on;
+							}
+							//----------------------------------------------------
+							if(tempfloat1 < 10.0)
+							{
+								convert_float(tempfloat1,&data[8],1);
+							}
+							else if(tempfloat1 < 100.0)
+							{
+								convert_float(tempfloat1,&data[7],1);
+							}
+							else
+							{
+								convert_float(99.9,&data[7],0);
+							}
+							//----------------------------------------------------
+						}
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+						//TM_H2_on;
+						TM_UNIT_on;
+					}
+					LINE2_on;
+					//--------------------------------------------------
+					if(gu16_parameterWord & ENABLE_RH)
+					{
+						if(b.RH_TEMP_NC)
+						{
+							data[10]=E;
+							data[11]=r;
+							data[12]=r;
+						}
+						else
+						{
+							if(tempfloat2<0.0)
+							{
+								tempfloat2 *= (-1.0);
+							}
+							//----------------------------------------------------
+							if(tempfloat2 < 10.0)
+							{
+								convert_float(tempfloat2,&data[11],1);
+							}
+							else if(tempfloat2 < 100.0)
+							{
+								convert_float(tempfloat2,&data[10],1);
+							}
+							else
+							{
+								convert_float(99.9,&data[10],0);
+							}
+							//----------------------------------------------------
+						}
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+					}
+				}
+			
+			break;
+			
+			case PROG_MODE:
+			
+				switch(prog_para_cnt)
+				{
+					case 0:
+					
+						data[4] = P;
+						data[5] = r;
+						data[6] = 9;
+					
+					break;
+					
+					case 1:
+					
+						data[4] = D;
+						data[5] = V;
+						data[6] = C;
+					
+						data[2] = 1;
+						data[3] = D;
+					
+						convert_char(dummy,&data[7],3);
+					
+					break;
+					
+					case 2:
+					
+						data[4] = B;
+						data[5] = C;
+						data[6] = L;
+					
+						if(!dummy)
+						{
+							data[7] = 0;
+							data[8] = F;
+							data[9] = F;
+						}
+						else
+						{
+							data[7] = 0;
+							data[8] = N;
+						}
+					
+					break;
+					
+					case 3:
+					
+						data[1] = 5;
+						data[2] = C;
+						data[3] = N;
+					
+						data[4] = t;
+						data[5] = M;
+						data[6] = E;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 4:
+					
+						DP_DIFF_on;
+						DP_ALM_on;
+						DP_UNIT_on;
+						
+						data[1] = 0;
+						data[2] = N;
+						
+						data[10] = U;
+						data[11] = P;
+						
+						//TM_H2_on;
+						
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 5:
+					
+						DP_DIFF_on;
+						DP_ALM_on;
+						DP_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = U;
+						data[11] = P;
+					
+						//TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 6:
+					
+						DP_DIFF_on;
+						DP_ALM_on;
+						DP_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						//TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 7:
+					
+						DP_DIFF_on;
+						DP_ALM_on;
+						DP_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = N;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						//TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 8:
+					
+						TM_ALM_on;
+						
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+					
+						data[1] = 0;
+						data[2] = N;
+					
+						data[10] = U;
+						data[11] = P;
+					
+						TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 9:
+					
+						TM_ALM_on;
+						
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = U;
+						data[11] = P;
+					
+						TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 10:
+					
+						TM_ALM_on;
+						if(!TM_Unit)
+						{																					
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}			
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 11:
+					
+						TM_ALM_on;
+					
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+					
+						data[1] = 0;
+						data[2] = N;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						TM_H2_on;
+					
+						if(dummy<0)
+						{
+							TM_MIN_on;
+							convert_char(-dummy,&data[6],4);
+						}
+						else
+						{
+							convert_char(dummy,&data[6],4);
+						}
+					
+					break;
+					
+					case 12:
+					
+						TM_H2_on;
+					
+						data[7] = U;
+						data[8] = N;
+						data[9] = t;
+					
+						if(!dummy)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+					
+					break;
+					
+					case 13:
+					
+						RH_ALM_on;
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = N;
+					
+						data[10] = U;
+						data[11] = P;
+					
+						//TM_H2_on;
+					
+						convert_char(dummy,&data[6],4);
+					
+					break;
+					
+					case 14:
+					
+						RH_ALM_on;
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+						
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = U;
+						data[11] = P;
+					
+						//TM_H2_on;
+					
+						convert_char(dummy,&data[6],4);
+					
+					break;
+					
+					case 15:
+					
+						RH_ALM_on;
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						//TM_H2_on;
+					
+						convert_char(dummy,&data[6],4);
+					
+					break;
+					
+					case 16:
+					
+						RH_ALM_on;
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+					
+						data[1] = 0;
+						data[2] = N;
+					
+						data[10] = L;
+						data[11] = 0;
+					
+						//TM_H2_on;
+					
+						convert_char(dummy,&data[6],4);
+					
+					break;
+					
+					case 17:
+					
+						data[1] = r;
+						data[2] = t;
+						data[3] = C;
+					
+						data[4] = H;
+						data[5] = r;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 18:
+					
+						data[1] = r;
+						data[2] = t;
+						data[3] = C;
+					
+						data[4] = M;
+						data[5] = N;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 19:
+					
+						data[1] = r;
+						data[2] = t;
+						data[3] = C;
+					
+						data[4] = D;
+						data[5] = t;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 20:
+					
+						data[1] = r;
+						data[2] = t;
+						data[3] = C;
+					
+						data[4] = M;
+						data[5] = 0;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 21:
+					
+						data[1] = r;
+						data[2] = t;
+						data[3] = C;
+					
+						data[4] = Y;
+						data[5] = r;
+					
+						convert_char(dummy,&data[7],2);
+					
+					break;
+					
+					case 22:
+					
+						data[4] = B;
+						data[5] = 2;
+						data[6] = r;
+					
+						data[2] = 0;
+						data[3] = N;
+					
+						convert_char(dummy,&data[7],3);
+					
+					break;
+					
+					case 23:
+					
+						data[4] = B;
+						data[5] = 2;
+						data[6] = r;
+					
+						data[1] = 0;
+						data[2] = F;
+						data[3] = F;
+					
+						convert_char(dummy,&data[7],3);
+					
+					break;
+					
+					case 24:
+					
+						data[4] = L;
+						data[5] = 0;
+						data[6] = 9;
+					
+						data[1] = t;
+						data[2] = M;
+						data[3] = E;
+					
+						convert_char(dummy,&data[7],3);
+					
+					break;
+					
+					case 25:
+					
+						data[1] = U;
+						data[2] = r;
+						data[3] = t;
+					
+						data[10] = B;
+						data[11] = D;
+						data[12] = r;
+					
+						switch(dummy)
+						{
+							case BAUD_1200:		convert_char(1200,&data[4],4);		break;
+							case BAUD_2400:		convert_char(2400,&data[4],4);		break;
+							case BAUD_4800:		convert_char(4800,&data[4],4);		break;
+							case BAUD_9600:		convert_char(9600,&data[4],4);		break;
+							case BAUD_14400:	convert_char(14400,&data[4],5);		break;
+							case BAUD_19200:	convert_char(19200,&data[4],5);		break;
+							case BAUD_28800:	convert_char(28800,&data[4],5);		break;
+							case BAUD_38400:	convert_char(38400,&data[4],5);		break;
+							case BAUD_57600:	convert_char(57600,&data[4],5);		break;
+							case BAUD_115200:	convert_char(115200,&data[4],6);	break;
+						}
+
+					break;
+					
+					case 26:
+					
+						data[1] = U;
+						data[2] = r;
+						data[3] = t;
+					
+						data[10] = B;
+						data[11] = 1;
+						data[12] = t;
+					
+						switch(dummy)
+						{
+							case DATABIT_5:		data[4]=5;		break;
+							case DATABIT_6:		data[4]=6;		break;
+							case DATABIT_7:		data[4]=7;		break;
+							case DATABIT_8:		data[4]=8;		break;
+						}
+
+					break;
+					
+					case 27:
+					
+						data[1] = U;
+						data[2] = r;
+						data[3] = t;
+					
+						data[10] = P;
+						data[11] = r;
+						data[12] = t;
+					
+						switch(dummy)
+						{
+							case PARITY_NONE:		data[4]=N;	data[5]=0;					break;
+							case PARITY_EVEN:		data[4]=E;	data[5]=V;	data[6]=N;		break;
+							case PARITY_ODD:		data[4]=0;	data[5]=D;	data[6]=D;		break;
+						}
+					
+					break;
+					
+					case 28:
+					
+						data[1] = U;
+						data[2] = r;
+						data[3] = t;
+					
+						data[10] = 5;
+						data[11] = t;
+						data[12] = P;
+					
+						switch(dummy)
+						{
+							case STOP_BIT_1:		data[4]=1;			break;
+							case STOP_BIT_2:		data[4]=2;			break;
+						}
+					
+					break;
+					
+					case 29:
+					
+						data[1] = C;
+						data[2] = A;
+						data[3] = L;
+					
+						convert_char(dummy,&data[4],3);
+					
+					break;
+
+					case 30:
+					
+						TM_H2_on;
+						if(!TM_Unit)
+						{
+							TM_C_on;
+						}
+						else
+						{
+							TM_F_on;
+						}
+					
+						data[1] = C;
+						data[2] = A;
+						data[3] = L;
+					
+						if(b.RH_TEMP_NC)
+						{
+							data[7]=E;
+							data[8]=r;
+							data[9]=r;
+						}
+						else
+						{
+							//----------------------------------------------------
+							if(dummy<0)
+							{
+								TM_MIN_on;
+								convert_char(-dummy,&data[6],4);
+							}
+							else
+							{
+								convert_char(dummy,&data[6],4);
+							}
+							//----------------------------------------------------
+						}
+					
+					break;
+					
+					case 31:
+					
+						//RH_H2_PER_on;
+						RH_UNIT_on;
+						
+						data[1] = C;
+						data[2] = A;
+						data[3] = L;
+					
+						if(b.RH_TEMP_NC)
+						{
+							data[7]=E;
+							data[8]=r;
+							data[9]=r;
+						}
+						else
+						{
+							//----------------------------------------------------
+							convert_char(dummy,&data[6],4);
+						
+							TM_H2_on;
+							//----------------------------------------------------
+						}
+					
+					break;
+				}
+				
+			break;
+		}
+	}
+
+#elif (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW)
 
 	void disp_value(void)
 	{
@@ -13482,7 +15316,7 @@ void AllSegment(unsigned char state)
 			break;
 		}
 	}
-
+	
 #elif DISPLAY_MODE==BIG_FONT_DISPLAY_OLD
 
 	void disp_value(void)
