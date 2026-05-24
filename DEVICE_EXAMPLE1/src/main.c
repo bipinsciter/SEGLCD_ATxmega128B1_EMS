@@ -63,6 +63,24 @@
 #include "SPI.c"
 #include "AT45DB321D.c"
 
+
+//FUSES =
+//{
+   //.high = (HFUSE_DEFAULT & FUSE_JTAGEN),
+   //.low  = FUSE_CKSEL1,
+   //.extended = (FUSE_BOOTSZ0 & FUSE_BOOTSZ1 & FUSE_BOOTRST);
+//};
+//LOCKBITS = (LB_MODE_1 & BLB0_MODE_3 & BLB1_MODE_4);
+//
+//const char eeprdata[] __attribute__ ((section (“.eeprom”))) = “Hello EEPROM”;
+//const char fusedata[] __attribute__ ((section (“.fuse”))) = {0xA2, 0x00, 0xFF, 0xFF, 0xFF, 0xF5};
+//const char lockbits[] __attribute__ ((section (“.lockbits”))) = {0xFC};
+//const char userdata[] __attribute__ ((section (“.user_signatures”))) = “Hello User Signatures”;
+
+
+//uint16_t bootvar __attribute__((at(0x2000)));
+
+
 //***********************************************************************************
 //#define ENABLE_BATTERY_DISPLAY
 #define USE_SM9541_SENSOR
@@ -133,7 +151,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				750  //means 7.50
+#define DFU_PASSWORD			3123
+#define SOFT_VER				760  //means 7.60
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -503,7 +522,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP_SW_FACT_ID				0x5F
 #define RELAY_CNTL_ID				0x60
 
-#define CORR_RTC_DATA_ID	0x99		
+#define CORR_RTC_DATA_ID	0x99	
+#define PUT_DFU_ID			0xAA	
 //************************************************************************/
 // UART PARAMETER
 //************************************************************************/
@@ -534,7 +554,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //************************************************************************/
 // EEPROM LOCATION FOR PARAMETERS
 //************************************************************************/
-#define FIRST_BOOT_CHECK		1
+#define DFU_NUMBER_LOGIC		0
+#define FIRST_BOOT_CHECK		(DFU_NUMBER_LOGIC+2)
 #define DISP_PARA_SELECT		(FIRST_BOOT_CHECK+1)
 #define DUMMY_ADDR				(DISP_PARA_SELECT+2)
 #define DP1_UP_ALM_ON			(DUMMY_ADDR+1)
@@ -1530,7 +1551,7 @@ unsigned char CurrentLog24IndReadLoc=0;
 
 unsigned short ADC_sample=0;
 
-unsigned char DP_StartUpTimer=0,TMRH_StartUpTimer=0;
+unsigned char DP_StartUpTimer=0,TMRH_StartUpTimer=0,gu8_restartTimer=0;
 
 unsigned short RAMBufferInd=0,RAMBufferLog=0;
 unsigned char FlashOVFByte=0;
@@ -1655,6 +1676,8 @@ int main(void)
 {
 	InitSystemClock();	
 	Init_GPIO();
+	
+	//wdt_enable(WDTO_8S);
 	
 	//-------------------------------------------------------
 	//Initialize Timer0
@@ -2553,8 +2576,6 @@ int main(void)
 		//Serve Watchdog Timer
 		wdt_reset();
 		
-		//sleepmgr_enter_sleep(); // Optional
-				
 		//1 Second Tick ====================================================
 		if(b.sec_flag)
 		{
@@ -6787,8 +6808,13 @@ void ServePCMsg(unsigned char SrcPort)
 					
 					gu16_parameterWord=us3;
 					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
+
+					//wdt_enable(WDTO_2S);
+					//b.resetDevice=1;
+					gu8_restartTimer = 3;
 					
-					b.resetDevice=1;
+					//CPU_CCP=0xD8;
+					//RST_CTRL=RST_SWRST_bm;
 				}
 			
 			break;
@@ -7830,6 +7856,21 @@ void ServePCMsg(unsigned char SrcPort)
 					}
 				}
 			break;
+			
+			case PUT_DFU_ID:
+				if(tempshort==DFU_PASSWORD)
+				{
+					eeprom_busy_wait();  	eeprom_write_word ((unsigned int*)DFU_NUMBER_LOGIC,0xABCD); 
+					
+					gu8_restartTimer = 3;
+					
+					//CPU_CCP=0xD8;
+					//RST_CTRL=RST_SWRST_bm;
+					//wdt_enable(WDTO_2S);
+					//b.resetDevice=1;
+				}
+			break;
+			
 			case MENB_ID:
 				if((tempshort==0) || (tempshort==1))
 				{
@@ -10307,6 +10348,16 @@ void SecondTick(void)
 	if(DP_StartUpTimer)DP_StartUpTimer--;
 	if(TMRH_StartUpTimer)TMRH_StartUpTimer--;
 	
+	if(gu8_restartTimer)
+	{
+		gu8_restartTimer--;
+		if(!gu8_restartTimer)
+		{
+			CPU_CCP=0xD8;
+			RST_CTRL=RST_SWRST_bm;
+		}
+	}
+	
 	//--------------------------------------------
 	if(progTimeout)
 	{
@@ -10555,7 +10606,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 5;
+	data[6] = 6;
 						
 	disp_value();
 	
