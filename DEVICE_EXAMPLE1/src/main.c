@@ -76,7 +76,7 @@
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				790  //means 7.90
+#define SOFT_VER				800  //means 8.00
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -357,10 +357,6 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define RS485_RX1_ENB 			PORTB_OUTCLR = BIT3
 #define RS485_RX1_DIS 			PORTB_OUTSET = BIT3
 
-#define XBEE_RST_DIR_OP			PORTA_DIRSET = BIT6
-#define XBEE_RST_HIGH			PORTA_OUTSET = BIT6
-#define XBEE_RST_LOW			PORTA_OUTCLR = BIT6
-
 #define RELAY1_DIR_OP			PORTG_DIRSET = BIT0
 #define RELAY1_ON				PORTG_OUTSET = BIT0
 #define RELAY1_OFF				PORTG_OUTCLR = BIT0
@@ -400,6 +396,10 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define RELAY8_ON				PORTG_OUTSET = BIT7
 #define RELAY8_OFF				PORTG_OUTCLR = BIT7
 #define RELAY8_STAT				(PORTG_OUT & BIT7)
+
+#define XBEE_RST_DIR_OP			PORTE_DIRSET = BIT4
+#define XBEE_RST_HIGH			PORTE_OUTSET = BIT4
+#define XBEE_RST_LOW			PORTE_OUTCLR = BIT4
 //--------------------------------------------------
 
 #define SHR(a, b) (-1 >> 1 == -1 ? (a) >> (b) : (a) / (1 << (b)) - ((a) % (1 << (b)) < 0))
@@ -504,7 +504,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP_SW_FACT_ID				0x5F
 #define RELAY_CNTL_ID				0x60
 #define AUTO_SENT_INTERVAL_ID		0x61
-
+//#define AUTO_SENT_INTERVAL_ID		0x62
 
 #define CORR_RTC_DATA_ID	0x99	
 #define PUT_DFU_ID			0xAA	
@@ -1356,6 +1356,7 @@ volatile static struct bits
 	unsigned char AlarmLED : 1;
 	unsigned char buzzeralert : 1;
 	unsigned char autoSendResponse : 1;
+	unsigned char triggerXbeeReset : 1;
 	
 }b={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -1548,7 +1549,7 @@ unsigned char rxMode=0;
 unsigned long LowEpoch=0,MidEpoch=0,MidEpoch1=0,HighEpoch=0,MidLogInd=0;
 unsigned long InitLogInd=0,LastLogInd=0,StartEpoch=0,EndEpoch=0,StartEpochTime=0,EndEpochTime=0,TotalLog=0,StartLogInd=0,EndLogInd=0;
 
-unsigned short logtransfer=0;
+unsigned short logtransfer=0, gu16_triggerXbeeResetTimer = 300;
 signed short su16_dp_sw_factor[5]={0,0,0,0,0};
 
 volatile unsigned long templong=0;
@@ -1931,7 +1932,7 @@ int main(void)
 	#endif
 	
 	logTimer = LogInterval;
-	b.brodcastEnb=0;	
+	b.brodcastEnb=1;	
 	logtransfer=0;
 	b.logtransferStart=0;
 	DP_StartUpTimer=S_STABLE_TIME;
@@ -2007,6 +2008,17 @@ int main(void)
 		{
 			AutoSendDataResponse(1);
 			b.autoSendResponse = false;
+		}
+		
+		if(b.triggerXbeeReset)
+		{
+			_delay_ms(25);
+			XBEE_RST_LOW;
+			_delay_ms(1);
+			XBEE_RST_HIGH;
+			_delay_ms(25);
+			
+			b.triggerXbeeReset=0;
 		}
 		
 		//1 Second Tick ====================================================
@@ -9860,6 +9872,8 @@ void Init_variables(void)
 	TMRH_StartUpTimer=0;
 	
 	b.autoSendResponse = false;
+	b.triggerXbeeReset = false;
+	gu16_triggerXbeeResetTimer = 300;
 }
 
 //**************************************************************************************************************************************
@@ -9875,23 +9889,48 @@ void SecondTick(void)
 		SendToSlave();
 	}
 	
-	if(gu8_AutoSentTimer)
+	if(gu16_triggerXbeeResetTimer)
 	{
-		gu8_AutoSentTimer--;
-		if(!gu8_AutoSentTimer)
+		gu16_triggerXbeeResetTimer--;
+		if(!gu16_triggerXbeeResetTimer)
 		{
-			b.autoSendResponse = true;
-			gu8_AutoSentTimer=gu8_AutoSentInterval;
+			gu16_triggerXbeeResetTimer = 300;
+			b.triggerXbeeReset = true;
 		}
 	}
 	
-	if(gu8_AutoSentTimeout)
+	if(b.brodcastEnb)
 	{
-		gu8_AutoSentTimeout--;
-		if(!gu8_AutoSentTimeout)
+		if(gu8_AutoSentTimer)
 		{
-			b.autoSendResponse = true;
-			gu8_AutoSentTimer=gu8_AutoSentInterval;
+			gu8_AutoSentTimer--;
+			if(!gu8_AutoSentTimer)
+			{
+				b.autoSendResponse = true;
+				
+				/*XBEE_RST_LOW;
+				_delay_ms(5);
+				XBEE_RST_HIGH;
+				_delay_ms(5);
+				*/
+				gu8_AutoSentTimer=gu8_AutoSentInterval;
+			}
+		}
+		
+		if(gu8_AutoSentTimeout)
+		{
+			gu8_AutoSentTimeout--;
+			if(!gu8_AutoSentTimeout)
+			{
+				b.autoSendResponse = true;
+				
+				/*XBEE_RST_LOW;
+				_delay_ms(5);
+				XBEE_RST_HIGH;
+				_delay_ms(5);
+				*/
+				gu8_AutoSentTimer=gu8_AutoSentInterval;
+			}
 		}
 	}
 	
@@ -10238,8 +10277,8 @@ void InitLCDController(void)
 	data[2] = E;
 	data[3] = r;
 		
-	data[5] = 17;
-	data[6] = 9;
+	data[5] = 18;
+	data[6] = 0;
 						
 	disp_value();
 	
