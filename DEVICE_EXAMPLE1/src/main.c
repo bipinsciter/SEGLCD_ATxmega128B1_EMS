@@ -65,11 +65,7 @@
 
 //***********************************************************************************
 //#define ROUND_MODULE
-#define USE_SM_SENSOR
-#define SM9541			0
-#define SM9543			1
-#define SM_SENSOR		SM9541
-
+#define USE_SM9541_SENSOR
 #define ENABLE_KEY_LOGIC
 //#define ENABLE_BATTERY_DISPLAY
 
@@ -78,6 +74,10 @@
 #define BIG_FONT_DISPLAY_OLD		2
 #define BIG_FONT_DISPLAY_NEW		3
 #define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
+
+
+#define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
+#define DP_ZERO_DISP_LIMIT_HIGH		(1.9)
 
 //***********************************************************************************
 
@@ -105,12 +105,12 @@ static volatile bool main_b_cdc_enable = false;
 #if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
 
 	#define NO_DIGIT	13
-	#define PARAMETER_WORD	(ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_USB | ENABLE_LCD | ENABLE_ALERT)
+	#define PARAMETER_WORD	(ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_LCD | ENABLE_ALERT)
 
 #elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 
 	#define NO_DIGIT	7
-	#define PARAMETER_WORD	(ENABLE_DP1 | ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_USB | ENABLE_LCD | ENABLE_ALERT)
+	#define PARAMETER_WORD	(ENABLE_DP1 | ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_LCD | ENABLE_ALERT)
 
 #endif
 
@@ -129,7 +129,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				620  //means 6.10
+#define SOFT_VER				640  //means 6.40
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -149,29 +149,11 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 // DISPLAY CONSTANTS
 //*************************************************************************
 
-#ifdef USE_SM_SENSOR
-
-	#if (SM_SENSOR==SM9541)
-
-	#define MIN_PRESSURE    			(-980)
-	#define MAX_PRESSURE	   			980
-	#define DIF_PRESSURE    			(MAX_PRESSURE-MIN_PRESSURE)
-	#define MIN_PRESSURE_CNT    		1638	//10%
-	#define MAX_PRESSURE_CNT    		13107	//90%
-	#define DIF_PRESSURE_CNT    		(MAX_PRESSURE_CNT-MIN_PRESSURE_CNT)	//90%-10%
-	#define RATIO_PRESSURE    			(DIF_PRESSURE/DIF_PRESSURE_CNT)
-
-	#else
-
-	#define MIN_PRESSURE    			(-980)
-	#define MAX_PRESSURE	   			980
-	#define DIF_PRESSURE    			(MAX_PRESSURE-MIN_PRESSURE)
-	#define MIN_PRESSURE_CNT    		1638	//10%
-	#define MAX_PRESSURE_CNT    		13107	//90%
-	#define DIF_PRESSURE_CNT    		(MAX_PRESSURE_CNT-MIN_PRESSURE_CNT)	//90%-10%
-	#define RATIO_PRESSURE    			(DIF_PRESSURE/DIF_PRESSURE_CNT)
-
-	#endif
+#ifdef USE_SM9541_SENSOR
+	#define ZERO_AP1_COUNT			2200
+	#define ZERO_DP1_COUNT			8192
+	#define ZERO_DP2_COUNT			8192
+	#define PASCAL_PER_CNT			8.0
 #else
 	#define ZERO_DP1_COUNT			16065
 	#define ZERO_DP2_COUNT			16065
@@ -458,7 +440,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define PARA_READ_CMD				0x10
 #define PARA_WITH_ALM_READ_CMD		0x00
 //-------------------------------------------------
-#define No_ERROR			0x00
+#define NO_ERROR			0x00
 #define INVALID_CMD			0x01
 #define INVALID_PARA		0x02
 #define DP1_FAULTY			0x04
@@ -577,7 +559,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //************************************************************************/
 #define FIRST_BOOT_CHECK		1
 #define DISP_PARA_SELECT		(FIRST_BOOT_CHECK+1)
-#define DP1_UP_ALM_ON			(DISP_PARA_SELECT+2)
+#define DUMMY_ADDR				(DISP_PARA_SELECT+2)
+#define DP1_UP_ALM_ON			(DUMMY_ADDR+1)
 #define DP1_UP_ALM_OFF			(DP1_UP_ALM_ON+2)
 #define DP1_LO_ALM_ON			(DP1_UP_ALM_OFF+2)
 #define DP1_LO_ALM_OFF			(DP1_LO_ALM_ON+2)
@@ -673,8 +656,9 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define MASTER_ENABLE_ADDR		(RH_LED_SETTING_ADDR+1)
 #define DOOR_SENSE_POLARITY_ADDR		(MASTER_ENABLE_ADDR+1)
 #define DOOR_SENSE_TIME_ADDR			(DOOR_SENSE_POLARITY_ADDR+1)
-#define DP1_ALM_SENSE_TIME_ADDR				(DOOR_SENSE_TIME_ADDR+1)
-#define DP2_ALM_SENSE_TIME_ADDR				(DP1_ALM_SENSE_TIME_ADDR+1)
+#define DP1_ALM_SENSE_TIME_ADDR			(DOOR_SENSE_TIME_ADDR+1)
+#define DP2_ALM_SENSE_TIME_ADDR			(DP1_ALM_SENSE_TIME_ADDR+1)
+#define DP_AUTO_CAL_FLAG				(DP2_ALM_SENSE_TIME_ADDR+1)
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
 
@@ -1318,6 +1302,7 @@ unsigned short buzzerOnTime=0,buzzerOffTime=0;
 unsigned short ConfiguPassword=0;
 unsigned char test[20];
 unsigned char Temp_RTC_ARR[5]={0};
+//unsigned char gu8_DPAutoCalFlag=0,gu8_DPAutoCalTimer=0;
 
 struct RTCData
 {
@@ -1398,7 +1383,7 @@ unsigned short CustPassword=0,FactCustPassword=0;
 
 unsigned char PCCalibrationTimer=0,gu8_doorSensingTimer=0,gu8_Dp1AlarmSensingTimer=0,gu8_Dp2AlarmSensingTimer=0;
 unsigned char gu8_Dp1AlarmSensingTime=0,gu8_Dp2AlarmSensingTime=0,gu8_doorSensingTime=0,gu8_doorSensingPolarity=0;
-unsigned char restoreFactoryCalibrationTimer=0,DPAutoCalModeTimer=0,MinMaxMeanModeTimer=0,MeanHrModeTimer=0,DPAutoCalTimer=0,ProgModeTimer=0;
+unsigned char restoreFactoryCalibrationTimer=0,DPAutoCalModeTimer=0,MinMaxMeanModeTimer=0,MeanHrModeTimer=0,DPAutoCalTimer=0,ProgModeTimer=0,gu8_MinMaxClearTimer=0;
 
 unsigned char AckPwdInd=0;
 unsigned short AckTimer=0,AckPwd[NO_OF_ACKPWD];
@@ -4027,34 +4012,23 @@ void CheckUpDnKey(void)
 			}
 		}
 	}
-	else if(!PROG_ENT_KEY)
+	else if(!PARA_SELECT_KEY && !DN_KEY)
 	{
-		ProgModeTimer++;
-		if(ProgModeTimer > 10)
+		if(mode==NORMAL_MODE)
 		{
-			ProgModeTimer=0;
-		
-			if(mode==NORMAL_MODE)
+			gu8_MinMaxClearTimer++;
+			if(gu8_MinMaxClearTimer > 20)
 			{
-				mode=PROG_MODE;
-				prog_para_cnt=0;
+				gu8_MinMaxClearTimer=0;
 				
-				Normal_para_cnt=0;
-				b.RTCChangeOccure=0;
-				b.UARTChanged=0;
-				Lastpara_cnt=0;
-				progTimeout=60;
-				b.SetACKPwd=0;
-			}
-			else if(mode==PROG_MODE)
-			{
-				mode=NORMAL_MODE;
-				progTimeout=0;
+				ResetMinMax();
 				
 				AllSegment(OFF);
 				for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
-				data[4] = N;
-				data[5] = 0;
+				MIN_on;
+				MAX_on;
+				data[4] = C;
+				data[5] = L;
 				data[6] = r;
 				disp_value();
 				
@@ -4169,6 +4143,41 @@ void CheckUpDnKey(void)
 				
 				_delay_ms(4000);
 				
+			}
+		}
+	}
+	else if(!PROG_ENT_KEY)
+	{
+		ProgModeTimer++;
+		if(ProgModeTimer > 10)
+		{
+			ProgModeTimer=0;
+			
+			if(mode==NORMAL_MODE)
+			{
+				mode=PROG_MODE;
+				prog_para_cnt=0;
+				
+				Normal_para_cnt=0;
+				b.RTCChangeOccure=0;
+				b.UARTChanged=0;
+				Lastpara_cnt=0;
+				progTimeout=60;
+				b.SetACKPwd=0;
+			}
+			else if(mode==PROG_MODE)
+			{
+				mode=NORMAL_MODE;
+				progTimeout=0;
+				
+				AllSegment(OFF);
+				for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
+				data[4] = N;
+				data[5] = 0;
+				data[6] = r;
+				disp_value();
+				
+				_delay_ms(4000);
 			}
 		}
 	}
@@ -5397,6 +5406,7 @@ void CheckUpDnKey(void)
 		ProgModeTimer=0;
 		MinMaxMeanModeTimer=0;
 		MeanHrModeTimer=0;
+		gu8_MinMaxClearTimer=0;
 	}
 }
 //**********************************************************************************************************************************************/
@@ -7287,7 +7297,7 @@ void ServePCMsg(unsigned char SrcPort)
 		{
 			RxBuffer[j++]=0;
 			
-			//Fill DP vale
+			//Fill DP value
 			templong = Dpressure1*100;
 			j += fillValue(&RxBuffer[j],templong);	
 		}
@@ -7302,7 +7312,7 @@ void ServePCMsg(unsigned char SrcPort)
 		{
 			RxBuffer[j++]=0;
 			
-			//Fill DP vale
+			//Fill DP value
 			templong = Dpressure2*100;
 			j += fillValue(&RxBuffer[j],templong);
 		}
@@ -7317,7 +7327,7 @@ void ServePCMsg(unsigned char SrcPort)
 		{
 			RxBuffer[j++]=0;
 			
-			//Fill Temp vale
+			//Fill Temp value
 			if(!TM_Unit)
 			{
 				tempshort = temperatureC*100;
@@ -7340,7 +7350,7 @@ void ServePCMsg(unsigned char SrcPort)
 		{
 			RxBuffer[j++]=0;
 			
-			//Fill Temp vale
+			//Fill Temp value
 			tempshort = humidityRH*100;
 			j += fillValue(&RxBuffer[j],tempshort);
 		}
@@ -9659,7 +9669,6 @@ void Init_Timer0(void)
 	//*/
 //}
 
-
 void ReadDiffPressure1(void)
 {	
 	unsigned char i=0;
@@ -9667,7 +9676,7 @@ void ReadDiffPressure1(void)
 
 	Dpressure1=0.0;
 	
-	#ifdef USE_SM_SENSOR
+	#ifdef USE_SM9541_SENSOR
 				
 		unsigned char DpError=0;
 		
@@ -9720,9 +9729,7 @@ void ReadDiffPressure1(void)
 			
 			if(gu16_parameterWord & DIFP1_ABSP1)
 			{
-				Dpressure1 = RATIO_PRESSURE*((Avg_Raw_pressure_cnt1-MIN_PRESSURE_CNT)+MIN_PRESSURE);
-				
-				/*if(Avg_Raw_pressure_cnt1 >= ZERO_DP1_COUNT)
+				if(Avg_Raw_pressure_cnt1 >= ZERO_DP1_COUNT)
 				{
 					Avg_Raw_pressure_cnt1 = Avg_Raw_pressure_cnt1 - ZERO_DP1_COUNT;
 					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.119751;
@@ -9732,11 +9739,11 @@ void ReadDiffPressure1(void)
 					Avg_Raw_pressure_cnt1 = ZERO_DP1_COUNT - Avg_Raw_pressure_cnt1;
 					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.119751;
 					Dpressure1 *= (-1.0);
-				}*/
+				}
 			}
 			else
 			{
-				/*if(Avg_Raw_pressure_cnt1 >= ZERO_AP1_COUNT)
+				if(Avg_Raw_pressure_cnt1 >= ZERO_AP1_COUNT)
 				{
 					Avg_Raw_pressure_cnt1 = Avg_Raw_pressure_cnt1 - ZERO_AP1_COUNT;
 					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.06287;
@@ -9746,14 +9753,14 @@ void ReadDiffPressure1(void)
 					Avg_Raw_pressure_cnt1 = ZERO_AP1_COUNT - Avg_Raw_pressure_cnt1;
 					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.06287;
 					Dpressure1 *= (-1.0);
-				}*/
+				}
 			}
 			
 			RealDpressure1 = Dpressure1;
 			Dpressure1 -= DP1_Cal_float_Value_F;
 			Dpressure1 -= DP1_Cal_float_Value_C;
 			
-			//if((Dpressure1<1.9) && (Dpressure1>-1.9)) Dpressure1=0.0;
+			if((Dpressure1<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure1>DP_ZERO_DISP_LIMIT_LOW)) Dpressure1=0.0;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10050,15 +10057,15 @@ void ReadDiffPressure1(void)
 	#endif
 }
 
+
 void ReadDiffPressure2(void)
 {
 	unsigned char i=0;
 	unsigned short differanceDP=0;
-	float lf32_temp=0;
-	
+
 	Dpressure2=0.0;
 	
-	#ifdef USE_SM_SENSOR
+	#ifdef USE_SM9541_SENSOR
 	
 		unsigned char DpError=0;
 		
@@ -10099,33 +10106,21 @@ void ReadDiffPressure2(void)
 		{
 			b.DP2_NC=0;
 		
-			Avg_Raw_pressure_cnt2=0;
-			for(i=0;i<RAW_DP_CNT_IND;i++) Avg_Raw_pressure_cnt2 += Raw_pressure_cnt2[i];
+			Avg_Raw_pressure_cnt2 = 0;
+			
+			for(i=0;i<RAW_DP_CNT_IND;i++) 
+			{
+				Avg_Raw_pressure_cnt2 += Raw_pressure_cnt2[i];
+			}
+			
 			Avg_Raw_pressure_cnt2 /= RAW_DP_CNT_IND;
 			
 			Raw_pressure_cnt2[Raw_pressure_cnt_ind2++] = differanceDP;
 			if(Raw_pressure_cnt_ind2>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind2=0;
 			
-			//lf32_temp = 0.1708954573197314;
-			Dpressure2 = (0.1708954573197314*(Avg_Raw_pressure_cnt2-1638))-980;
-			
 			//Avg_Raw_pressure_cnt2 += DP2_Cal_Count;
 			//Avg_Raw_pressure_cnt2 += DP2_Cal_Count_C;
-			/*
-			#define MIN_PRESSURE    			(-980)
-			#define MAX_PRESSURE	   			980
-			#define DIF_PRESSURE    			(MAX_PRESSURE-MIN_PRESSURE)
-			#define MIN_PRESSURE_CNT    		1638	//10%
-			#define MAX_PRESSURE_CNT    		13107	//90%
-			#define DIF_PRESSURE_CNT    		(MAX_PRESSURE_CNT-MIN_PRESSURE_CNT)	//90%-10%
-			#define RATIO_PRESSURE    			(DIF_PRESSURE/DIF_PRESSURE_CNT)
-			*/
-			
-			
-			
-			//Dpressure2 = lf32_temp;//RATIO_PRESSURE*((Avg_Raw_pressure_cnt2-MIN_PRESSURE_CNT)+MIN_PRESSURE);
-			
-			/*
+		
 			if(Avg_Raw_pressure_cnt2 >= ZERO_DP2_COUNT)
 			{
 				Avg_Raw_pressure_cnt2 = Avg_Raw_pressure_cnt2 - ZERO_DP2_COUNT;
@@ -10137,13 +10132,12 @@ void ReadDiffPressure2(void)
 				Dpressure2 = (float)Avg_Raw_pressure_cnt2 * 0.119751;
 				Dpressure2 *= (-1.0);
 			}
-			*/
 			
 			RealDpressure2 = Dpressure2;
 			Dpressure2 -= DP2_Cal_float_Value_F;
 			Dpressure2 -= DP2_Cal_float_Value_C;
 			
-			//if((Dpressure2<1.9) && (Dpressure2>-1.9)) Dpressure2=0.0;
+			if((Dpressure2<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure2>DP_ZERO_DISP_LIMIT_LOW)) Dpressure2=0.0;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10635,7 +10629,7 @@ void Init_variables(void)
 	
 	for(i=0;i<RAW_DP_CNT_IND;i++) 
 	{
-		Raw_pressure_cnt2[i]=0;//ZERO_DP2_COUNT;
+		Raw_pressure_cnt2[i]=ZERO_DP2_COUNT;
 	}
 	memset(&Buffer1[0],0,sizeof(Buffer1));
 	memset(&TxBuffer[0],0,sizeof(TxBuffer));
@@ -10644,11 +10638,11 @@ void Init_variables(void)
 	
 	if(!(gu16_parameterWord & ENABLE_DP1))
 	{
-		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=0;//ZERO_AP1_COUNT;
+		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=ZERO_AP1_COUNT;
 	}
 	else
 	{
-		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=0;//ZERO_DP1_COUNT;
+		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=ZERO_DP1_COUNT;
 	}
 	
 	DP_StartUpTimer=0;
@@ -10667,6 +10661,42 @@ void SecondTick(void)
 	{
 		SendToSlave();
 	}
+	//--------------------------------------------
+	/*if(gu8_DPAutoCalTimer)
+	{
+		gu8_DPAutoCalTimer--;
+		if(!gu8_DPAutoCalTimer)
+		{
+			if(!b.DP1_NC)
+			{
+				DP1_Cal_Value_F = RealDpressure1*10.0;
+				eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+				DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
+				
+				DP1_Cal_Value_C = 0;
+				DP1_Cal_float_Value_C = 0;
+				
+				eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP1_CAL_DATE_ADDR,12);
+				eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP1_CAL_CERT_ADDR,15);
+			}
+			
+			if(!b.DP2_NC)
+			{
+				DP2_Cal_Value_F = RealDpressure2*10.0;
+				eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+				DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
+				
+				DP2_Cal_Value_C = 0;
+				DP2_Cal_float_Value_C = 0;
+				
+				eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP2_CAL_DATE_ADDR,12);
+				eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP2_CAL_CERT_ADDR,15);
+			}
+			
+			gu8_DPAutoCalFlag=1;
+			eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+		}
+	}*/
 	//--------------------------------------------
 	if(b.buzzerStart==YES)
 	{
@@ -10726,6 +10756,7 @@ void SecondTick(void)
 			MinMaxMeanModeTimer=0;
 			MeanHrModeTimer=0;
 			dispMinMaxMeanLogInd=0;
+			gu8_MinMaxClearTimer=0;
 			
 			AllSegment(OFF);
 			for(unsigned char i=0;i<NO_DIGIT;i++) data[i]=BLANK;
@@ -10954,7 +10985,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 16;
-	data[6] = 2;
+	data[6] = 4;
 						
 	disp_value();
 	
@@ -13258,21 +13289,22 @@ void AllSegment(unsigned char state)
 								{
 									tempfloat *= (-1.0);
 									TM_MIN_on;
-									//----------------------------------------------------
-									if(tempfloat < 10.0)
-									{
-										convert_float(tempfloat,&data[8],1);
-									}
-									else if(tempfloat < 100.0)
-									{
-										convert_float(tempfloat,&data[7],1);
-									}
-									else
-									{
-										convert_float(99.9,&data[7],0);
-									}
-									//----------------------------------------------------
 								}
+								//----------------------------------------------------
+								if(tempfloat < 10.0)
+								{
+									convert_float(tempfloat,&data[8],1);
+								}
+								else if(tempfloat < 100.0)
+								{
+									convert_float(tempfloat,&data[7],1);
+								}
+								else
+								{
+									convert_float(99.9,&data[7],0);
+								}
+								//----------------------------------------------------
+
 								if(!TM_Unit)
 								{
 									TM_C_on;
@@ -19706,6 +19738,9 @@ void boot_data(void)
 		gu16_parameterWord=PARAMETER_WORD;
 		eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
 		
+		//gu8_DPAutoCalFlag=0;
+		//eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+		
 		gu8_masterEnable=0;
 		eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 		
@@ -19900,7 +19935,7 @@ void boot_data(void)
 			
 			//RH_Cal_Count=0;
 			//eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
-		//
+		
 			//RH_Cal_Count_C=0;
 			//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
 			
@@ -20095,6 +20130,13 @@ void boot_data(void)
 			RTCCorruptDataInd=0;
 			eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 		}
+		
+		/*eeprom_read_byte ((unsigned char*)DP_AUTO_CAL_FLAG);
+		if(gu8_DPAutoCalFlag>1)
+		{
+			gu8_DPAutoCalFlag=1;
+			eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+		}*/
 		
 		gu16_parameterWord = eeprom_read_word ((unsigned int*)DISP_PARA_SELECT);
 		//gu16_parameterWord = PARAMETER_WORD;
@@ -20681,6 +20723,15 @@ void boot_data(void)
 			eeprom_write_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)),CurrentLog24Ind);
 		}
 	}
+	
+	/*if(!gu8_DPAutoCalFlag)
+	{
+		gu8_DPAutoCalTimer=60;
+	}
+	else
+	{
+		gu8_DPAutoCalTimer=0;
+	}*/
 }
 
 //***************************************************************************************************
