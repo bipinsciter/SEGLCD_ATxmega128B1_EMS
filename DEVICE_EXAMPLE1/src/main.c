@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				940  //means 9.40
+#define SOFT_VER				950  //means 9.50
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -147,7 +147,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DEFAULT_XBEE_RST_INTERVAL	 360
 #define DEFAULT_DEVICES_IN_GROUP	 5
 
-#define DP_SW_FACT_DIVISION			 7
+#define DP_SW_FACT_DIVISION			 10
 
 
 #define DISP_PER			82.0 // PWM
@@ -1335,7 +1335,8 @@ volatile static struct bits
 	unsigned char Sec_blink_flag : 1;	
 	unsigned char RTCChangeOccure : 1;
 	unsigned char sec_flag : 1;	
-	unsigned char dp_sw_factor_add : 1;
+	unsigned char dp_sw_factor_add1 : 1;
+	unsigned char dp_sw_factor_add2 : 1;
 	unsigned char msec500_flag : 1;	
 	unsigned char msec250_flag : 1;
 	unsigned char msec100_flag : 1;
@@ -9235,7 +9236,7 @@ void ReadDiffPressure1(void)
 		Dpressure1 += f32_dp_offset[0];
 		
 		//Add manipulation offset ---------------------------------------------------
-		if(b.dp_sw_factor_add)
+		if(b.dp_sw_factor_add1)
 		{
 			if(Dpressure1>1.5)
 			{
@@ -9246,7 +9247,7 @@ void ReadDiffPressure1(void)
 					LastDpressure1 = Dpressure1;
 				}
 			}
-			else if(Dpressure1<-1.5)
+			/*else if(Dpressure1<-1.5)
 			{
 				if(gu8_dp_sw_factor_add_cnt[0]<DP_SW_FACT_DIVISION)
 				{
@@ -9254,24 +9255,30 @@ void ReadDiffPressure1(void)
 					gu8_dp_sw_factor_add_cnt[0]++;
 					LastDpressure1 = Dpressure1;
 				}
-			}
+			}*/
 			else
 			{
-				gu8_dp_sw_factor_add_cnt[0] = 0;
-				TempDpressure1 = 0;
+				if(gu8_dp_sw_factor_add_cnt[0])
+				{
+					TempDpressure1 -= (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[0]--;
+					LastDpressure1 = Dpressure1;
+				}
+				
+				//gu8_dp_sw_factor_add_cnt[0] = 0;
+				//TempDpressure1 = 0;
 			}
 			
-			b.dp_sw_factor_add = 0;
+			b.dp_sw_factor_add1 = 0;
 		}
-		
 		Dpressure1 += TempDpressure1;
 		//-----------------------------------------------------------------
-		if(((LastDpressure1<0) && (Dpressure1>0)) || ((LastDpressure1>0) && (Dpressure1<0)))
+		/*if(((LastDpressure1<0) && (Dpressure1>0)) || ((LastDpressure1>0) && (Dpressure1<0)))
 		{
 			gu8_dp_sw_factor_add_cnt[0] = 0;
 			TempDpressure1 = 0;
 			LastDpressure1 = Dpressure1;
-		}
+		}*/
 		//-----------------------------------------------------------------
 		if(Dpressure1 > f32_dp_limit[0]) 
 		{
@@ -9483,7 +9490,7 @@ void ReadDiffPressure2(void)
 		Dpressure2 += f32_dp_offset[1];
 		
 		//Add manipulation offset ---------------------------------------------------
-		if(b.dp_sw_factor_add)
+		if(b.dp_sw_factor_add2)
 		{
 			if(Dpressure2>1.5)
 			{
@@ -9494,7 +9501,7 @@ void ReadDiffPressure2(void)
 					LastDpressure2 = Dpressure2;
 				}
 			}
-			else if(Dpressure2<-1.5)
+			/*else if(Dpressure2<-1.5)
 			{
 				if(gu8_dp_sw_factor_add_cnt[1]<DP_SW_FACT_DIVISION)
 				{
@@ -9502,23 +9509,30 @@ void ReadDiffPressure2(void)
 					gu8_dp_sw_factor_add_cnt[1]++;
 					LastDpressure2 = Dpressure2;
 				}
-			}
+			}*/
 			else
 			{
-				gu8_dp_sw_factor_add_cnt[1] = 0;
-				TempDpressure2 = 0;
+				if(gu8_dp_sw_factor_add_cnt[1])
+				{
+					TempDpressure2 -= (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[1]--;
+					LastDpressure2 = Dpressure2;
+				}
+				
+				//gu8_dp_sw_factor_add_cnt[1] = 0;
+				//TempDpressure2 = 0;
 			}
 			
-			b.dp_sw_factor_add = 0;
+			b.dp_sw_factor_add2 = 0;
 		}
 		Dpressure2 += TempDpressure2;
 		//-----------------------------------------------------------------
-		if(((LastDpressure2<0) && (Dpressure2>0)) || ((LastDpressure2>0) && (Dpressure2<0)))
+		/*if(((LastDpressure2<0) && (Dpressure2>0)) || ((LastDpressure2>0) && (Dpressure2<0)))
 		{
 			gu8_dp_sw_factor_add_cnt[1] = 0;
 			TempDpressure2 = 0;
 			LastDpressure2 = Dpressure2;
-		}
+		}*/
 		//---------------------------------------------------------------------------
 		
 		if(Dpressure2 > f32_dp_limit[1]) 
@@ -9730,7 +9744,8 @@ ISR(RTC_OVF_vect)
 		
 		b.msec500_flag = 1;
 		
-		b.dp_sw_factor_add = 1;
+		b.dp_sw_factor_add1 = 1;
+		b.dp_sw_factor_add2 = 1;
 		
 		if(RxTimeout)
 		{
@@ -10419,7 +10434,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 19;
-	data[6] = 4;
+	data[6] = 5;
 						
 	disp_value();
 	
