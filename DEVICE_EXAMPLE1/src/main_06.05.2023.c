@@ -74,7 +74,7 @@
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -1789,19 +1789,19 @@ int main(void)
 			Buffer1[5]=rtc.month;
 			Buffer1[6]=rtc.year;
 			us1 = CORRUPT_RTC_DATA_ADDR + (RTCCorruptDataInd * 7);
-			eeprom_busy_wait();  eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
+			eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
 			
 			RTCCorruptDataInd++;
 			if(RTCCorruptDataInd>15)
 			{
 				RTCCorruptDataInd=0;
 			}
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
+			eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 			
 			//RTCSetFlag=0;
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 						
 			rtcValid=0;
 		}
@@ -1860,14 +1860,14 @@ int main(void)
 		Buffer1[5]=rtc.month;
 		Buffer1[6]=rtc.year;
 		us1 = CORRUPT_RTC_DATA_ADDR + (RTCCorruptDataInd * 7);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
+		eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
 		
 		RTCCorruptDataInd++;
 		if(RTCCorruptDataInd>15)
 		{
 			RTCCorruptDataInd=0;
 		}
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
+		eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 	}
 	
 	/*Read_DS1307(0x00,&RTC_data[0],7);
@@ -2078,7 +2078,7 @@ int main(void)
 				
 						MinMaxMeanDayLogInd++;
 						if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG) MinMaxMeanDayLogInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+						eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
 					}
 				}
 			
@@ -2095,7 +2095,7 @@ int main(void)
 						FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
 				
 						LastDP1_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 					}
 				}
 		
@@ -2110,7 +2110,7 @@ int main(void)
 						FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
 				
 						LastDP2_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 					}
 				}
 		
@@ -2125,7 +2125,7 @@ int main(void)
 						FillRamBuffer(TM_ALM_RESTORE_LOG,0,0xFFFF);
 				
 						LastTM_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 					}
 				}
 		
@@ -2140,7 +2140,7 @@ int main(void)
 						FillRamBuffer(RH_ALM_RESTORE_LOG,0,0xFFFF);
 				
 						LastRH_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 					}
 				}
 			}
@@ -2477,17 +2477,17 @@ int main(void)
 	
 	//memset(gu8ar_SrNumber,1,sizeof(gu8ar_SrNumber));
 	////eeprom_busy_wait();
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber)); eeprom_busy_wait();
+	//eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber)); eeprom_busy_wait();
 	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
 	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
 
 	//memset(gu8ar_SrNumber,2,sizeof(gu8ar_SrNumber));
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
+	//eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
 	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
 	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
 	
 	//memset(gu8ar_SrNumber,3,sizeof(gu8ar_SrNumber));
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
+	//eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
 	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
 	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
 
@@ -3206,12 +3206,12 @@ void CheckUpDnKey(void)
 						
 						DP1_Cal_Value_C = (RealDpressure1 - DP1_Cal_float_Value_F)*10.0;
 						//DP1_Cal_Value_C = RealDpressure1*10.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 						DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
 						
 						/*AutocalCnt = (signed short)(Dpressure1 * 10.0);
 						DP1_Cal_Count_C -= AutocalCnt;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+						eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
 						*/
 						
 					break;
@@ -3220,12 +3220,12 @@ void CheckUpDnKey(void)
 				
 						DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
 						//DP2_Cal_Value_C = RealDpressure2*10.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 						DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
 						
 						/*AutocalCnt = (signed short)(Dpressure2 * 10.0);
 						DP2_Cal_Count_C -= AutocalCnt;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+						eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
 						*/
 						
 					break;
@@ -3255,31 +3255,31 @@ void CheckUpDnKey(void)
 			
 				DP1_Cal_Value_C=0;
 				DP1_Cal_float_Value_C = 0.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+				eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 				
 				DP2_Cal_Value_C=0;
 				DP2_Cal_float_Value_C = 0.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+				eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 				
 				TM_Cal_Value_C=0;
 				TM_Cal_float_Value_C = 0.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+				eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 				
 				RH_Cal_Value_C=0;
 				RH_Cal_float_Value_C = 0.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+				eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 				
 				//DP1_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
 			
 				//DP2_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
 			
 				//TM_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 			
 				//RH_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);	
+				//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);	
 				Normal_para_cnt=0;
 				progTimeout=0;
 				
@@ -4668,14 +4668,14 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
+								eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 							}
 						break;
 						case 2:
 							if(gu8_BackLitOnOff != dummy)
 							{
 								gu8_BackLitOnOff = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
+								eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
 								
 								if(!gu8_BackLitOnOff)
 								{
@@ -4691,63 +4691,63 @@ void keyboard(void)
 							if(gu8_TM_RH_ScanTime != dummy)
 							{
 								gu8_TM_RH_ScanTime = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
+								eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
 							}
 						break;
 						case 4:
 							if(DP2_Upper_Alm_ON != dummy)
 							{
 								DP2_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
 							}
 						break;
 						case 5:
 							if(DP2_Upper_Alm_OFF != dummy)
 							{
 								DP2_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
 							}
 						break;
 						case 6:
 							if(DP2_Lower_Alm_OFF != dummy)
 							{
 								DP2_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
 							}
 						break;
 						case 7:
 							if(DP2_Lower_Alm_ON != dummy)
 							{
 								DP2_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
 							}
 						break;								
 						case 8:
 							if(TM_Upper_Alm_ON != dummy)
 							{
 								TM_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 							}
 						break;
 						case 9:
 							if(TM_Upper_Alm_OFF != dummy)
 							{
 								TM_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 							}
 						break;
 						case 10:
 							if(TM_Lower_Alm_OFF != dummy)
 							{
 								TM_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 							}
 						break;
 						case 11:
 							if(TM_Lower_Alm_ON != dummy)
 							{
 								TM_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 							}
 						break;
 						case 12:
@@ -4761,28 +4761,28 @@ void keyboard(void)
 							if(RH_Upper_Alm_ON != dummy)
 							{
 								RH_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
 							}
 						break;
 						case 14:
 							if(RH_Upper_Alm_OFF != dummy)
 							{
 								RH_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
 							}
 						break;
 						case 15:
 							if(RH_Lower_Alm_OFF != dummy)
 							{
 								RH_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
 							}
 						break;
 						case 16:
 							if(RH_Lower_Alm_ON != dummy)
 							{
 								RH_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
 							}
 						break;
 						case 17:
@@ -4824,7 +4824,7 @@ void keyboard(void)
 							if(Buzzer_ON_Time != dummy)
 							{
 								Buzzer_ON_Time = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
+								eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
 							
 								if(!Buzzer_ON_Time)
 								{
@@ -4848,7 +4848,7 @@ void keyboard(void)
 							if(Buzzer_OFF_Time != dummy)
 							{
 								Buzzer_OFF_Time = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
+								eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
 							}
 						break;
 						case 24:
@@ -4858,35 +4858,35 @@ void keyboard(void)
 								logTimer = LogInterval;
 								//FlashlogTimer=60;
 								//logTimer=(unsigned long)LogInterval*60;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
+								eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
 							}
 						break;
 						case 25:
 							if(UART_BaudRate != dummy)
 							{
 								UART_BaudRate = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
+								eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
 							}
 						break;
 						case 26:
 							if(UART_DataBits != dummy)
 							{
 								UART_DataBits = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
+								eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
 							}
 						break;
 						case 27:
 							if(UART_Parity != dummy)
 							{
 								UART_Parity = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
+								eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
 							}
 						break;
 						case 28:
 							if(UART_StopBit != dummy)
 							{
 								UART_StopBit = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
+								eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
 							}
 						break;
 						case 30:
@@ -4898,7 +4898,7 @@ void keyboard(void)
 									{
 										ss1 = (RealtemperatureC - TM_Cal_float_Value_F)*10.0;
 										TM_Cal_Value_C = ss1 - dummy;
-										eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+										eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 										TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 									}
 									else
@@ -4906,7 +4906,7 @@ void keyboard(void)
 										ss1 = (RealtemperatureF - TM_Cal_float_Value_F)*10.0;
 										TM_Cal_Value_C = ss1 - dummy;
 										TM_Cal_Value_C = ((float)TM_Cal_Value_C * 1.8) + 32.0;
-										eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+										eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 										
 										TM_Cal_Value_C = (TM_Cal_Value_C-320) / 1.8;
 										TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
@@ -4916,7 +4916,7 @@ void keyboard(void)
 							//if(TM_Cal_Count_C != dummy)
 							//{
 							//	TM_Cal_Count_C = dummy;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+							//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 							//}
 						break;
 						case 31:
@@ -4927,14 +4927,14 @@ void keyboard(void)
 								{
 									ss1 = (RealhumidityRH - RH_Cal_float_Value_F)*10.0;
 									RH_Cal_Value_C = ss1 - dummy;
-									eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+									eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 									RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 								}
 							}
 							//if(RH_Cal_Count_C != dummy)
 							//{
 							//	RH_Cal_Count_C = dummy;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+							//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
 							//}
 						break;
 					}
@@ -5120,14 +5120,14 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,DeviceID);
+								eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,DeviceID);
 							}
 						break;
 						case 2:
 							if(gu8_BackLitOnOff != dummy)
 							{
 								gu8_BackLitOnOff = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
+								eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
 								
 								if(!gu8_BackLitOnOff)
 								{
@@ -5143,91 +5143,91 @@ void keyboard(void)
 							if(gu8_TM_RH_ScanTime != dummy)
 							{
 								gu8_TM_RH_ScanTime = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
+								eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
 							}
 						break;
 						case 5:		
 							if(DP1_Upper_Alm_ON != dummy) 	
 							{
 								DP1_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
 							}
 						break;
 						case 7:		
 							if(DP1_Upper_Alm_OFF != dummy) 	
 							{
 								DP1_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
 							}
 						break;
 						case 9:		
 							if(DP1_Lower_Alm_OFF != dummy) 	
 							{
 								DP1_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
 							}
 						break;
 						case 11:
 							if(DP1_Lower_Alm_ON != dummy)
 							{
 								DP1_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
 							}
 						break;
 						case 13:
 							if(DP2_Upper_Alm_ON != dummy)
 							{
 								DP2_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
 							}
 						break;
 						case 15:
 							if(DP2_Upper_Alm_OFF != dummy)
 							{
 								DP2_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
 							}
 						break;
 						case 17:
 							if(DP2_Lower_Alm_OFF != dummy)
 							{
 								DP2_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
 							}
 						break;
 						case 19:
 							if(DP2_Lower_Alm_ON != dummy)
 							{
 								DP2_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
 							}
 						break;
 						case 21:		
 							if(TM_Upper_Alm_ON != dummy) 	
 							{
 								TM_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 							}
 						break;
 						case 23:		
 							if(TM_Upper_Alm_OFF != dummy) 	
 							{
 								TM_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 							}
 						break;
 						case 25:		
 							if(TM_Lower_Alm_OFF != dummy) 	
 							{
 								TM_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 							}
 						break;
 						case 27:
 							if(TM_Lower_Alm_ON != dummy)
 							{
 								TM_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 							}
 						break;
 						case 28:		
@@ -5241,28 +5241,28 @@ void keyboard(void)
 							if(RH_Upper_Alm_ON != dummy) 	
 							{
 								RH_Upper_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
+								eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
 							}
 						break;
 						case 32:		
 							if(RH_Upper_Alm_OFF != dummy) 	
 							{
 								RH_Upper_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
+								eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
 							}
 						break;
 						case 34:		
 							if(RH_Lower_Alm_OFF != dummy) 	
 							{
 								RH_Lower_Alm_OFF = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
+								eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
 							}
 						break;
 						case 36:
 							if(RH_Lower_Alm_ON != dummy)
 							{
 								RH_Lower_Alm_ON = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
+								eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
 							}
 						break;
 						case 38:
@@ -5304,7 +5304,7 @@ void keyboard(void)
 							if(Buzzer_ON_Time != dummy) 	
 							{
 								Buzzer_ON_Time = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
+								eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
 								
 								if(!Buzzer_ON_Time)
 								{
@@ -5328,7 +5328,7 @@ void keyboard(void)
 							if(Buzzer_OFF_Time != dummy) 	
 							{
 								Buzzer_OFF_Time = dummy;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
+								eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
 							}
 						break;
 						case 49:
@@ -5338,35 +5338,35 @@ void keyboard(void)
 								logTimer = LogInterval;
 								//FlashlogTimer=60;
 								//logTimer=(unsigned long)LogInterval*60;
-								eeprom_busy_wait();  eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
+								eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
 							}
 						break;
 						case 51:
 							if(UART_BaudRate != dummy)
 							{
 								UART_BaudRate = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
+								eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
 							}
 						break;
 						case 53:
 							if(UART_DataBits != dummy)
 							{
 								UART_DataBits = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
+								eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
 							}
 						break;
 						case 55:
 							if(UART_Parity != dummy)
 							{
 								UART_Parity = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
+								eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
 							}
 						break;
 						case 57:
 							if(UART_StopBit != dummy)
 							{
 								UART_StopBit = dummy;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
+								eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
 							}
 						break;
 						case 60:
@@ -5378,7 +5378,7 @@ void keyboard(void)
 									{
 										ss1 = (RealtemperatureC - TM_Cal_float_Value_F)*10.0;
 										TM_Cal_Value_C = ss1 - dummy;
-										eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+										eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 										TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 									}
 									else
@@ -5386,7 +5386,7 @@ void keyboard(void)
 										ss1 = (RealtemperatureF - TM_Cal_float_Value_F)*10.0;
 										TM_Cal_Value_C = ss1 - dummy;
 										TM_Cal_Value_C = ((float)TM_Cal_Value_C * 1.8) + 32.0;
-										eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+										eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 									
 										TM_Cal_Value_C = (TM_Cal_Value_C-320) / 1.8;
 										TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
@@ -5397,7 +5397,7 @@ void keyboard(void)
 							//if(TM_Cal_Count_C != dummy)
 							//{
 							//	TM_Cal_Count_C = dummy;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+							//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 							//}
 						break;
 						case 62:
@@ -5407,7 +5407,7 @@ void keyboard(void)
 								{
 									ss1 = (RealhumidityRH - RH_Cal_float_Value_F)*10.0;
 									RH_Cal_Value_C = ss1 - dummy;
-									eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+									eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 									RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 								}
 							}
@@ -5415,7 +5415,7 @@ void keyboard(void)
 							//if(RH_Cal_Count_C != dummy)
 							//{
 							//	RH_Cal_Count_C = dummy;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+							//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
 							//}
 						break;
 					}	
@@ -5786,24 +5786,24 @@ void EraseWholeFlash(void)
 	if(gu16_parameterWord & ENABLE_M3LOG)
 	{
 		MinMaxMeanDayLogInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+		eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
 	}
 	
 	//Reset Data Logging Parameter -------------------------------------------
 	CurrentLogIndReadLoc = 0;
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
+	eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
 	
 	FlashOVFByte=0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
+	eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
 	
 	CurrentLogInd = 0;
-	eeprom_busy_wait();  eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)CURR_LOG_IND,4);
+	eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)CURR_LOG_IND,4);
 	
 	CurrentLog24IndReadLoc = 0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
+	eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
 	
 	CurrentLog24Ind = 0;
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG24_IND,CurrentLog24Ind);
+	eeprom_write_word ((unsigned int*)CURR_LOG24_IND,CurrentLog24Ind);
 	
 	b.DP1Log=0;
 	b.DP2Log=0;
@@ -5811,16 +5811,16 @@ void EraseWholeFlash(void)
 	b.RHLog=0;
 	
 	LastDP1_Alrm_ON=0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+	eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 	
 	LastDP2_Alrm_ON=0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+	eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 	
 	LastTM_Alrm_ON=0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+	eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 	
 	LastRH_Alrm_ON=0;
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+	eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 	
 	#ifdef ENABLE_PRINTF
 	opstr(0,"Flash Erase\r\n");
@@ -6168,9 +6168,9 @@ void FillRamBuffer(unsigned char logtype,unsigned char userID,unsigned short pas
 				{
 					CurrentLog24IndReadLoc=0;
 				}
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
+				eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
 			}
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)),CurrentLog24Ind);
+			eeprom_write_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)),CurrentLog24Ind);
 			sei();
 		}
 	}
@@ -6397,16 +6397,16 @@ void LogReading(unsigned char logtype,unsigned char userID,unsigned short passwo
 			CurrentLogInd=0;
 			FlashOVFByte=1;
 		
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
+			eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
 		
 			CurrentLogIndReadLoc++;
 			if(CurrentLogIndReadLoc>=100)
 			{
 				CurrentLogIndReadLoc=0;
 			}
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
+			eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
 		}
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)(CURR_LOG_IND + (CurrentLogIndReadLoc*4)),4);
+		eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)(CURR_LOG_IND + (CurrentLogIndReadLoc*4)),4);
 
 		sei();
 	}
@@ -6674,28 +6674,28 @@ void ServePCMsg(unsigned char SrcPort)
 					case TEMP_DISPLAY:
 					
 						gu8_TM_LEDBlinkForPara=RxBuffer[5];
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
+						eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
 					
 					break;
 					
 					case RH_DISPLAY:
 					
 						gu8_RH_LEDBlinkForPara=RxBuffer[5];
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
+						eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
 					
 					break;
 					
 					case DP1_DISPLAY:
 					
 						gu8_DP1_LEDBlinkForPara=RxBuffer[5];
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
+						eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
 					
 					break;
 					
 					case DP2_DISPLAY:
 					
 						gu8_DP2_LEDBlinkForPara=RxBuffer[5];
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
+						eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
 					
 					break;
 				}
@@ -6720,7 +6720,7 @@ void ServePCMsg(unsigned char SrcPort)
 					us1 = RxBuffer[12]-'0';								us3 += us1;		us1 = 0;
 					
 					gu16_parameterWord=us3;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
+					eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
 					
 					b.resetDevice=1;
 				}
@@ -6822,12 +6822,12 @@ void ServePCMsg(unsigned char SrcPort)
 					{
 						rtcValid=1;
 						//RTCSetFlag=1;
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
+						//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+						//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
+						//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 						
 						RTCCorruptDataInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
+						eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 					
 						#ifdef ENABLE_PRINTF
 						opstr(0,"RTC Working\r\n");
@@ -6841,7 +6841,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=1000) && (ss1>= DP1_Upper_Alm_OFF))
 				{
 					DP1_Upper_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON); 
+					eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON); 
 				}
 			break;
 			case DP1UAOFF_ID:
@@ -6849,7 +6849,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP1_Upper_Alm_ON) && (ss1>= DP1_Lower_Alm_OFF))
 				{
 					DP1_Upper_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF); 
+					eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF); 
 				}
 			break;
 			case DP1LAON_ID:	
@@ -6857,7 +6857,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP1_Lower_Alm_OFF) && (ss1>= -1000))	
 				{
 					DP1_Lower_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON); 
+					eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON); 
 				}
 			break;
 			case DP1LAOFF_ID:	
@@ -6865,7 +6865,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP1_Upper_Alm_OFF) && (ss1>= DP1_Lower_Alm_ON))	
 				{
 					DP1_Lower_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF); 
+					eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF); 
 				}
 			break;
 			
@@ -6874,7 +6874,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=1000) && (ss1>= DP2_Upper_Alm_OFF))
 				{
 					DP2_Upper_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
+					eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
 				}
 			break;
 			case DP2UAOFF_ID:
@@ -6882,7 +6882,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP2_Upper_Alm_ON) && (ss1>= DP2_Lower_Alm_OFF))
 				{
 					DP2_Upper_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
+					eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
 				}
 			break;
 			case DP2LAON_ID:
@@ -6890,7 +6890,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP2_Lower_Alm_OFF) && (ss1>= -1000))
 				{
 					DP2_Lower_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
+					eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
 				}
 			break;
 			case DP2LAOFF_ID:
@@ -6898,7 +6898,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=DP2_Upper_Alm_OFF) && (ss1>= DP2_Lower_Alm_ON))
 				{
 					DP2_Lower_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
+					eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
 				}
 			break;
 			
@@ -6909,7 +6909,7 @@ void ServePCMsg(unsigned char SrcPort)
 					if((ss1<=1250) && (ss1>= TM_Upper_Alm_OFF))
 					{
 						TM_Upper_Alm_ON=ss1;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+						eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 					}
 				}
 				else
@@ -6917,7 +6917,7 @@ void ServePCMsg(unsigned char SrcPort)
 					if((ss1<=2570) && (ss1>= TM_Upper_Alm_OFF))
 					{
 						TM_Upper_Alm_ON=ss1;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+						eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 					}
 				}
 			break;
@@ -6926,7 +6926,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=TM_Upper_Alm_ON) && (ss1>= TM_Lower_Alm_OFF))		
 				{
 					TM_Upper_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 				}
 			break;
 			case TMLAON_ID:		
@@ -6934,7 +6934,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=TM_Lower_Alm_OFF) && (ss1>= -400))
 				{
 					TM_Lower_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 				}
 			break;
 			case TMLAOFF_ID:	
@@ -6942,7 +6942,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=TM_Upper_Alm_OFF) && (ss1>= TM_Lower_Alm_ON))	
 				{
 					TM_Lower_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 				}
 			break;
 			case RHUAON_ID:		
@@ -6950,7 +6950,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=1000) && (ss1>= RH_Upper_Alm_OFF))
 				{
 					RH_Upper_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON); 
+					eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON); 
 				}
 			break;
 			case RHUAOFF_ID:	
@@ -6958,7 +6958,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=RH_Upper_Alm_ON) && (ss1>= RH_Lower_Alm_OFF))
 				{
 					RH_Upper_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF); 
+					eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF); 
 				}
 			break;
 			case RHLAON_ID:		
@@ -6966,7 +6966,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=RH_Lower_Alm_OFF) && (ss1>= 0))
 				{
 					RH_Lower_Alm_ON=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON); 
+					eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON); 
 				}
 			break;
 			case RHLAOFF_ID:	
@@ -6974,7 +6974,7 @@ void ServePCMsg(unsigned char SrcPort)
 				if((ss1<=RH_Upper_Alm_OFF) && (ss1>= RH_Lower_Alm_ON))
 				{
 					RH_Lower_Alm_OFF=ss1;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF); 
+					eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF); 
 				}
 			break;
 			case LOGINTVAL_ID:		
@@ -6985,16 +6985,16 @@ void ServePCMsg(unsigned char SrcPort)
 					logTimer = LogInterval;
 					//FlashlogTimer=60;
 					//logTimer=(unsigned long)LogInterval*60;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);	
+					eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);	
 				}
 			break;
 			case DVCID_ID:		
 				DeviceID=tempshort;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
+				eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 			break;
 			case BZRON_ID:		
 				Buzzer_ON_Time=tempshort;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
+				eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
 				if(!Buzzer_ON_Time)
 				{
 					//b.buzzerStart=NO;
@@ -7015,12 +7015,12 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			case SCROLL_TIME_ID:
 				ParaScrollTime=(unsigned char)tempshort;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
+				eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
 			break;
 			
 			case TM_RH_SCAN_TIME_ID:
 				gu8_TM_RH_ScanTime=(unsigned char)tempshort;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
+				eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
 			break;
 			
 			case EXT_FLASH_ERASE_ID:
@@ -7047,9 +7047,9 @@ void ServePCMsg(unsigned char SrcPort)
 				
 				rtcValid=0;
 				//RTCSetFlag=0;
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
+				//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+				//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
+				//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 				
 			break;
 			
@@ -7062,10 +7062,10 @@ void ServePCMsg(unsigned char SrcPort)
 						case '0':
 					
 							//DP1_Cal_Value_F=0;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+							//eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 
 							DP1_Cal_Value_C=0;
-							eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+							eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 
 							//DP1_Cal_float_Value_F = 0.0;
 							DP1_Cal_float_Value_C = 0.0;
@@ -7075,10 +7075,10 @@ void ServePCMsg(unsigned char SrcPort)
 						case '1':
 					
 							//DP2_Cal_Value_F=0;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+							//eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 						
 							DP2_Cal_Value_C=0;
-							eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+							eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 						
 							//DP2_Cal_float_Value_F = 0.0;
 							DP2_Cal_float_Value_C = 0.0;
@@ -7088,10 +7088,10 @@ void ServePCMsg(unsigned char SrcPort)
 						case '2':
 					
 							//TM_Cal_Value_F=0;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+							//eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						
 							TM_Cal_Value_C=0;
-							eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+							eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						
 							//TM_Cal_float_Value_F = 0.0;
 							TM_Cal_float_Value_C = 0.0;
@@ -7101,10 +7101,10 @@ void ServePCMsg(unsigned char SrcPort)
 						case '3':
 					
 							//RH_Cal_Value_F=0;
-							//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+							//eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 						
 							RH_Cal_Value_C=0;
-							eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+							eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 						
 							//RH_Cal_float_Value_F = 0.0;
 							RH_Cal_float_Value_C = 0.0;
@@ -7116,7 +7116,7 @@ void ServePCMsg(unsigned char SrcPort)
 
 			case BZROFF_ID:		
 				Buzzer_OFF_Time=tempshort;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
+				eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
 			break;
 			case CAL_FPWD_ID:		
 				if(tempshort==FACTORY_PASSWORD)
@@ -7140,14 +7140,14 @@ void ServePCMsg(unsigned char SrcPort)
 				if(tempshort<=999)
 				{
 					CustPassword=tempshort;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
+					eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
 				}
 			break;
 			case FCPWD_ID:
 				if(tempshort<=9999)
 				{
 					FactCustPassword=tempshort;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
+					eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
 				}
 			break;
 			
@@ -7157,7 +7157,7 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					su16_dp_sw_factor=tempshort;
 					f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
-					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+					eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 				}	
 				
 			break;
@@ -7168,10 +7168,10 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					//DP1_Cal_Count=tempshort;
 					//DP1_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
 					
 					DP1_Cal_Value_F = RealDpressure1*10.0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 					DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
 					
 					DP1_Cal_Value_C = 0;
@@ -7189,30 +7189,30 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 					
 					DP1_Max = DEFAUT_DP1_MAX;
 					DP1_Min = DEFAUT_DP1_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 				}
 				
 				/*if(b.FactoryCalibrationOn==1)
 				{
 					//DP1_Cal_Count=tempshort;
 					//DP1_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
 					
 					DP1_Cal_Value_F = RealDpressure1*10.0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 					DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
 					
 					DP1_Cal_Value_C = 0;
 					DP1_Cal_float_Value_C = 0;
 					
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP1_CAL_DATE_ADDR,12);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP1_CAL_CERT_ADDR,15);
+					eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP1_CAL_DATE_ADDR,12);
+					eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP1_CAL_CERT_ADDR,15);
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7236,11 +7236,11 @@ void ServePCMsg(unsigned char SrcPort)
 						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 						{
 							us1 = DP1_USER_CAL_DATE_ADDR + (DP1_UserCalDateInd * 6);
-							eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
 							DP1_UserCalDateInd++;
 							if(DP1_UserCalDateInd>=NO_OF_USER_CAL_DATE) DP1_UserCalDateInd=0;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
+							eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
 						}
 					}
 				}
@@ -7249,13 +7249,13 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 					
 					DP1_Max = DEFAUT_DP1_MAX;
 					DP1_Min = DEFAUT_DP1_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 				}*/
 				
 			break;
@@ -7266,10 +7266,10 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					//DP2_Cal_Count=tempshort;
 					//DP2_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
 					
 					DP2_Cal_Value_F = RealDpressure2*10.0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 					DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
 					
 					DP2_Cal_Value_C = 0;
@@ -7303,30 +7303,30 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 					
 					DP2_Max = DEFAUT_DP2_MAX;
 					DP2_Min = DEFAUT_DP2_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 				}
 				
 				/*if(b.FactoryCalibrationOn==1)
 				{
 					//DP2_Cal_Count=tempshort;
 					//DP2_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
 					
 					DP2_Cal_Value_F = RealDpressure2*10.0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 					DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
 					
 					DP2_Cal_Value_C = 0;
 					DP2_Cal_float_Value_C = 0;
 									
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP2_CAL_DATE_ADDR,12);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP2_CAL_CERT_ADDR,15);
+					eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP2_CAL_DATE_ADDR,12);
+					eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP2_CAL_CERT_ADDR,15);
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7350,11 +7350,11 @@ void ServePCMsg(unsigned char SrcPort)
 						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 						{
 							us1 = DP2_USER_CAL_DATE_ADDR + (DP2_UserCalDateInd * 6);
-							eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
 							DP2_UserCalDateInd++;
 							if(DP2_UserCalDateInd>14) DP2_UserCalDateInd=0;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
+							eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
 						}
 					}
 				}
@@ -7363,13 +7363,13 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 					
 					DP2_Max = DEFAUT_DP2_MAX;
 					DP2_Min = DEFAUT_DP2_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 				}*/
 				
 			break;
@@ -7379,13 +7379,13 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					//TM_Cal_Count=tempshort;
 					//TM_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
 					
 					if(!TM_Unit)
 					{
 						ss1 = RealtemperatureC*10.0;
 						TM_Cal_Value_F = ss1 - tempshort;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
 					}
 					else
@@ -7393,7 +7393,7 @@ void ServePCMsg(unsigned char SrcPort)
 						ss1 = RealtemperatureF*10.0;
 						TM_Cal_Value_F = ss1 - tempshort;
 						TM_Cal_Value_F = ((float)TM_Cal_Value_F * 1.8) + 32.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						
 						TM_Cal_Value_F = (TM_Cal_Value_F-320) / 1.8;
 						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
@@ -7401,7 +7401,7 @@ void ServePCMsg(unsigned char SrcPort)
 										
 					TM_Cal_Value_C = 0;
 					TM_Cal_float_Value_C = 0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+					eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7411,7 +7411,7 @@ void ServePCMsg(unsigned char SrcPort)
 					{
 						ss1 = (RealtemperatureC - TM_Cal_float_Value_F)*10.0;
 						TM_Cal_Value_C = ss1 - tempshort;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 					}
 					else
@@ -7419,7 +7419,7 @@ void ServePCMsg(unsigned char SrcPort)
 						ss1 = (RealtemperatureF - TM_Cal_float_Value_F)*10.0;
 						TM_Cal_Value_C = ss1 - tempshort;
 						TM_Cal_Value_C = ((float)TM_Cal_Value_C * 1.8) + 32.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						
 						TM_Cal_Value_C = (TM_Cal_Value_C-320) / 1.8;
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
@@ -7439,25 +7439,25 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 
 					TM_Max = DEFAUT_TEMP_C_MAX;
 					TM_Min = DEFAUT_TEMP_C_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
 				}
 				
 				/*if(b.FactoryCalibrationOn==1)
 				{
 					//TM_Cal_Count=tempshort;
 					//TM_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
 					
 					if(!TM_Unit)
 					{
 						ss1 = RealtemperatureC*10.0;
 						TM_Cal_Value_F = ss1 - tempshort;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
 					}
 					else
@@ -7465,7 +7465,7 @@ void ServePCMsg(unsigned char SrcPort)
 						ss1 = RealtemperatureF*10.0;
 						TM_Cal_Value_F = ss1 - tempshort;
 						TM_Cal_Value_F = ((float)TM_Cal_Value_F * 1.8) + 32.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						
 						TM_Cal_Value_F = (TM_Cal_Value_F-320) / 1.8;
 						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
@@ -7473,10 +7473,10 @@ void ServePCMsg(unsigned char SrcPort)
 										
 					TM_Cal_Value_C = 0;
 					TM_Cal_float_Value_C = 0;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+					eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 					
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)TM_CAL_DATE_ADDR,12);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)TM_CAL_CERT_ADDR,15);
+					eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)TM_CAL_DATE_ADDR,12);
+					eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)TM_CAL_CERT_ADDR,15);
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7486,7 +7486,7 @@ void ServePCMsg(unsigned char SrcPort)
 					{
 						ss1 = (RealtemperatureC - TM_Cal_float_Value_F)*10.0;
 						TM_Cal_Value_C = ss1 - tempshort;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 					}
 					else
@@ -7494,7 +7494,7 @@ void ServePCMsg(unsigned char SrcPort)
 						ss1 = (RealtemperatureF - TM_Cal_float_Value_F)*10.0;
 						TM_Cal_Value_C = ss1 - tempshort;
 						TM_Cal_Value_C = ((float)TM_Cal_Value_C * 1.8) + 32.0;
-						eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						
 						TM_Cal_Value_C = (TM_Cal_Value_C-320) / 1.8;
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
@@ -7515,11 +7515,11 @@ void ServePCMsg(unsigned char SrcPort)
 						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 						{
 							us1 = TM_USER_CAL_DATE_ADDR + (TM_UserCalDateInd * 6);
-							eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
 							TM_UserCalDateInd++;
 							if(TM_UserCalDateInd>14) TM_UserCalDateInd=0;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
+							eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
 						}
 					}
 				}
@@ -7528,12 +7528,12 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 
 					TM_Max = DEFAUT_TEMP_C_MAX;
 					TM_Min = DEFAUT_TEMP_C_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
 				}*/
 				
 			break;
@@ -7543,7 +7543,7 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					ss1 = RealhumidityRH*10.0;
 					RH_Cal_Value_F = ss1 - tempshort;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 					RH_Cal_float_Value_F = (float)RH_Cal_Value_F/10.0;
 				
 					RH_Cal_Value_C = 0;
@@ -7560,31 +7560,31 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 					
 					RH_Max = DEFAUT_RH_MAX;
 					RH_Min = DEFAUT_RH_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 				}
 			
 				/*if(b.FactoryCalibrationOn==1)
 				{
 					//RH_Cal_Count=tempshort;
 					//RH_Cal_Count_C=0;
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
+					//eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
 					
 					ss1 = RealhumidityRH*10.0;
 					RH_Cal_Value_F = ss1 - tempshort;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 					RH_Cal_float_Value_F = (float)RH_Cal_Value_F/10.0;
 					
 					RH_Cal_Value_C = 0;
 					RH_Cal_float_Value_C = 0;
 					
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)RH_CAL_DATE_ADDR,12);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)RH_CAL_CERT_ADDR,15);
+					eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)RH_CAL_DATE_ADDR,12);
+					eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)RH_CAL_CERT_ADDR,15);
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7609,11 +7609,11 @@ void ServePCMsg(unsigned char SrcPort)
 						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 						{
 							us1 = RH_USER_CAL_DATE_ADDR + (RH_UserCalDateInd * 6);
-							eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 
 							RH_UserCalDateInd++;
 							if(RH_UserCalDateInd>14) RH_UserCalDateInd=0;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
+							eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
 						}
 					}
 				}
@@ -7622,13 +7622,13 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					PCCalibrationTimer=60;
 					
-					//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+					//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 					
 					RH_Max = DEFAUT_RH_MAX;
 					RH_Min = DEFAUT_RH_MIN;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 				}*/
 				
 			break;
@@ -7646,35 +7646,35 @@ void ServePCMsg(unsigned char SrcPort)
 				if((tempshort>=3) && (tempshort<=9))
 				{
 					UART_BaudRate=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
+					eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
 				}
 			break;
 			case UDBT_ID:
 				if((tempshort>=0) && (tempshort<=3))
 				{
 					UART_DataBits=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
+					eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
 				}
 			break;
 			case UPRT_ID:
 				if((tempshort>=0) && (tempshort<=2))
 				{
 					UART_Parity=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
+					eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
 				}
 			break;
 			case USTB_ID:
 				if((tempshort==0) || (tempshort==1))
 				{
 					UART_StopBit=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
+					eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
 				}
 			break;
 			case BACKLIT_ID:
 				if((tempshort==0) || (tempshort==1))
 				{
 					gu8_BackLitOnOff=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
+					eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
 					
 					if(!gu8_BackLitOnOff)
 					{
@@ -7690,21 +7690,21 @@ void ServePCMsg(unsigned char SrcPort)
 				if((tempshort==0) || (tempshort==1))
 				{
 					gu8_masterEnable=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
+					eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 				}
 			break;
 			case DOOR_SENSE_POLARITY_ID:
 				if((tempshort==0) || (tempshort==1))
 				{
 					gu8_doorSensingPolarity=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
+					eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
 				}
 			break;
 			case DOOR_SENSE_TIME_ID:
 				if(tempshort<=250)
 				{
 					gu8_doorSensingTime=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
+					eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
 				}
 			break;
 			case LCD_BRIGHT_CNT_ID:
@@ -7712,26 +7712,26 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					gu8_LCDBrigthnessCnt=tempshort;
 					LCD_CTRLF = gu8_LCDBrigthnessCnt;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
+					eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 				}
 			break;
 			case DP1_ALM_SENSE_TIME_ID:
 				if(tempshort<=250)
 				{
 					gu8_Dp1AlarmSensingTime=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
+					eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
 				}
 			break;
 			case DP2_ALM_SENSE_TIME_ID:
 				if(tempshort<=250)
 				{
 					gu8_Dp2AlarmSensingTime=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
+					eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 				}
 			break;
 			case ACK_TIMER_ID:
 				AckTimer=tempshort;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
+				eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
 			break;
 			case ACK_PW_ID:
 				
@@ -7741,8 +7741,8 @@ void ServePCMsg(unsigned char SrcPort)
 					tempchar=RxBuffer[4]-1;
 					AckPwd[tempchar] = tempshort;
 					
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(2*tempchar)),AckPwd[tempchar]);
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
+					eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(2*tempchar)),AckPwd[tempchar]);
+					eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
 				}
 										
 			break;
@@ -7775,7 +7775,7 @@ void ServePCMsg(unsigned char SrcPort)
 			break;
 			case SRNO_ID:
 				memcpy(gu8ar_SrNumber,&RxBuffer[4],16);
-				eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
+				eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
 			break;	
 			case BRDSTP_ID:
 				b.brodcastEnb=0;
@@ -9150,13 +9150,13 @@ void ReadDiffPressure1(void)
 				if(Dpressure1 > DP1_Max)
 				{
 					DP1_Max = Dpressure1;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
 				}
 							
 				if(Dpressure1 < DP1_Min)
 				{
 					DP1_Min = Dpressure1;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 				}
 						
 				//Check Alarm Limit for DP ------------------------------------------------------------------------
@@ -9173,7 +9173,7 @@ void ReadDiffPressure1(void)
 						if(!b.DP1Log)
 						{
 							LastDP1_Alrm_ON=DP1_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 						
 							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9190,7 +9190,7 @@ void ReadDiffPressure1(void)
 								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
 							
 								LastDP1_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 							
 								b.DP1Log=0;
 							}
@@ -9210,7 +9210,7 @@ void ReadDiffPressure1(void)
 						if(!b.DP1Log)
 						{
 							LastDP1_Alrm_ON=DP1_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 							
 							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9227,7 +9227,7 @@ void ReadDiffPressure1(void)
 								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
 								
 								LastDP1_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 								
 								b.DP1Log=0;
 							}
@@ -9248,7 +9248,7 @@ void ReadDiffPressure1(void)
 						b.DP1Log=0;
 						
 						LastDP1_Alrm_ON=DP1_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 					}
 				}
 			}
@@ -9333,13 +9333,13 @@ void ReadDiffPressure1(void)
 				if(Dpressure1 > DP1_Max)
 				{
 					DP1_Max = Dpressure1;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
 				}
 			
 				if(Dpressure1 < DP1_Min)
 				{
 					DP1_Min = Dpressure1;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 				}
 							
 				//Check Alarm Limit for DP ------------------------------------------------------------------------
@@ -9356,7 +9356,7 @@ void ReadDiffPressure1(void)
 						if(!b.DP1Log)
 						{
 							LastDP1_Alrm_ON=DP1_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 							
 							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9373,7 +9373,7 @@ void ReadDiffPressure1(void)
 								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
 								
 								LastDP1_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 								
 								b.DP1Log=0;
 							}
@@ -9393,7 +9393,7 @@ void ReadDiffPressure1(void)
 						if(!b.DP1Log)
 						{
 							LastDP1_Alrm_ON=DP1_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 							
 							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9410,7 +9410,7 @@ void ReadDiffPressure1(void)
 								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
 								
 								LastDP1_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 								
 								b.DP1Log=0;
 							}
@@ -9431,7 +9431,7 @@ void ReadDiffPressure1(void)
 						b.DP1Log=0;
 						
 						LastDP1_Alrm_ON=DP1_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 					}
 				}
 			}
@@ -9543,13 +9543,13 @@ void ReadDiffPressure2(void)
 				if(Dpressure2 > DP2_Max)
 				{
 					DP2_Max = Dpressure2;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
 				}
 			
 				if(Dpressure2 < DP2_Min)
 				{
 					DP2_Min = Dpressure2;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 				}
 				
 				//Check Alarm Limit for DP ------------------------------------------------------------------------
@@ -9566,7 +9566,7 @@ void ReadDiffPressure2(void)
 						if(!b.DP2Log)
 						{
 							LastDP2_Alrm_ON=DP2_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 							
 							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9583,7 +9583,7 @@ void ReadDiffPressure2(void)
 								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
 								
 								LastDP2_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 								
 								b.DP2Log=0;
 							}
@@ -9603,7 +9603,7 @@ void ReadDiffPressure2(void)
 						if(!b.DP2Log)
 						{
 							LastDP2_Alrm_ON=DP2_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 							
 							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9620,7 +9620,7 @@ void ReadDiffPressure2(void)
 								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
 								
 								LastDP2_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 								
 								b.DP2Log=0;
 							}
@@ -9641,7 +9641,7 @@ void ReadDiffPressure2(void)
 						b.DP2Log=0;
 						
 						LastDP2_Alrm_ON=DP2_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 					}
 				}
 			}
@@ -9729,13 +9729,13 @@ void ReadDiffPressure2(void)
 				if(Dpressure2 > DP2_Max)
 				{
 					DP2_Max = Dpressure2;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
 				}
 			
 				if(Dpressure2 < DP2_Min)
 				{
 					DP2_Min = Dpressure2;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 				}
 							
 				//Check Alarm Limit for DP ------------------------------------------------------------------------
@@ -9752,7 +9752,7 @@ void ReadDiffPressure2(void)
 						if(!b.DP2Log)
 						{
 							LastDP2_Alrm_ON=DP2_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 						
 							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9769,7 +9769,7 @@ void ReadDiffPressure2(void)
 								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
 							
 								LastDP2_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 							
 								b.DP2Log=0;
 							}
@@ -9789,7 +9789,7 @@ void ReadDiffPressure2(void)
 						if(!b.DP2Log)
 						{
 							LastDP2_Alrm_ON=DP2_Alrm_ON;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 						
 							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
 							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
@@ -9806,7 +9806,7 @@ void ReadDiffPressure2(void)
 								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
 							
 								LastDP2_Alrm_ON=NO_ALARM;
-								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+								eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 							
 								b.DP2Log=0;
 							}
@@ -9827,7 +9827,7 @@ void ReadDiffPressure2(void)
 						b.DP2Log=0;
 						
 						LastDP2_Alrm_ON=DP2_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 					}
 				}
 			}
@@ -10073,31 +10073,31 @@ void SecondTick(void)
 			if(!b.DP1_NC)
 			{
 				DP1_Cal_Value_F = RealDpressure1*10.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+				eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 				DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
 				
 				DP1_Cal_Value_C = 0;
 				DP1_Cal_float_Value_C = 0;
 				
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP1_CAL_DATE_ADDR,12);
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP1_CAL_CERT_ADDR,15);
+				eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP1_CAL_DATE_ADDR,12);
+				eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP1_CAL_CERT_ADDR,15);
 			}
 			
 			if(!b.DP2_NC)
 			{
 				DP2_Cal_Value_F = RealDpressure2*10.0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+				eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 				DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
 				
 				DP2_Cal_Value_C = 0;
 				DP2_Cal_float_Value_C = 0;
 				
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP2_CAL_DATE_ADDR,12);
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP2_CAL_CERT_ADDR,15);
+				eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)DP2_CAL_DATE_ADDR,12);
+				eeprom_write_block((unsigned char*)&RxBuffer[21],(unsigned char*)DP2_CAL_CERT_ADDR,15);
 			}
 			
 			gu8_DPAutoCalFlag=1;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+			eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
 		}
 	}*/
 	//--------------------------------------------
@@ -20078,8 +20078,8 @@ void ResetMinMax(void)
 		DP1_Max = DEFAUT_DP1_MAX;
 		DP1_Min = DEFAUT_DP1_MIN;
 		
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+		eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+		eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 	}
 	
 	if(gu16_parameterWord & ENABLE_DP2)
@@ -20087,8 +20087,8 @@ void ResetMinMax(void)
 		DP2_Max = DEFAUT_DP2_MAX;
 		DP2_Min = DEFAUT_DP2_MIN;
 	
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+		eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+		eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 	}
 	
 	if(gu16_parameterWord & ENABLE_TEMP)
@@ -20096,8 +20096,8 @@ void ResetMinMax(void)
 		TM_Max = DEFAUT_TEMP_C_MAX;
 		TM_Min = DEFAUT_TEMP_C_MIN;
 		
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+		eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+		eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
 	}
 	
 	if(gu16_parameterWord & ENABLE_RH)
@@ -20105,14 +20105,14 @@ void ResetMinMax(void)
 		RH_Max = DEFAUT_RH_MAX;
 		RH_Min = DEFAUT_RH_MIN;
 		
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+		eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+		eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 	}
 }
 
 void TMUnitChange(void)
 {
-	eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
+	eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
 	
 	if(!TM_Unit)
 	{
@@ -20137,10 +20137,10 @@ void TMUnitChange(void)
 	TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
 	TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 	
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
-	eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+	eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+	eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+	eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+	eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 }
 //****************************************************************************************************************************************/
 void delay(unsigned int cnt)
@@ -20415,7 +20415,7 @@ void Check_RTC(void)
 					
 						MinMaxMeanDayLogInd++;
 						if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG) MinMaxMeanDayLogInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+						eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
 					}
 					
 					ResetMinMax();
@@ -20572,13 +20572,13 @@ void Read_SHT25(void)
 				if(temperatureC > TM_Max)
 				{
 					TM_Max = temperatureC;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
 				}
 				
 				if(temperatureC < TM_Min)
 				{
 					TM_Min = temperatureC;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
 				}
 								
 				//Check Alarm Limit for Temp -----------------------------------------------
@@ -20589,7 +20589,7 @@ void Read_SHT25(void)
 					if(!b.TMLog)
 					{
 						LastTM_Alrm_ON=TM_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 						
 						LogReading(TM_ALM_OCCURE_LOG,0,0xFFFF);
 						FillRamBuffer(TM_ALM_OCCURE_LOG,0,0xFFFF);
@@ -20606,7 +20606,7 @@ void Read_SHT25(void)
 							FillRamBuffer(TM_ALM_RESTORE_LOG,0,0xFFFF);
 							
 							LastTM_Alrm_ON=NO_ALARM;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 							
 							b.TMLog=0;
 						}
@@ -20619,7 +20619,7 @@ void Read_SHT25(void)
 					if(!b.TMLog)
 					{
 						LastTM_Alrm_ON=TM_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 						
 						LogReading(TM_ALM_OCCURE_LOG,0,0xFFFF);
 						FillRamBuffer(TM_ALM_OCCURE_LOG,0,0xFFFF);
@@ -20636,7 +20636,7 @@ void Read_SHT25(void)
 							FillRamBuffer(TM_ALM_RESTORE_LOG,0,0xFFFF);
 							
 							LastTM_Alrm_ON=NO_ALARM;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 							
 							b.TMLog=0;
 						}
@@ -20654,7 +20654,7 @@ void Read_SHT25(void)
 						b.TMLog=0;
 						
 						LastTM_Alrm_ON=TM_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 					}
 				}
 			}
@@ -20689,13 +20689,13 @@ void Read_SHT25(void)
 				if(humidityRH > RH_Max) 
 				{
 					RH_Max = humidityRH;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
 				}
 				
 				if(humidityRH < RH_Min) 
 				{
 					RH_Min = humidityRH;
-					eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 				}
 				
 				//Check Alarm Limit for RH -----------------------------------------------
@@ -20706,7 +20706,7 @@ void Read_SHT25(void)
 					if(!b.RHLog)
 					{
 						LastRH_Alrm_ON=RH_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 						
 						LogReading(RH_ALM_OCCURE_LOG,0,0xFFFF);
 						FillRamBuffer(RH_ALM_OCCURE_LOG,0,0xFFFF);
@@ -20723,7 +20723,7 @@ void Read_SHT25(void)
 							FillRamBuffer(RH_ALM_RESTORE_LOG,0,0xFFFF);
 							
 							LastRH_Alrm_ON=NO_ALARM;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 							
 							b.RHLog=0;
 						}
@@ -20736,7 +20736,7 @@ void Read_SHT25(void)
 					if(!b.RHLog)
 					{
 						LastRH_Alrm_ON=RH_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 						
 						LogReading(RH_ALM_OCCURE_LOG,0,0xFFFF);
 						FillRamBuffer(RH_ALM_OCCURE_LOG,0,0xFFFF);
@@ -20753,7 +20753,7 @@ void Read_SHT25(void)
 							FillRamBuffer(RH_ALM_RESTORE_LOG,0,0xFFFF);
 							
 							LastRH_Alrm_ON=NO_ALARM;
-							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+							eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 							
 							b.RHLog=0;
 						}
@@ -20771,7 +20771,7 @@ void Read_SHT25(void)
 						b.RHLog=0;
 						
 						LastRH_Alrm_ON=RH_Alrm_ON;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+						eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 					}
 				}
 			}
@@ -20826,40 +20826,40 @@ void boot_data(void)
 	if(FirstTimeCheck != 0xAA)
 	{
 		FirstTimeCheck=0xAA;
-		eeprom_busy_wait();  eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)FIRST_BOOT_CHECK,FirstTimeCheck); 
+		eeprom_write_byte ((unsigned char*)FIRST_BOOT_CHECK,FirstTimeCheck); 
 		
 		gu16_parameterWord=PARAMETER_WORD;
-		eeprom_busy_wait();  eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
+		eeprom_write_word ((unsigned int*)DISP_PARA_SELECT,gu16_parameterWord);
 		
 		//gu8_DPAutoCalFlag=0;
-		//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+		//eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
 		
 		gu8_masterEnable=0;
-		eeprom_busy_wait();  eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
+		eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 		
 		memset(gu8ar_SrNumber,0,sizeof(gu8ar_SrNumber));
-		eeprom_busy_wait();  eeprom_write_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
+		eeprom_write_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
 		
 		gu8_DP1_LEDBlinkForPara=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
+		eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
 		
 		gu8_DP2_LEDBlinkForPara=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
+		eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
 		
 		gu8_TM_LEDBlinkForPara=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
+		eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
 		
 		gu8_RH_LEDBlinkForPara=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
+		eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
 		
 		gu8_BackLitOnOff=1;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
+		eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
 		
 		gu8_TM_RH_ScanTime=5;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
+		eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
 		
 		MinMaxMeanDayLogInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+		eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
 		
 		if(gu16_parameterWord & ENABLE_DATAFLASH)
 		{
@@ -20878,241 +20878,241 @@ void boot_data(void)
 		}
 		
 		RTCCorruptDataInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
+		eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 		
 		DP1_UserCalDateInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
+		eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
 		
 		DP2_UserCalDateInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
+		eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
 		
 		TM_UserCalDateInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
+		eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
 		
 		RH_UserCalDateInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
+		eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
 		
 		//RTCSetFlag=0;
-		//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-		//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-		//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
+		//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+		//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
+		//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 		
 		ParaScrollTime=DEFAULT_PARA_SCROLL_TIME;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
+		eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
 		
 		if(gu16_parameterWord & ENABLE_DP1)
 		{
 			//DPressure1 Parameter -----------------------------------------------------
 			DP1_Upper_Alm_ON=DEFAULT_DP1_UPPER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
+			eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
 		
 			DP1_Upper_Alm_OFF=DEFAULT_DP1_UPPER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
+			eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
 		
 			DP1_Lower_Alm_ON=DEFAULT_DP1_LOWER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
+			eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
 		
 			DP1_Lower_Alm_OFF=DEFAULT_DP1_LOWER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
+			eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
 		
 			DP1_Cal_Value_F=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+			eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 			
 			DP1_Cal_Value_C=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+			eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 			
 			DP1_Cal_float_Value_F = 0.0;
 			DP1_Cal_float_Value_C = 0.0;			
 				
 			//DP1_Cal_Count=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
+			//eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
 		//
 			//DP1_Cal_Count_C=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+			//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
 			
 			LastDP1_Alrm_ON=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+			eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 		}
 
 		if(gu16_parameterWord & ENABLE_DP2)
 		{
 			//DPressure2 Parameter -----------------------------------------------------
 			DP2_Upper_Alm_ON=DEFAULT_DP2_UPPER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
+			eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
 		
 			DP2_Upper_Alm_OFF=DEFAULT_DP2_UPPER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
+			eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
 		
 			DP2_Lower_Alm_ON=DEFAULT_DP2_LOWER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
+			eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
 		
 			DP2_Lower_Alm_OFF=DEFAULT_DP2_LOWER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
+			eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
 		
 			DP2_Cal_Value_F=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+			eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 			
 			DP2_Cal_Value_C=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+			eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 			
 			DP2_Cal_float_Value_F = 0.0;
 			DP2_Cal_float_Value_C = 0.0;
 			
 			//DP2_Cal_Count=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
+			//eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
 		//
 			//DP2_Cal_Count_C=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+			//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
 			
 			LastDP2_Alrm_ON=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+			eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 		}
 		
 		su16_dp_sw_factor=0;
 		f32_dp_sw_factor=0.0;
-		eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+		eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 		
 		if(gu16_parameterWord & ENABLE_TEMP)
 		{
 			//Temperature Parameter -----------------------------------------------------
 			TM_Upper_Alm_ON=DEFAULT_TM_C_UPPER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+			eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 		
 			TM_Upper_Alm_OFF=DEFAULT_TM_C_UPPER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+			eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 		
 			TM_Lower_Alm_ON=DEFAULT_TM_C_LOWER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+			eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 		
 			TM_Lower_Alm_OFF=DEFAULT_TM_C_LOWER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+			eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 		
 			TM_Cal_Value_F=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+			eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 			
 			TM_Cal_Value_C=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+			eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 			
 			TM_Cal_float_Value_F = 0.0;
 			TM_Cal_float_Value_C = 0.0;
 			
 			//TM_Cal_Count=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
+			//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
 		//
 			//TM_Cal_Count_C=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+			//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 		//
 			TM_Unit=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
+			eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
 			
 			LastTM_Alrm_ON=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+			eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 		}
 			
 		if(gu16_parameterWord & ENABLE_RH)
 		{
 			//RHumidity Parameter -----------------------------------------------------
 			RH_Upper_Alm_ON=DEFAULT_RH_UPPER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
+			eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
 		
 			RH_Upper_Alm_OFF=DEFAULT_RH_UPPER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
+			eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
 		
 			RH_Lower_Alm_ON=DEFAULT_RH_LOWER_ALM_ON;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
+			eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
 		
 			RH_Lower_Alm_OFF=DEFAULT_RH_LOWER_ALM_OFF;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
+			eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
 		
 			RH_Cal_Value_F=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+			eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 			
 			RH_Cal_Value_C=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+			eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 			
 			RH_Cal_float_Value_F = 0.0;
 			RH_Cal_float_Value_C = 0.0;
 			
 			//RH_Cal_Count=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
+			//eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
 		
 			//RH_Cal_Count_C=0;
-			//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+			//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
 			
 			LastRH_Alrm_ON=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+			eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 		}
 		
 		ResetMinMax();	
 		
 		//RS485 Parameter -------------------------------------------
 		DeviceID=DEFAULT_DEVICE_ID;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
+		eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 		
 		//Buzzer Parameter -------------------------------------------
 		Buzzer_ON_Time=DEFAULT_BUZZER_ON_TIME;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
+		eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
 		
 		Buzzer_OFF_Time=DEFAULT_BUZZER_OFF_TIME;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
+		eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
 		
 		if(gu16_parameterWord & ENABLE_LOG)
 		{
 			//Data Logging Parameter -------------------------------------------
 			LogInterval=DEFAULT_LOG_INTERVAL;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
+			eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
 		}
 		
 		//UART Parameter -------------------------------------------
 		UART_BaudRate=DEFAULT_UART_BAUDRATE;	//9600
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
+		eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
 		
 		UART_DataBits=DEFAULT_UART_DATABITS;	//8
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
+		eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
 		
 		UART_Parity=DEFAULT_UART_PARITYBITS;		//None
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
+		eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
 		
 		UART_StopBit=DEFAULT_UART_STOPBITS;	//1
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
+		eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
 		
 		//Customer Password -------------------------------------------
 		CustPassword=DEFAULT_CUSTOMER_PWD;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
+		eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
 		
 		//Factory Customer Password -------------------------------------------
 		FactCustPassword=DEFAULT_FACTORY_PWD;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
+		eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
 		
 		//Acknowledge Parameter -------------------------------------------
 		AckTimer=1;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
+		eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
 		
 		AckPwdInd=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
+		eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
 		
 		for(unsigned char i=0;i<NO_OF_ACKPWD;i++)
 		{
 			AckPwd[i]=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(i*2)),AckPwd[i]);
+			eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(i*2)),AckPwd[i]);
 		}
 		
 	
 		//Reset Data Logging Parameter -------------------------------------------
 		CurrentLogIndReadLoc = 0;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
+		eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
 		
 		FlashOVFByte=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
+		eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
 		
 		CurrentLogInd = 0;
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)CURR_LOG_IND,4);
+		eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)CURR_LOG_IND,4);
 		
 		CurrentLog24IndReadLoc = 0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
+		eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
 		
 		CurrentLog24Ind = 0;
-		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG24_IND,CurrentLog24Ind);
+		eeprom_write_word ((unsigned int*)CURR_LOG24_IND,CurrentLog24Ind);
 		
 		b.DP1Log=0;
 		b.DP2Log=0;
@@ -21120,31 +21120,31 @@ void boot_data(void)
 		b.RHLog=0;
 		
 		LastDP1_Alrm_ON=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+		eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 		
 		LastDP2_Alrm_ON=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+		eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 		
 		LastTM_Alrm_ON=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+		eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 		
 		LastRH_Alrm_ON=0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+		eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 		
 		gu8_doorSensingPolarity=1;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
+		eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
 		
 		gu8_doorSensingTime=60;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
+		eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
 		
 		gu8_Dp1AlarmSensingTime=5;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
+		eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
 		
 		gu8_Dp2AlarmSensingTime=5;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
+		eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 		
 		gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
+		eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		
 		//EraseWholeFlash();
 	}
@@ -21154,14 +21154,14 @@ void boot_data(void)
 		if(gu8_doorSensingPolarity > 1)
 		{
 			gu8_doorSensingPolarity=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
+			eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
 		}
 		
 		gu8_LCDBrigthnessCnt  = eeprom_read_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR);
 		if(gu8_LCDBrigthnessCnt > 63)
 		{
 			gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
+			eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		}
 		
 		eeprom_read_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
@@ -21170,84 +21170,84 @@ void boot_data(void)
 		if(gu8_doorSensingTime > 250)
 		{
 			gu8_doorSensingTime=60;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
+			eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
 		}
 		
 		gu8_Dp1AlarmSensingTime  = eeprom_read_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR);
 		if(gu8_Dp1AlarmSensingTime > 250)
 		{
 			gu8_Dp1AlarmSensingTime=5;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
+			eeprom_write_byte ((unsigned char*)DP1_ALM_SENSE_TIME_ADDR,gu8_Dp1AlarmSensingTime);
 		}
 		
 		gu8_Dp2AlarmSensingTime  = eeprom_read_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR);
 		if(gu8_Dp2AlarmSensingTime > 250)
 		{
 			gu8_Dp2AlarmSensingTime=5;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
+			eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 		}
 			
 		gu8_masterEnable  = eeprom_read_byte ((unsigned char*)MASTER_ENABLE_ADDR);
 		if(gu8_masterEnable > 1)
 		{
 			gu8_masterEnable=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
+			eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 		}
 		
 		gu8_DP1_LEDBlinkForPara  = eeprom_read_byte ((unsigned char*)DP1_LED_SETTING_ADDR);
 		if(gu8_DP1_LEDBlinkForPara > 0x0F)
 		{
 			gu8_DP1_LEDBlinkForPara=0b00000100;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
+			eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
 		}
 		
 		gu8_DP2_LEDBlinkForPara  = eeprom_read_byte ((unsigned char*)DP2_LED_SETTING_ADDR);
 		if(gu8_DP2_LEDBlinkForPara > 0x0F)
 		{
 			gu8_DP2_LEDBlinkForPara=0b00001000;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
+			eeprom_write_byte ((unsigned char*)DP2_LED_SETTING_ADDR,gu8_DP2_LEDBlinkForPara);
 		}
 		
 		gu8_TM_LEDBlinkForPara  = eeprom_read_byte ((unsigned char*)TM_LED_SETTING_ADDR);
 		if(gu8_TM_LEDBlinkForPara > 0x0F)
 		{
 			gu8_TM_LEDBlinkForPara=0b00000001;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
+			eeprom_write_byte ((unsigned char*)TM_LED_SETTING_ADDR,gu8_TM_LEDBlinkForPara);
 		}
 		
 		gu8_RH_LEDBlinkForPara  = eeprom_read_byte ((unsigned char*)RH_LED_SETTING_ADDR);
 		if(gu8_RH_LEDBlinkForPara > 0x0F)
 		{
 			gu8_RH_LEDBlinkForPara=0b00000010;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
+			eeprom_write_byte ((unsigned char*)RH_LED_SETTING_ADDR,gu8_RH_LEDBlinkForPara);
 		}
 		
 		gu8_BackLitOnOff  = eeprom_read_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR);
 		if(gu8_BackLitOnOff>1)
 		{
 			gu8_BackLitOnOff=1;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
+			eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,gu8_BackLitOnOff);
 		}
 		
 		gu8_TM_RH_ScanTime  = eeprom_read_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR);
 		if((gu8_TM_RH_ScanTime<5) || (gu8_TM_RH_ScanTime>20))
 		{
 			gu8_TM_RH_ScanTime=5;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
+			eeprom_write_byte ((unsigned char*)TM_RH_SCAN_TIME_ADDR,gu8_TM_RH_ScanTime);
 		}
 		
 		RTCCorruptDataInd  = eeprom_read_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR);
 		if(RTCCorruptDataInd>15)
 		{
 			RTCCorruptDataInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
+			eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
 		}
 		
 		/*eeprom_read_byte ((unsigned char*)DP_AUTO_CAL_FLAG);
 		if(gu8_DPAutoCalFlag>1)
 		{
 			gu8_DPAutoCalFlag=1;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
+			eeprom_write_byte ((unsigned char*)DP_AUTO_CAL_FLAG,gu8_DPAutoCalFlag);
 		}*/
 		
 		gu16_parameterWord = eeprom_read_word ((unsigned int*)DISP_PARA_SELECT);
@@ -21259,7 +21259,7 @@ void boot_data(void)
 			if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG)
 			{
 				MinMaxMeanDayLogInd=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+				eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
 			}
 		}
 
@@ -21267,28 +21267,28 @@ void boot_data(void)
 		if(DP1_UserCalDateInd>15)
 		{
 			DP1_UserCalDateInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
+			eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
 		}
 		
 		DP2_UserCalDateInd  = eeprom_read_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR);
 		if(DP2_UserCalDateInd>15)
 		{
 			DP2_UserCalDateInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
+			eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
 		}
 		
 		TM_UserCalDateInd  = eeprom_read_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR);
 		if(TM_UserCalDateInd>15)
 		{
 			TM_UserCalDateInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
+			eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
 		}
 		
 		RH_UserCalDateInd  = eeprom_read_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR);
 		if(RH_UserCalDateInd>15)
 		{
 			RH_UserCalDateInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
+			eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
 		}
 		
 		//Buffer1[0]  = eeprom_read_byte ((unsigned char*)RTC_SET_FLAG_ADDR);
@@ -21302,9 +21302,9 @@ void boot_data(void)
 		//if((Buffer1[0]==1) || (Buffer1[1]==1) || (Buffer1[2]==1))
 		//{
 			//RTCSetFlag=1;
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 		//}
 		//else
 		//{
@@ -21315,14 +21315,14 @@ void boot_data(void)
 		//if(RTCSetFlag>1)
 		//{
 			//RTCSetFlag=0;
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
+			//eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
 		//}
 		
 		ParaScrollTime  = eeprom_read_byte ((unsigned char*)PARA_SCROLL_TIME);
 		if(ParaScrollTime>60)
 		{
 			ParaScrollTime=DEFAULT_PARA_SCROLL_TIME;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
+			eeprom_write_byte ((unsigned char*)PARA_SCROLL_TIME,ParaScrollTime);
 		}
 
 		if(gu16_parameterWord & ENABLE_DP1)
@@ -21332,35 +21332,35 @@ void boot_data(void)
 			if((DP1_Upper_Alm_ON<(DEFAUT_DP1_MAX*10)) || (DP1_Upper_Alm_ON>(DEFAUT_DP1_MIN*10)))
 			{
 				DP1_Upper_Alm_ON=DEFAULT_DP1_UPPER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
+				eeprom_write_word ((unsigned int*)DP1_UP_ALM_ON,DP1_Upper_Alm_ON);
 			}
 		
 			DP1_Upper_Alm_OFF  = eeprom_read_word ((unsigned int*)DP1_UP_ALM_OFF);
 			if((DP1_Upper_Alm_OFF<(DEFAUT_DP1_MAX*10)) || (DP1_Upper_Alm_OFF>(DEFAUT_DP1_MIN*10)))
 			{
 				DP1_Upper_Alm_OFF=DEFAULT_DP1_UPPER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
+				eeprom_write_word ((unsigned int*)DP1_UP_ALM_OFF,DP1_Upper_Alm_OFF);
 			}
 		
 			DP1_Lower_Alm_ON  = eeprom_read_word ((unsigned int*)DP1_LO_ALM_ON);
 			if((DP1_Lower_Alm_ON<(DEFAUT_DP1_MAX*10)) || (DP1_Lower_Alm_ON>(DEFAUT_DP1_MIN*10)))
 			{
 				DP1_Lower_Alm_ON=DEFAULT_DP1_LOWER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
+				eeprom_write_word ((unsigned int*)DP1_LO_ALM_ON,DP1_Lower_Alm_ON);
 			}
 		
 			DP1_Lower_Alm_OFF  = eeprom_read_word ((unsigned int*)DP1_LO_ALM_OFF);
 			if((DP1_Lower_Alm_OFF<(DEFAUT_DP1_MAX*10)) || (DP1_Lower_Alm_OFF>(DEFAUT_DP1_MIN*10)))
 			{
 				DP1_Lower_Alm_OFF=DEFAULT_DP1_LOWER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
+				eeprom_write_word ((unsigned int*)DP1_LO_ALM_OFF,DP1_Lower_Alm_OFF);
 			}
 		
 			DP1_Cal_Value_F  = eeprom_read_word ((unsigned int*)DP1_CAL_VAL_F_ADDR);
 			//if((DP1_Cal_Value_F<(DEFAUT_DP1_MAX*10.0)) || (DP1_Cal_Value_F>(DEFAUT_DP1_MIN*10.0)))
 			//{
 				//DP1_Cal_Value_F=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+				//eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 			//}
 			DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
 			
@@ -21368,7 +21368,7 @@ void boot_data(void)
 			//if((DP1_Cal_Value_C<(DEFAUT_DP1_MAX*10.0)) || (DP1_Cal_Value_C>(DEFAUT_DP1_MIN*10.0)))
 			//{
 				//DP1_Cal_Value_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+				//eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 			//}
 			DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
 			
@@ -21376,35 +21376,35 @@ void boot_data(void)
 			//if((DP1_Cal_Count<-500) || (DP1_Cal_Count>500))
 			//{
 				//DP1_Cal_Count=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
+				//eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
 			//}
 		//
 			//DP1_Cal_Count_C  = eeprom_read_word ((unsigned int*)DP1_CAL_CNT_C);
 			//if((DP1_Cal_Count_C<-500) || (DP1_Cal_Count_C>500))
 			//{
 				//DP1_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
 			//}
 		
 			eeprom_read_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
 			if(DP1_Max<DEFAUT_DP1_MAX)
 			{
 				DP1_Max = DEFAUT_DP1_MAX;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+				eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
 			}
 		
 			eeprom_read_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 			if(DP1_Min>DEFAUT_DP1_MIN)
 			{
 				DP1_Min = DEFAUT_DP1_MIN;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+				eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
 			}
 			
 			LastDP1_Alrm_ON = eeprom_read_byte ((unsigned char*)LAST_DP1_ALRM_STAT);
 			if(LastDP1_Alrm_ON>2)
 			{
 				LastDP1_Alrm_ON=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+				eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
 			}
 		}
 		
@@ -21415,35 +21415,35 @@ void boot_data(void)
 			if((DP2_Upper_Alm_ON<(DEFAUT_DP2_MAX*10)) || (DP2_Upper_Alm_ON>(DEFAUT_DP2_MIN*10)))
 			{
 				DP2_Upper_Alm_ON=DEFAULT_DP2_UPPER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
+				eeprom_write_word ((unsigned int*)DP2_UP_ALM_ON,DP2_Upper_Alm_ON);
 			}
 		
 			DP2_Upper_Alm_OFF  = eeprom_read_word ((unsigned int*)DP2_UP_ALM_OFF);
 			if((DP2_Upper_Alm_OFF<(DEFAUT_DP2_MAX*10)) || (DP2_Upper_Alm_OFF>(DEFAUT_DP2_MIN*10)))
 			{
 				DP2_Upper_Alm_OFF=DEFAULT_DP2_UPPER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
+				eeprom_write_word ((unsigned int*)DP2_UP_ALM_OFF,DP2_Upper_Alm_OFF);
 			}
 		
 			DP2_Lower_Alm_ON  = eeprom_read_word ((unsigned int*)DP2_LO_ALM_ON);
 			if((DP2_Lower_Alm_ON<(DEFAUT_DP2_MAX*10)) || (DP2_Lower_Alm_ON>(DEFAUT_DP2_MIN*10)))
 			{
 				DP2_Lower_Alm_ON=DEFAULT_DP2_LOWER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
+				eeprom_write_word ((unsigned int*)DP2_LO_ALM_ON,DP2_Lower_Alm_ON);
 			}
 		
 			DP2_Lower_Alm_OFF  = eeprom_read_word ((unsigned int*)DP2_LO_ALM_OFF);
 			if((DP2_Lower_Alm_OFF<(DEFAUT_DP2_MAX*10)) || (DP2_Lower_Alm_OFF>(DEFAUT_DP2_MIN*10)))
 			{
 				DP2_Lower_Alm_OFF=DEFAULT_DP2_LOWER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
+				eeprom_write_word ((unsigned int*)DP2_LO_ALM_OFF,DP2_Lower_Alm_OFF);
 			}
 			
 			DP2_Cal_Value_F  = eeprom_read_word ((unsigned int*)DP2_CAL_VAL_F_ADDR);
 			//if((DP2_Cal_Value_F<(DEFAUT_DP2_MAX*10.0)) || (DP2_Cal_Value_F>(DEFAUT_DP2_MIN*10.0)))
 			//{
 				//DP2_Cal_Value_F=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+				//eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 			//}
 			DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
 			
@@ -21451,7 +21451,7 @@ void boot_data(void)
 			//if((DP2_Cal_Value_C<(DEFAUT_DP2_MAX*10.0)) || (DP2_Cal_Value_C>(DEFAUT_DP2_MIN*10.0)))
 			//{
 				//DP2_Cal_Value_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+				//eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 			//}
 			DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
 			
@@ -21459,35 +21459,35 @@ void boot_data(void)
 			//if((DP2_Cal_Count<-500) || (DP2_Cal_Count>500))
 			//{
 				//DP2_Cal_Count=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
+				//eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
 			//}
 		//
 			//DP2_Cal_Count_C  = eeprom_read_word ((unsigned int*)DP2_CAL_CNT_C);
 			//if((DP2_Cal_Count_C<-500) || (DP2_Cal_Count_C>500))
 			//{
 				//DP2_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
 			//}
 		
 			eeprom_read_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
 			if(DP2_Max<DEFAUT_DP2_MAX)
 			{
 				DP2_Max = DEFAUT_DP2_MAX;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+				eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
 			}
 		
 			eeprom_read_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 			if(DP2_Min>DEFAUT_DP2_MIN)
 			{
 				DP2_Min = DEFAUT_DP2_MIN;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+				eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
 			}
 			
 			LastDP2_Alrm_ON = eeprom_read_byte ((unsigned char*)LAST_DP2_ALRM_STAT);
 			if(LastDP2_Alrm_ON>2)
 			{
 				LastDP2_Alrm_ON=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+				eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 			}
 		}
 		
@@ -21495,7 +21495,7 @@ void boot_data(void)
 		if((su16_dp_sw_factor<-10000) && (su16_dp_sw_factor>10000))
 		{	
 			su16_dp_sw_factor=0;
-			eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+			eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 		}
 		f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
 		
@@ -21506,21 +21506,21 @@ void boot_data(void)
 			if(TM_Unit>1)
 			{
 				TM_Unit=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
+				eeprom_write_byte ((unsigned char*)TEMP_UNIT,TM_Unit);
 			}
 			
 			TM_Cal_Value_F  = eeprom_read_word ((unsigned int*)TM_CAL_VAL_F_ADDR);
 			//if((TM_Cal_Value_F<(DEFAUT_TEMP_C_MAX*10.0)) || (TM_Cal_Value_F>(DEFAUT_TEMP_C_MIN*10.0)))
 			//{
 				//TM_Cal_Value_F=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+				//eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 			//}
 			
 			TM_Cal_Value_C  = eeprom_read_word ((unsigned int*)TM_CAL_VAL_C_ADDR);
 			//if((TM_Cal_Value_C<(DEFAUT_TEMP_C_MAX*10.0)) || (TM_Cal_Value_C>(DEFAUT_TEMP_C_MIN*10.0)))
 			//{
 				//TM_Cal_Value_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+				//eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 			//}
 		
 			if(!TM_Unit)
@@ -21529,28 +21529,28 @@ void boot_data(void)
 				if((TM_Upper_Alm_ON<(DEFAUT_TEMP_C_MAX*10)) || (TM_Upper_Alm_ON>(DEFAUT_TEMP_C_MIN*10)))
 				{
 					TM_Upper_Alm_ON=DEFAULT_TM_C_UPPER_ALM_ON;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+					eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 				}
 			
 				TM_Upper_Alm_OFF  = eeprom_read_word ((unsigned int*)TEMP_UP_ALM_OFF);
 				if((TM_Upper_Alm_OFF<(DEFAUT_TEMP_C_MAX*10)) || (TM_Upper_Alm_OFF>(DEFAUT_TEMP_C_MIN*10)))
 				{
 					TM_Upper_Alm_OFF=DEFAULT_TM_C_UPPER_ALM_OFF;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 				}
 			
 				TM_Lower_Alm_ON  = eeprom_read_word ((unsigned int*)TEMP_LO_ALM_ON);
 				if((TM_Lower_Alm_ON<(DEFAUT_TEMP_C_MAX*10)) || (TM_Lower_Alm_ON>(DEFAUT_TEMP_C_MIN*10)))
 				{
 					TM_Lower_Alm_ON=DEFAULT_TM_C_LOWER_ALM_ON;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 				}
 			
 				TM_Lower_Alm_OFF  = eeprom_read_word ((unsigned int*)TEMP_LO_ALM_OFF);
 				if((TM_Lower_Alm_OFF<(DEFAUT_TEMP_C_MAX*10)) || (TM_Lower_Alm_OFF>(DEFAUT_TEMP_C_MIN*10)))
 				{
 					TM_Lower_Alm_OFF=DEFAULT_TM_C_LOWER_ALM_OFF;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 				}
 			}
 			else
@@ -21559,28 +21559,28 @@ void boot_data(void)
 				if((TM_Upper_Alm_ON<(DEFAUT_TEMP_F_MAX*10)) || (TM_Upper_Alm_ON>(DEFAUT_TEMP_F_MIN*10)))
 				{
 					TM_Upper_Alm_ON=DEFAULT_TM_F_UPPER_ALM_ON;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
+					eeprom_write_word ((unsigned int*)TEMP_UP_ALM_ON,TM_Upper_Alm_ON);
 				}
 			
 				TM_Upper_Alm_OFF  = eeprom_read_word ((unsigned int*)TEMP_UP_ALM_OFF);
 				if((TM_Upper_Alm_OFF<(DEFAUT_TEMP_F_MAX*10)) || (TM_Upper_Alm_OFF>(DEFAUT_TEMP_F_MIN*10)))
 				{
 					TM_Upper_Alm_OFF=DEFAULT_TM_F_UPPER_ALM_OFF;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_UP_ALM_OFF,TM_Upper_Alm_OFF);
 				}
 			
 				TM_Lower_Alm_ON  = eeprom_read_word ((unsigned int*)TEMP_LO_ALM_ON);
 				if((TM_Lower_Alm_ON<(DEFAUT_TEMP_F_MAX*10)) || (TM_Lower_Alm_ON>(DEFAUT_TEMP_F_MIN*10)))
 				{
 					TM_Lower_Alm_ON=DEFAULT_TM_F_LOWER_ALM_ON;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_ON,TM_Lower_Alm_ON);
 				}
 			
 				TM_Lower_Alm_OFF  = eeprom_read_word ((unsigned int*)TEMP_LO_ALM_OFF);
 				if((TM_Lower_Alm_OFF<(DEFAUT_TEMP_F_MAX*10)) || (TM_Lower_Alm_OFF>(DEFAUT_TEMP_F_MIN*10)))
 				{
 					TM_Lower_Alm_OFF=DEFAULT_TM_F_LOWER_ALM_OFF;
-					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
+					eeprom_write_word ((unsigned int*)TEMP_LO_ALM_OFF,TM_Lower_Alm_OFF);
 				}
 				
 				TM_Cal_Value_F = ((float)TM_Cal_Value_F * 1.8) + 32.0;
@@ -21594,28 +21594,28 @@ void boot_data(void)
 			//if((TM_Cal_Count<-1000) || (TM_Cal_Count>1000))
 			//{
 				//TM_Cal_Count=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
+				//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
 			//}
 		//
 			//TM_Cal_Count_C  = eeprom_read_word ((unsigned int*)TEMP_CAL_CNT_C);
 			//if((TM_Cal_Count_C<-1000) || (TM_Cal_Count_C>1000))
 			//{
 				//TM_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
 			//}
 
 			eeprom_read_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
 			eeprom_read_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
 			if(TM_Min>DEFAUT_TEMP_C_MIN) TM_Min = DEFAUT_TEMP_C_MIN;
 			if(TM_Max<DEFAUT_TEMP_C_MAX) TM_Max = DEFAUT_TEMP_C_MAX;
-			eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
-			eeprom_busy_wait();  eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+			eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+			eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
 			
 			LastTM_Alrm_ON = eeprom_read_byte ((unsigned char*)LAST_TM_ALRM_STAT);
 			if(LastTM_Alrm_ON>2)
 			{
 				LastTM_Alrm_ON=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
+				eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
 			}
 		}
 		
@@ -21626,35 +21626,35 @@ void boot_data(void)
 			if(RH_Upper_Alm_ON>(DEFAUT_RH_MIN*10))
 			{
 				RH_Upper_Alm_ON=DEFAULT_RH_UPPER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
+				eeprom_write_word ((unsigned int*)RH_UP_ALM_ON,RH_Upper_Alm_ON);
 			}
 		
 			RH_Upper_Alm_OFF  = eeprom_read_word ((unsigned int*)RH_UP_ALM_OFF);
 			if(RH_Upper_Alm_OFF>(DEFAUT_RH_MIN*10))
 			{
 				RH_Upper_Alm_OFF=DEFAULT_RH_UPPER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
+				eeprom_write_word ((unsigned int*)RH_UP_ALM_OFF,RH_Upper_Alm_OFF);
 			}
 		
 			RH_Lower_Alm_ON  = eeprom_read_word ((unsigned int*)RH_LO_ALM_ON);
 			if(RH_Lower_Alm_ON>(DEFAUT_RH_MIN*10))
 			{
 				RH_Lower_Alm_ON=DEFAULT_RH_LOWER_ALM_ON;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
+				eeprom_write_word ((unsigned int*)RH_LO_ALM_ON,RH_Lower_Alm_ON);
 			}
 		
 			RH_Lower_Alm_OFF  = eeprom_read_word ((unsigned int*)RH_LO_ALM_OFF);
 			if(RH_Lower_Alm_OFF>(DEFAUT_RH_MIN*10))
 			{
 				RH_Lower_Alm_OFF=DEFAULT_RH_LOWER_ALM_OFF;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
+				eeprom_write_word ((unsigned int*)RH_LO_ALM_OFF,RH_Lower_Alm_OFF);
 			}
 		
 			RH_Cal_Value_F  = eeprom_read_word ((unsigned int*)RH_CAL_VAL_F_ADDR);
 			//if((RH_Cal_Value_F<(-DEFAUT_RH_MIN*10.0)) || (RH_Cal_Value_F>(DEFAUT_RH_MIN*10.0)))
 			//{
 				//RH_Cal_Value_F=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+				//eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 			//}
 			RH_Cal_float_Value_F = (float)RH_Cal_Value_F/10.0;
 			
@@ -21662,7 +21662,7 @@ void boot_data(void)
 			//if((RH_Cal_Value_C<(DEFAUT_RH_MAX*10.0)) || (RH_Cal_Value_C>(DEFAUT_RH_MIN*10.0)))
 			//{
 				//RH_Cal_Value_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+				//eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 			//}
 			RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 			
@@ -21670,35 +21670,35 @@ void boot_data(void)
 			//if((RH_Cal_Count<-1500) || (RH_Cal_Count>1500))
 			//{
 				//RH_Cal_Count=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
+				//eeprom_write_word ((unsigned int*)RH_CAL_CNT,RH_Cal_Count);
 			//}
 		//
 			//RH_Cal_Count_C  = eeprom_read_word ((unsigned int*)RH_CAL_CNT_C);
 			//if((RH_Cal_Count_C<-1500) || (RH_Cal_Count_C>1500))
 			//{
 				//RH_Cal_Count_C=0;
-				//eeprom_busy_wait();  eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+				//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
 			//}
 		
 			eeprom_read_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
 			if(RH_Max<DEFAUT_RH_MAX)
 			{
 				RH_Max = DEFAUT_RH_MAX;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+				eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
 			}
 		
 			eeprom_read_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 			if(RH_Min>DEFAUT_RH_MIN)
 			{
 				RH_Min = DEFAUT_RH_MIN;
-				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+				eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
 			}
 			
 			LastRH_Alrm_ON = eeprom_read_byte ((unsigned char*)LAST_RH_ALRM_STAT);
 			if(LastRH_Alrm_ON>2)
 			{
 				LastRH_Alrm_ON=0;
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
+				eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
 			}
 		}
 		
@@ -21707,7 +21707,7 @@ void boot_data(void)
 		if(DeviceID>250)
 		{
 			DeviceID=DEFAULT_DEVICE_ID;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
+			eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 		}
 		
 		//Buzzer Parameter -------------------------------------------
@@ -21715,14 +21715,14 @@ void boot_data(void)
 		if(Buzzer_ON_Time>60)
 		{
 			Buzzer_ON_Time=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
+			eeprom_write_word ((unsigned int*)BUZZER_ON_TIME,Buzzer_ON_Time);
 		}
 		
 		Buzzer_OFF_Time  = eeprom_read_word ((unsigned int*)BUZZER_OFF_TIME);
 		if(Buzzer_OFF_Time>960)
 		{
 			Buzzer_OFF_Time=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
+			eeprom_write_word ((unsigned int*)BUZZER_OFF_TIME,Buzzer_OFF_Time);
 		}
 		
 		if(gu16_parameterWord & ENABLE_LOG)
@@ -21732,7 +21732,7 @@ void boot_data(void)
 			if((LogInterval<MIN_LOG_INTERVAL) || (LogInterval>MAX_LOG_INTERVAL))
 			{
 				LogInterval=DEFAULT_LOG_INTERVAL;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
+				eeprom_write_word ((unsigned int*)LOG_INTERVAL,LogInterval);
 			}
 		}
 		
@@ -21741,28 +21741,28 @@ void boot_data(void)
 		if((UART_BaudRate<3) || (UART_BaudRate>9))
 		{
 			UART_BaudRate=DEFAULT_UART_BAUDRATE;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
+			eeprom_write_byte ((unsigned char*)UART_BAUDRATE,UART_BaudRate);
 		}
 		
 		UART_DataBits = eeprom_read_byte ((unsigned char*)UART_DATBITS);
 		if(UART_DataBits>3)
 		{
 			UART_DataBits=DEFAULT_UART_DATABITS;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
+			eeprom_write_byte ((unsigned char*)UART_DATBITS,UART_DataBits);
 		}
 		
 		UART_Parity = eeprom_read_byte ((unsigned char*)UART_PARITY);
 		if(UART_Parity>2)
 		{
 			UART_Parity=DEFAULT_UART_PARITYBITS;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
+			eeprom_write_byte ((unsigned char*)UART_PARITY,UART_Parity);
 		}
 		
 		UART_StopBit = eeprom_read_byte ((unsigned char*)UART_STOPBIT);
 		if(UART_StopBit>1)
 		{
 			UART_StopBit=DEFAULT_UART_STOPBITS;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
+			eeprom_write_byte ((unsigned char*)UART_STOPBIT,UART_StopBit);
 		}
 
 		//Customer Password -------------------------------------------
@@ -21770,7 +21770,7 @@ void boot_data(void)
 		if(CustPassword>999)
 		{
 			CustPassword=DEFAULT_CUSTOMER_PWD;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
+			eeprom_write_word ((unsigned int*)CUSTOMER_PASSWORD,CustPassword);
 		}
 		
 		//Factory Customer Password -------------------------------------------
@@ -21778,7 +21778,7 @@ void boot_data(void)
 		if(FactCustPassword>9999)
 		{
 			FactCustPassword=DEFAULT_FACTORY_PWD;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
+			eeprom_write_word ((unsigned int*)FAC_CUSTOMER_PASSWORD,FactCustPassword);
 		}
 		
 		//Acknowledge Parameter -------------------------------------------
@@ -21786,14 +21786,14 @@ void boot_data(void)
 		if(AckTimer>1440)
 		{
 			AckTimer=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
+			eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
 		}
 		
 		AckPwdInd  = eeprom_read_byte ((unsigned char*)ACK_PWD_IND);
 		if(AckPwdInd>NO_OF_ACKPWD)
 		{
 			AckPwdInd=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
+			eeprom_write_byte ((unsigned char*)ACK_PWD_IND,AckPwdInd);
 		}
 		
 		for(unsigned char i=0;i<NO_OF_ACKPWD;i++)
@@ -21802,7 +21802,7 @@ void boot_data(void)
 			if(AckPwd[i]>999)
 			{
 				AckPwd[i]=0;
-				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(i*2)),AckPwd[i]);
+				eeprom_write_word ((unsigned int*)(ACK_PASSWORD+(i*2)),AckPwd[i]);
 			}
 		}
 		
@@ -21812,35 +21812,35 @@ void boot_data(void)
 		if(CurrentLogIndReadLoc>=100)
 		{
 			CurrentLogIndReadLoc=0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
+			eeprom_write_word ((unsigned int*)CURR_LOG_IND_RDLC,CurrentLogIndReadLoc);
 		}
 		
 		FlashOVFByte  = eeprom_read_byte ((unsigned char*)FLSH_OVF_IND);
 		if(FlashOVFByte>1)
 		{
 			FlashOVFByte=0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
+			eeprom_write_byte ((unsigned char*)FLSH_OVF_IND,FlashOVFByte);
 		}
 		
 		eeprom_read_block((unsigned char*)&CurrentLogInd,(unsigned char*)(CURR_LOG_IND+(CurrentLogIndReadLoc*4)),4);
 		if(CurrentLogInd>=LAST_LOG_ADDR)
 		{
 			CurrentLogInd = 0;
-			eeprom_busy_wait();  eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)(CURR_LOG_IND+(CurrentLogIndReadLoc*4)),4);
+			eeprom_write_block((unsigned char*)&CurrentLogInd,(unsigned char*)(CURR_LOG_IND+(CurrentLogIndReadLoc*4)),4);
 		}
 		
 		CurrentLog24IndReadLoc  = eeprom_read_byte ((unsigned char*)CURR_LOG24_IND_RDLC);
 		if(CurrentLog24IndReadLoc>=100)
 		{
 			CurrentLog24IndReadLoc = 0;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
+			eeprom_write_byte ((unsigned char*)CURR_LOG24_IND_RDLC,CurrentLog24IndReadLoc);
 		}
 		
 		CurrentLog24Ind = eeprom_read_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)));
 		if(CurrentLog24Ind>=LAST_LOG24_ADDR)
 		{
 			CurrentLog24Ind = 0;
-			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)),CurrentLog24Ind);
+			eeprom_write_word ((unsigned int*)(CURR_LOG24_IND+(CurrentLog24IndReadLoc*2)),CurrentLog24Ind);
 		}
 	}
 	
