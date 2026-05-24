@@ -73,7 +73,7 @@
 #define SMALL_FONT_DISPLAY_NEW		1
 #define BIG_FONT_DISPLAY_OLD		2
 #define BIG_FONT_DISPLAY_NEW		3
-#define DISPLAY_MODE				BIG_FONT_DISPLAY_OLD
+#define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -129,7 +129,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				670  //means 6.70
+#define SOFT_VER				650  //means 6.50
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -279,7 +279,70 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define UPPER_ALARM				1
 #define LOWER_ALARM				2
 
+//--------------------------------------------------
+
+#define LED1_RED_DIR_OP			PORTG_DIRSET = BIT0
+#define LED1_RED_ON 			PORTG_OUTSET = BIT0
+#define LED1_RED_OFF			PORTG_OUTCLR = BIT0
+#define LED1_RED_TOGGLE			PORTG_OUTTGL = BIT0
+
+#define LED1_GREEN_DIR_OP		PORTG_DIRSET = BIT1
+#define LED1_GREEN_ON 			PORTG_OUTSET = BIT1
+#define LED1_GREEN_OFF			PORTG_OUTCLR = BIT1
+#define LED1_GREEN_TOGGLE		PORTG_OUTTGL = BIT1
+
+#define LED2_RED_DIR_OP			PORTG_DIRSET = BIT2
+#define LED2_RED_ON 			PORTG_OUTSET = BIT2
+#define LED2_RED_OFF			PORTG_OUTCLR = BIT2
+#define LED2_RED_TOGGLE			PORTG_OUTTGL = BIT2
+
+#define LED2_GREEN_DIR_OP		PORTG_DIRSET = BIT3
+#define LED2_GREEN_ON 			PORTG_OUTSET = BIT3
+#define LED2_GREEN_OFF			PORTG_OUTCLR = BIT3
+#define LED2_GREEN_TOGGLE		PORTG_OUTTGL = BIT3
+
+#define LED3_RED_DIR_OP			PORTG_DIRSET = BIT4
+#define LED3_RED_ON 			PORTG_OUTSET = BIT4
+#define LED3_RED_OFF			PORTG_OUTCLR = BIT4
+#define LED3_RED_TOGGLE			PORTG_OUTTGL = BIT4
+
+#define LED3_GREEN_DIR_OP		PORTG_DIRSET = BIT5
+#define LED3_GREEN_ON 			PORTG_OUTSET = BIT5
+#define LED3_GREEN_OFF			PORTG_OUTCLR = BIT5
+#define LED3_GREEN_TOGGLE		PORTG_OUTTGL = BIT5
+
+#define LED4_RED_DIR_OP			PORTG_DIRSET = BIT6
+#define LED4_RED_ON 			PORTG_OUTSET = BIT6
+#define LED4_RED_OFF			PORTG_OUTCLR = BIT6
+#define LED4_RED_TOGGLE			PORTG_OUTTGL = BIT6
+
+#define LED4_GREEN_DIR_OP		PORTG_DIRSET = BIT7
+#define LED4_GREEN_ON 			PORTG_OUTSET = BIT7
+#define LED4_GREEN_OFF			PORTG_OUTCLR = BIT7
+#define LED4_GREEN_TOGGLE		PORTG_OUTTGL = BIT7
+
 #ifdef ROUND_MODULE
+
+	//LED Definition
+	#define TM_GREEN_ON 			LED3_GREEN_ON
+	#define TM_GREEN_OFF			LED3_GREEN_OFF
+	#define TM_RED_ON 				LED3_RED_ON
+	#define TM_RED_OFF				LED3_RED_OFF
+	
+	#define RH_GREEN_ON 			LED2_GREEN_ON
+	#define RH_GREEN_OFF			LED2_GREEN_OFF
+	#define RH_RED_ON 				LED2_RED_ON
+	#define RH_RED_OFF				LED2_RED_OFF
+
+	#define DP1_GREEN_ON 			LED1_GREEN_ON
+	#define DP1_GREEN_OFF			LED1_GREEN_OFF
+	#define DP1_RED_ON 				LED1_RED_ON
+	#define DP1_RED_OFF				LED1_RED_OFF
+
+	#define DP2_GREEN_ON 			LED4_GREEN_ON
+	#define DP2_GREEN_OFF			LED4_GREEN_OFF
+	#define DP2_RED_ON 				LED4_RED_ON
+	#define DP2_RED_OFF				LED4_RED_OFF
 	
 	//Key Definition
 	#define PROG_ENT_KEY		(PORTA_IN & BIT5)
@@ -290,10 +353,33 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 
 #else
 
-	#define PROG_ENT_KEY		(PORTA_IN & BIT0)
-	#define PARA_SELECT_KEY		(PORTA_IN & BIT1)
-	#define UP_KEY				(PORTA_IN & BIT5)
-	#define DN_KEY				(PORTA_IN & BIT3)
+	
+	
+	//LED Definition
+	#define TM_GREEN_ON 			LED1_GREEN_ON
+	#define TM_GREEN_OFF			LED1_GREEN_OFF
+	#define TM_RED_ON 				LED1_RED_ON
+	#define TM_RED_OFF				LED1_RED_OFF
+	
+	#define RH_GREEN_ON 			LED2_GREEN_ON
+	#define RH_GREEN_OFF			LED2_GREEN_OFF
+	#define RH_RED_ON 				LED2_RED_ON
+	#define RH_RED_OFF				LED2_RED_OFF
+
+	#define DP1_GREEN_ON 			LED3_GREEN_ON
+	#define DP1_GREEN_OFF			LED3_GREEN_OFF
+	#define DP1_RED_ON 				LED3_RED_ON
+	#define DP1_RED_OFF				LED3_RED_OFF
+
+	#define DP2_GREEN_ON 			LED4_GREEN_ON
+	#define DP2_GREEN_OFF			LED4_GREEN_OFF
+	#define DP2_RED_ON 				LED4_RED_ON
+	#define DP2_RED_OFF				LED4_RED_OFF
+
+	#define PROG_ENT_KEY		(PORTA_IN & BIT1)
+	#define PARA_SELECT_KEY		(PORTA_IN & BIT3)
+	#define UP_KEY				(PORTA_IN & BIT4)
+	#define DN_KEY				(PORTA_IN & BIT2)
 	//#define KEY1				(PORTA_IN & BIT5)
 	//#define KEY2				(PORTA_IN & BIT0)
 	
@@ -309,25 +395,15 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 		
 #define USB_SENSE				(PORTD_IN & BIT2)
 
-//#define BUZZER_DIR_OP			PORTE_DIRSET = BIT0
-//#define BUZZER_ON 				{TCE0_CTRLA = TC_CLKSEL_DIV1_gc;  TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc); }
-//#define BUZZER_OFF				{TCE0_CTRLA = 0;	TCE0_CTRLB = 0;  PORTE_OUTCLR = BIT0; }
-//#define TOGGLE_BUZZER			PORTE_OUTTGL = BIT0
+#define BUZZER_DIR_OP			PORTE_DIRSET = BIT0
+#define BUZZER_ON 				{TCE0_CTRLA = TC_CLKSEL_DIV1_gc;  TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc); }
+#define BUZZER_OFF				{TCE0_CTRLA = 0;	TCE0_CTRLB = 0;  PORTE_OUTCLR = BIT0; }
+#define TOGGLE_BUZZER			PORTE_OUTTGL = BIT0
 
-#define BUZZER_DIR_OP			PORTG_DIRSET = BIT7
-#define BUZZER_ON 				PORTG_OUTSET = BIT7
-#define BUZZER_OFF				PORTG_OUTCLR = BIT7
-#define TOGGLE_BUZZER			PORTG_OUTTGL = BIT7
-
-#define RED_BLIT_SET_DIR		PORTE_DIRSET = BIT1
-#define RED_BLIT_ON				PORTE_OUTSET = BIT1
-#define RED_BLIT_OFF			PORTE_OUTCLR = BIT1
-#define RED_BLIT_TOGGLE			PORTE_OUTTGL = BIT1
-
-#define WHITE_BLIT_SET_DIR		PORTE_DIRSET = BIT0
-#define WHITE_BLIT_ON			PORTE_OUTSET = BIT0
-#define WHITE_BLIT_OFF			PORTE_OUTCLR = BIT0
-#define WHITE_BLIT_TOGGLE		PORTE_OUTTGL = BIT0
+#define BACKLIT_DIR_OP			PORTE_DIRSET = BIT1
+#define BACKLIT_ON 				PORTE_OUTSET = BIT1
+#define BACKLIT_OFF				PORTE_OUTCLR = BIT1
+#define TOGGLE_BACKLIT			PORTE_OUTTGL = BIT1
 		
 #define RS485_TX0_DIR_OP		PORTB_DIRSET = BIT6
 #define RS485_TX0_ENB 			PORTB_OUTSET = BIT6
@@ -447,9 +523,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define MENB_ID				0x58
 #define DOOR_SENSE_POLARITY_ID		0x5A
 #define DOOR_SENSE_TIME_ID			0x5B
-#define DP1_ALM_SENSE_TIME_ID		0x5C
-#define DP2_ALM_SENSE_TIME_ID		0x5D
-#define LCD_BRIGHT_CNT_ID			0x5E
+#define DP1_ALM_SENSE_TIME_ID			0x5C
+#define DP2_ALM_SENSE_TIME_ID			0x5D
 
 #define CORR_RTC_DATA_ID	0x99		
 //************************************************************************/
@@ -584,8 +659,6 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP1_ALM_SENSE_TIME_ADDR			(DOOR_SENSE_TIME_ADDR+1)
 #define DP2_ALM_SENSE_TIME_ADDR			(DP1_ALM_SENSE_TIME_ADDR+1)
 #define DP_AUTO_CAL_FLAG				(DP2_ALM_SENSE_TIME_ADDR+1)
-#define LCD_BRIGHT_CNT_ADDR				(DP_AUTO_CAL_FLAG+1)
-
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
 
@@ -1309,7 +1382,7 @@ volatile unsigned char crcVal=0;
 unsigned short CustPassword=0,FactCustPassword=0;
 
 unsigned char PCCalibrationTimer=0,gu8_doorSensingTimer=0,gu8_Dp1AlarmSensingTimer=0,gu8_Dp2AlarmSensingTimer=0;
-unsigned char gu8_Dp1AlarmSensingTime=0,gu8_Dp2AlarmSensingTime=0,gu8_doorSensingTime=0,gu8_doorSensingPolarity=0,gu8_LCDBrigthnessCnt=0;
+unsigned char gu8_Dp1AlarmSensingTime=0,gu8_Dp2AlarmSensingTime=0,gu8_doorSensingTime=0,gu8_doorSensingPolarity=0;
 unsigned char restoreFactoryCalibrationTimer=0,DPAutoCalModeTimer=0,MinMaxMeanModeTimer=0,MeanHrModeTimer=0,DPAutoCalTimer=0,ProgModeTimer=0,gu8_MinMaxClearTimer=0;
 
 unsigned char AckPwdInd=0;
@@ -1381,7 +1454,7 @@ unsigned char glbSrcPort=0;
 unsigned char clkmode=0;
 unsigned char comport=0;
 unsigned char varusb=0;
-unsigned char gu8ar_SrNumber[16]={0};
+
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1455,12 +1528,19 @@ int main(void)
 	//-------------------------------------------------------
 	//Initialize Timer0
 	//-------------------------------------------------------
-	//Init_Timer0();
+	Init_Timer0();
 	
-	BUZZER_ON;
+	TM_GREEN_ON;
+	TM_RED_ON;
+	RH_GREEN_ON;
+	RH_RED_ON;
+	DP2_GREEN_ON;
+	DP2_RED_ON;
+	DP1_GREEN_ON;
+	DP1_RED_ON;
+	BUZZER_OFF;
 	XBEE_RST_LOW;
-	//RED_BLIT_ON;
-	//WHITE_BLIT_ON;
+	
 	//-------------------------------------------------------
 	//Boot Data from Internal EEPROM
 	//-------------------------------------------------------
@@ -1468,11 +1548,11 @@ int main(void)
 	
 	if(!gu8_BackLitOnOff)
 	{
-		WHITE_BLIT_OFF;
+		BACKLIT_OFF;	
 	}
 	else
 	{
-		WHITE_BLIT_ON;
+		BACKLIT_ON;
 	}
 	
 	//-------------------------------------------------------
@@ -2254,6 +2334,14 @@ int main(void)
 	RS485_TX0_DIS;
 	RS485_RX1_ENB;
 	RS485_TX1_DIS;
+	TM_GREEN_OFF;
+	TM_RED_OFF;
+	RH_GREEN_OFF;
+	RH_RED_OFF;
+	DP1_GREEN_OFF;
+	DP1_RED_OFF;
+	DP2_GREEN_OFF;
+	DP2_RED_OFF;
 	BUZZER_OFF;
 	XBEE_RST_HIGH;
 	
@@ -2403,35 +2491,1023 @@ int main(void)
 		
 		if(b.AlarmLED)
 		{
-			if(b.doorSense==1)
+			//Check Alarm if any ================================
+			if(gu16_parameterWord & ENABLE_DP1)
 			{
-				static unsigned char i11=0;
-				
-				i11++;
-				if(i11>2) i11=0;
-				switch(i11)
+				if(DP1_Alrm_ON==LOWER_ALARM)
 				{
-					case 0:		WHITE_BLIT_ON;	RED_BLIT_OFF;	break;
-					case 1:		WHITE_BLIT_OFF;	RED_BLIT_ON;	break;
-					case 2:		WHITE_BLIT_ON;	RED_BLIT_ON;	break;
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+
+						DP1_RED_ON;
+						if(b.led_toggle)
+						{
+							DP1_GREEN_ON;
+						}
+						else
+						{
+							DP1_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
 				}
-			}
-			else
-			{
-				if((DP1_Alrm_ON==UPPER_ALARM)||(DP2_Alrm_ON==UPPER_ALARM)||(TM_Alrm_ON==UPPER_ALARM)||(RH_Alrm_ON==UPPER_ALARM))
+				else if(DP1_Alrm_ON==UPPER_ALARM)
 				{
-					RED_BLIT_ON;		WHITE_BLIT_OFF;
-				}
-				else if((DP1_Alrm_ON==LOWER_ALARM)||(DP2_Alrm_ON==LOWER_ALARM)||(TM_Alrm_ON==LOWER_ALARM)||(RH_Alrm_ON==LOWER_ALARM))
-				{
-					WHITE_BLIT_ON;		RED_BLIT_ON;
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP1_GREEN_OFF;
+						if(b.led_toggle) DP1_RED_ON;
+						else			 DP1_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
 				}
 				else
 				{
-					WHITE_BLIT_ON;		RED_BLIT_OFF;
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP1_GREEN_ON;
+						DP1_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
 				}
 			}
+			
+			if(gu16_parameterWord & ENABLE_DP2)
+			{
+				if(DP2_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
 
+						DP2_RED_ON;
+						if(b.led_toggle)
+						{
+							DP2_GREEN_ON;
+						}
+						else
+						{
+							DP2_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(DP2_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP2_GREEN_OFF;
+						if(b.led_toggle) DP2_RED_ON;
+						else			 DP2_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP2_GREEN_ON;
+						DP2_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+
+						#endif
+					}
+				}
+			}
+			
+			if(gu16_parameterWord & ENABLE_TEMP)
+			{
+				if(TM_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+
+						TM_RED_ON;
+						if(b.led_toggle)
+						{
+							TM_GREEN_ON;
+						}
+						else
+						{
+							TM_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(TM_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						TM_GREEN_OFF;
+						if(b.led_toggle) TM_RED_ON;
+						else			 TM_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						TM_GREEN_ON;
+						TM_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+			}
+			
+			if(gu16_parameterWord & ENABLE_RH)
+			{
+				if(RH_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_RED_ON;
+						if(b.led_toggle)
+						{
+							RH_GREEN_ON;
+						}
+						else
+						{
+							RH_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(RH_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_GREEN_OFF;
+						if(b.led_toggle) RH_RED_ON;
+						else			 RH_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_GREEN_ON;
+						RH_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+			}
+			
 			b.AlarmLED=0;
 		}
 		
@@ -2841,22 +3917,6 @@ int main(void)
 			check_key();		//Check Keyboard
 			if(b.msec_flag)
 			{
-				if(gu16_parameterWord & ENABLE_DP2)
-				{
-					ReadDiffPressure2();
-				}
-				else
-				{
-					Dpressure2=0.0;
-
-					DP2_Max=0.0;
-					DP2_Min=0.0;
-
-					DP2_Alrm_ON=NO_ALARM;
-					
-					DP_StartUpTimer=0;
-				}
-				
 				b.msec_flag=0;
 				CheckUpDnKey();		//Check UP and Down key
 			}
@@ -4466,11 +5526,11 @@ void keyboard(void)
 								
 								if(!gu8_BackLitOnOff)
 								{
-									WHITE_BLIT_OFF;
+									BACKLIT_OFF;
 								}
 								else
 								{
-									WHITE_BLIT_ON;
+									BACKLIT_ON;
 								}
 							}
 						break;
@@ -4918,11 +5978,11 @@ void keyboard(void)
 								
 								if(!gu8_BackLitOnOff)
 								{
-									WHITE_BLIT_OFF;
+									BACKLIT_OFF;
 								}
 								else
 								{
-									WHITE_BLIT_ON;
+									BACKLIT_ON;
 								}
 							}
 						break;
@@ -6380,16 +7440,6 @@ void ServePCMsg(unsigned char SrcPort)
 			RxBuffer[j++] = 0x0F;
 		}
 		
-		RxBuffer[j++] = 0xEE;	//Field Separator
-		
-		memcpy(&RxBuffer[j],gu8ar_SrNumber,16);
-		j+=16;
-		
-		RxBuffer[j++] = 0xEE;	//Field Separator
-		
-		memcpy(&RxBuffer[j],(unsigned char*)&ep.currentEpochTime,4);
-		j+=4;
-		
 		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
 		j++;
 		
@@ -6549,7 +7599,7 @@ void ServePCMsg(unsigned char SrcPort)
 				rtc2.year = HEX2BCD(rtc2.year);
 							
 				//If SetDate is greater than current date then set it otherwise discard it
-				//if(ep1.currentEpochTime >= ep.currentEpochTime)
+				if(ep1.currentEpochTime >= ep.currentEpochTime)
 				{
 					Write_byte_DS1307(0x00,rtc2.second); 
 					Write_byte_DS1307(0x01,rtc2.minute); 
@@ -6944,28 +7994,36 @@ void ServePCMsg(unsigned char SrcPort)
 					
 					DP1_Cal_Value_C = (RealDpressure1 - DP1_Cal_float_Value_F)*10.0;
 					DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
-						
-					Buffer1[0] = findValue(&RxBuffer[9],2);
-					Buffer1[1] = findValue(&RxBuffer[11],2);
-					Buffer1[2] = findValue(&RxBuffer[13],2);
-								
-					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
-					{	
-						if(!DP1_UserCalDateInd) a1=NO_OF_USER_CAL_DATE-1;
-						else a1=DP1_UserCalDateInd-1;
+										
+					if(!DP1_UserCalDateInd) a1=NO_OF_USER_CAL_DATE-1;
+					else a1=DP1_UserCalDateInd-1;
 					
-						us1 = DP1_USER_CAL_DATE_ADDR + (a1 * 6);
-						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					us1 = DP1_USER_CAL_DATE_ADDR + (a1 * 6);
+					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
 						
-						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-						{
-							us1 = DP1_USER_CAL_DATE_ADDR + (DP1_UserCalDateInd * 6);
-							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+					{
+						us1 = DP1_USER_CAL_DATE_ADDR + (DP1_UserCalDateInd * 6);
+						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-							DP1_UserCalDateInd++;
-							if(DP1_UserCalDateInd>=NO_OF_USER_CAL_DATE) DP1_UserCalDateInd=0;
-							eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
-						}
+						/*opstr(0,"Cal Date at ");
+						print_Hex(0,DP1_UserCalDateInd);
+						opstr(0," Date:");
+						opchar(0,RxBuffer[9]);
+						opchar(0,RxBuffer[10]);
+						opchar(0,RxBuffer[11]);
+						opchar(0,RxBuffer[12]);
+						opchar(0,RxBuffer[13]);
+						opchar(0,RxBuffer[14]);
+						*/
+						
+						DP1_UserCalDateInd++;
+						if(DP1_UserCalDateInd>=NO_OF_USER_CAL_DATE) DP1_UserCalDateInd=0;
+						eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
+					}
+					else
+					{
+						//opstr(0,"Cal On same date");
 					}
 				}
 				
@@ -7008,27 +8066,34 @@ void ServePCMsg(unsigned char SrcPort)
 					DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
 					DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
 					
-					Buffer1[0] = findValue(&RxBuffer[9],2);
-					Buffer1[1] = findValue(&RxBuffer[11],2);
-					Buffer1[2] = findValue(&RxBuffer[13],2);
+					if(!DP2_UserCalDateInd) a1=14;
+					else a1=DP2_UserCalDateInd-1;
 					
-					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					us1 = DP2_USER_CAL_DATE_ADDR + (a1 * 6);
+					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 					{
-						if(!DP2_UserCalDateInd) a1=14;
-						else a1=DP2_UserCalDateInd-1;
-					
-						us1 = DP2_USER_CAL_DATE_ADDR + (a1 * 6);
-						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
-					
-						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-						{
-							us1 = DP2_USER_CAL_DATE_ADDR + (DP2_UserCalDateInd * 6);
-							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						us1 = DP2_USER_CAL_DATE_ADDR + (DP2_UserCalDateInd * 6);
+						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-							DP2_UserCalDateInd++;
-							if(DP2_UserCalDateInd>14) DP2_UserCalDateInd=0;
-							eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
-						}
+						/*opstr(0,"Cal Date at ");
+						print_Hex(0,DP2_UserCalDateInd);
+						opstr(0," Date:");
+						opchar(0,RxBuffer[9]);
+						opchar(0,RxBuffer[10]);
+						opchar(0,RxBuffer[11]);
+						opchar(0,RxBuffer[12]);
+						opchar(0,RxBuffer[13]);
+						opchar(0,RxBuffer[14]);
+						*/
+						DP2_UserCalDateInd++;
+						if(DP2_UserCalDateInd>14) DP2_UserCalDateInd=0;
+						eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
+					}
+					else
+					{
+						//opstr(0,"Cal On same date");
 					}
 				}
 			
@@ -7101,27 +8166,35 @@ void ServePCMsg(unsigned char SrcPort)
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 					}
 					
-					Buffer1[0] = findValue(&RxBuffer[9],2);
-					Buffer1[1] = findValue(&RxBuffer[11],2);
-					Buffer1[2] = findValue(&RxBuffer[13],2);
+					if(!TM_UserCalDateInd) a1=14;
+					else a1=TM_UserCalDateInd-1;
 					
-					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					us1 = TM_USER_CAL_DATE_ADDR + (a1 * 6);
+					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 					{
-						if(!TM_UserCalDateInd) a1=14;
-						else a1=TM_UserCalDateInd-1;
-					
-						us1 = TM_USER_CAL_DATE_ADDR + (a1 * 6);
-						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
-					
-						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-						{
-							us1 = TM_USER_CAL_DATE_ADDR + (TM_UserCalDateInd * 6);
-							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						us1 = TM_USER_CAL_DATE_ADDR + (TM_UserCalDateInd * 6);
+						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-							TM_UserCalDateInd++;
-							if(TM_UserCalDateInd>14) TM_UserCalDateInd=0;
-							eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
-						}
+						/*opstr(0,"Cal Date at ");
+						print_Hex(0,TM_UserCalDateInd);
+						opstr(0," Date:");
+						opchar(0,RxBuffer[9]);
+						opchar(0,RxBuffer[10]);
+						opchar(0,RxBuffer[11]);
+						opchar(0,RxBuffer[12]);
+						opchar(0,RxBuffer[13]);
+						opchar(0,RxBuffer[14]);
+						*/
+						
+						TM_UserCalDateInd++;
+						if(TM_UserCalDateInd>14) TM_UserCalDateInd=0;
+						eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
+					}
+					else
+					{
+						//opstr(0,"Cal On same date");
 					}
 				}
 				
@@ -7165,27 +8238,35 @@ void ServePCMsg(unsigned char SrcPort)
 					RH_Cal_Value_C = ss1 - tempshort;
 					RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 					
-					Buffer1[0] = findValue(&RxBuffer[9],2);
-					Buffer1[1] = findValue(&RxBuffer[11],2);
-					Buffer1[2] = findValue(&RxBuffer[13],2);
+					if(!RH_UserCalDateInd) a1=14;
+					else a1=RH_UserCalDateInd-1;
 					
-					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					us1 = RH_USER_CAL_DATE_ADDR + (a1 * 6);
+					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
 					{
-						if(!RH_UserCalDateInd) a1=14;
-						else a1=RH_UserCalDateInd-1;
-					
-						us1 = RH_USER_CAL_DATE_ADDR + (a1 * 6);
-						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
-					
-						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-						{
-							us1 = RH_USER_CAL_DATE_ADDR + (RH_UserCalDateInd * 6);
-							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
-
-							RH_UserCalDateInd++;
-							if(RH_UserCalDateInd>14) RH_UserCalDateInd=0;
-							eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
-						}
+						us1 = RH_USER_CAL_DATE_ADDR + (RH_UserCalDateInd * 6);
+						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						
+						/*opstr(0,"Cal Date at ");
+						print_Hex(0,RH_UserCalDateInd);
+						opstr(0," Date:");
+						opchar(0,RxBuffer[9]);
+						opchar(0,RxBuffer[10]);
+						opchar(0,RxBuffer[11]);
+						opchar(0,RxBuffer[12]);
+						opchar(0,RxBuffer[13]);
+						opchar(0,RxBuffer[14]);
+						*/
+						
+						RH_UserCalDateInd++;
+						if(RH_UserCalDateInd>14) RH_UserCalDateInd=0;
+						eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
+					}
+					else
+					{
+						//opstr(0,"Cal On same date");
 					}
 				}
 				
@@ -7249,11 +8330,11 @@ void ServePCMsg(unsigned char SrcPort)
 					
 					if(!gu8_BackLitOnOff)
 					{
-						WHITE_BLIT_OFF;
+						BACKLIT_OFF;
 					}
 					else
 					{
-						WHITE_BLIT_ON;
+						BACKLIT_ON;
 					}
 				}
 			break;
@@ -7276,14 +8357,6 @@ void ServePCMsg(unsigned char SrcPort)
 				{
 					gu8_doorSensingTime=tempshort;
 					eeprom_write_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR,gu8_doorSensingTime);
-				}
-			break;
-			case LCD_BRIGHT_CNT_ID:
-				if(tempshort<=63)
-				{
-					gu8_LCDBrigthnessCnt=tempshort;
-					LCD_CTRLF = gu8_LCDBrigthnessCnt;
-					eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 				}
 			break;
 			case DP1_ALM_SENSE_TIME_ID:
@@ -7345,8 +8418,7 @@ void ServePCMsg(unsigned char SrcPort)
 				}
 			break;
 			case SRNO_ID:
-				memcpy(gu8ar_SrNumber,&RxBuffer[4],16);
-				eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
+				eeprom_write_block((unsigned char*)&RxBuffer[4],(unsigned char*)DEVICE_SR_NO,16);
 			break;	
 			case BRDSTP_ID:
 				b.brodcastEnb=0;
@@ -7551,7 +8623,6 @@ void ServePCMsg(unsigned char SrcPort)
 			case MENB_ID:		tempshort = gu8_masterEnable;			break;
 			case DOOR_SENSE_POLARITY_ID:	tempshort = gu8_doorSensingPolarity;	break;
 			case DOOR_SENSE_TIME_ID:		tempshort = gu8_doorSensingTime;		break;
-			case LCD_BRIGHT_CNT_ID:			tempshort = gu8_LCDBrigthnessCnt;		break;
 			case DP1_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp1AlarmSensingTime;	break;
 			case DP2_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp2AlarmSensingTime;	break;
 			case SRNO_ID:												break;
@@ -7647,10 +8718,9 @@ void ServePCMsg(unsigned char SrcPort)
 			if(b.RH_TEMP_NC) 		TxBuffer[3] |= RH_TEMP_FAULTY;
 			TxBuffer[4]=RxBuffer[3];
 			
-			//cli();			//Global Interrupt Disable
-			memcpy(&TxBuffer[5],gu8ar_SrNumber,16);
-			//eeprom_read_block((unsigned char*)&TxBuffer[5],(unsigned char*)DEVICE_SR_NO,16);
-			//sei();			//Global Interrupt Enable
+			cli();			//Global Interrupt Disable
+			eeprom_read_block((unsigned char*)&TxBuffer[5],(unsigned char*)DEVICE_SR_NO,16);
+			sei();			//Global Interrupt Enable
 			
 			TxBuffer[21]=CalCRC(&TxBuffer[1],20);	
 			TxBuffer[22]=0xFC;
@@ -8649,28 +9719,15 @@ void ReadDiffPressure1(void)
 		{
 			b.DP1_NC=0;
 			
-			Raw_pressure_cnt1[Raw_pressure_cnt_ind1++] = differanceDP;
-			if(Raw_pressure_cnt_ind1>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind1=0;
-			
-			signed long lu32_temp=0;
-			
-			lu32_temp = 0;
-			for(i=0;i<RAW_DP_CNT_IND;i++) lu32_temp += Raw_pressure_cnt1[i];
-			lu32_temp /= RAW_DP_CNT_IND;
-
-			if((Avg_Raw_pressure_cnt1<=(lu32_temp+5)) && (Avg_Raw_pressure_cnt1>=(lu32_temp-5)))
+			if(abs(differanceDP-lastdifferanceDP1)>10)
 			{
-				Avg_Raw_pressure_cnt1=(lu32_temp+Avg_Raw_pressure_cnt1+Avg_Raw_pressure_cnt1)/3;
-			}
-			else
-			{
-				Avg_Raw_pressure_cnt1=lu32_temp;
+				Avg_Raw_pressure_cnt1 = differanceDP;
+				Avg_Raw_pressure_cnt1 -= 1638;
+				lastdifferanceDP1 = differanceDP;
 			}
 			
-			Avg_Raw_pressure_cnt1 -= 1638;
-
 			RealDpressure1 = (float)Avg_Raw_pressure_cnt1;
-			
+
 			if(gu16_parameterWord & DIFP1_ABSP1)
 			{
 				RealDpressure1 *= 0.1496910048065919;
@@ -8682,22 +9739,11 @@ void ReadDiffPressure1(void)
 				RealDpressure1 -= 981;
 			}
 			
-			float f32_temp=0;
-			f32_temp = RealDpressure1;
-			f32_temp -= DP1_Cal_float_Value_F;
-			f32_temp -= DP1_Cal_float_Value_C;
-			lu32_temp = f32_temp;
-			f32_temp = lu32_temp;
+			Dpressure1 = RealDpressure1;
+			Dpressure1 -= DP1_Cal_float_Value_F;
+			Dpressure1 -= DP1_Cal_float_Value_C;
 			
-			if((f32_temp > 200) && (f32_temp <= 300)) f32_temp -= 1;
-			else if((f32_temp > 300) && (f32_temp <= 400)) f32_temp -= 2;
-			else if((f32_temp > 400) && (f32_temp <= 500)) f32_temp -= 3;
-			else if((f32_temp > 500) && (f32_temp <= 600)) f32_temp -= 4;
-			else if((f32_temp > 600) && (f32_temp <= 700)) f32_temp -= 5;
-			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
-			else if(f32_temp > 800) f32_temp -= 7;
-			
-			Dpressure1 = f32_temp;
+			//if((Dpressure1<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure1>DP_ZERO_DISP_LIMIT_LOW)) Dpressure1=0.0;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -8996,6 +10042,7 @@ void ReadDiffPressure1(void)
 
 void ReadDiffPressure2(void)
 {
+	//unsigned char i=0;
 	unsigned short differanceDP=0;
 
 	Dpressure2=0.0;
@@ -9041,46 +10088,51 @@ void ReadDiffPressure2(void)
 		{
 			b.DP2_NC=0;
 
-			Raw_pressure_cnt2[Raw_pressure_cnt_ind2++] = differanceDP;
-			if(Raw_pressure_cnt_ind2>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind2=0;
-			
-			signed long lu32_temp=0;
-			
-			lu32_temp = 0;
-			for(i=0;i<RAW_DP_CNT_IND;i++) lu32_temp += Raw_pressure_cnt2[i];
-			lu32_temp /= RAW_DP_CNT_IND;       
-
-			if((Avg_Raw_pressure_cnt2<=(lu32_temp+5)) && (Avg_Raw_pressure_cnt2>=(lu32_temp-5)))
+			if(abs(differanceDP-lastdifferanceDP2)>10)
 			{
-				Avg_Raw_pressure_cnt2=(lu32_temp+Avg_Raw_pressure_cnt2+Avg_Raw_pressure_cnt2)/3;
+				//for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt2[i] = differanceDP;
+				Avg_Raw_pressure_cnt2 = differanceDP;
+				Avg_Raw_pressure_cnt2 -= 1638;
+				lastdifferanceDP2 = differanceDP;
+				gu8_DP2StandbyTimer = 0;
 			}
 			else
 			{
-				Avg_Raw_pressure_cnt2=lu32_temp;
+				gu8_DP2StandbyTimer++;
+				if(gu8_DP2StandbyTimer>5)
+				{
+					gu8_DP2StandbyTimer=0;
+					
+					Avg_Raw_pressure_cnt2 = differanceDP;
+					Avg_Raw_pressure_cnt2 -= 1638;
+					lastdifferanceDP2 = differanceDP;
+				}
 			}
-	
-			Avg_Raw_pressure_cnt2 -= 1638;
-
+			//else
+			//{
+				//Raw_pressure_cnt2[Raw_pressure_cnt_ind2++] = differanceDP;
+				//if(Raw_pressure_cnt_ind2>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind2=0;
+			//}
+			
+			
+			
+			//Avg_Raw_pressure_cnt2 = 0;
+			
+			//for(i=0;i<RAW_DP_CNT_IND;i++)
+			//{
+				//Avg_Raw_pressure_cnt2 += Raw_pressure_cnt2[i];
+			//}
+			//
+			//Avg_Raw_pressure_cnt2 /= RAW_DP_CNT_IND;
+				
 			RealDpressure2 = (float)Avg_Raw_pressure_cnt2;			
 			RealDpressure2 *= 0.1496910048065919;
 			RealDpressure2 -= 981;
+			Dpressure2 = RealDpressure2;
+			Dpressure2 -= DP2_Cal_float_Value_F;
+			Dpressure2 -= DP2_Cal_float_Value_C;
 			
-			float f32_temp=0;
-			f32_temp = RealDpressure2;
-			f32_temp -= DP2_Cal_float_Value_F;
-			f32_temp -= DP2_Cal_float_Value_C;
-			lu32_temp = f32_temp;
-			f32_temp = lu32_temp;
-			
-			if((f32_temp > 200) && (f32_temp <= 300)) f32_temp -= 1;
-			else if((f32_temp > 300) && (f32_temp <= 400)) f32_temp -= 2;
-			else if((f32_temp > 400) && (f32_temp <= 500)) f32_temp -= 3;
-			else if((f32_temp > 500) && (f32_temp <= 600)) f32_temp -= 4;
-			else if((f32_temp > 600) && (f32_temp <= 700)) f32_temp -= 5;
-			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
-			else if(f32_temp > 800) f32_temp -= 7;
-			
-			Dpressure2 = f32_temp;
+			//if((Dpressure2<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure2>DP_ZERO_DISP_LIMIT_LOW)) Dpressure2=0.0;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -9806,21 +10858,21 @@ void SecondTick(void)
 		DP_StartUpTimer=0;
 	}
 	
-	//if(gu16_parameterWord & ENABLE_DP2)
-	//{
-		//ReadDiffPressure2();
-	//}
-	//else
-	//{
-		//Dpressure2=0.0;
-//
-		//DP2_Max=0.0;
-		//DP2_Min=0.0;
-//
-		//DP2_Alrm_ON=NO_ALARM;
-		//
-		//DP_StartUpTimer=0;
-	//}
+	if(gu16_parameterWord & ENABLE_DP2)
+	{
+		ReadDiffPressure2();
+	}
+	else
+	{
+		Dpressure2=0.0;
+
+		DP2_Max=0.0;
+		DP2_Min=0.0;
+
+		DP2_Alrm_ON=NO_ALARM;
+		
+		DP_StartUpTimer=0;
+	}
 	
 	#if ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 
@@ -9872,7 +10924,7 @@ void InitLCDController(void)
 	LCD_INTCTRL = LCD_XIME2_bm | LCD_XIME1_bm | LCD_XIME0_bm;
 	
 	//Set LCD contrast to 3.0V
-	LCD_CTRLF = gu8_LCDBrigthnessCnt;//0b00100000;
+	LCD_CTRLF = 0b00000000;
 	
 	//Enable LCD
 	LCD_CTRLA = LCD_ENABLE_bm | LCD_SEGON_bm;						//ENABLE LCD CONTROLLER
@@ -9928,7 +10980,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 16;
-	data[6] = 7;
+	data[6] = 5;
 						
 	disp_value();
 	
@@ -15808,7 +16860,6 @@ void AllSegment(unsigned char state)
 								if(b.mec500_blink_flag)
 								{
 									convert_char(rtc.minute,&data[2],2);
-									//convert_char(vvv,&data[2],2);
 									
 									if(b.AM_PM_Flag)
 									{
@@ -18688,9 +19739,6 @@ void boot_data(void)
 		gu8_masterEnable=0;
 		eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 		
-		memset(gu8ar_SrNumber,0,16);
-		eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
-		
 		gu8_DP1_LEDBlinkForPara=0;
 		eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
 		
@@ -18990,9 +20038,6 @@ void boot_data(void)
 		gu8_Dp2AlarmSensingTime=5;
 		eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 		
-		gu8_LCDBrigthnessCnt=55;
-		eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
-		
 		//EraseWholeFlash();
 	}
 	else
@@ -19003,15 +20048,6 @@ void boot_data(void)
 			gu8_doorSensingPolarity=0;
 			eeprom_write_byte ((unsigned char*)DOOR_SENSE_POLARITY_ADDR,gu8_doorSensingPolarity);
 		}
-		
-		gu8_LCDBrigthnessCnt  = eeprom_read_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR);
-		if(gu8_LCDBrigthnessCnt > 63)
-		{
-			gu8_LCDBrigthnessCnt=55;
-			eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
-		}
-		
-		eeprom_read_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
 		
 		gu8_doorSensingTime  = eeprom_read_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR);
 		if(gu8_doorSensingTime > 250)

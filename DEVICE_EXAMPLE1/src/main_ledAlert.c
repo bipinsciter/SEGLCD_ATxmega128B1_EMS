@@ -73,7 +73,7 @@
 #define SMALL_FONT_DISPLAY_NEW		1
 #define BIG_FONT_DISPLAY_OLD		2
 #define BIG_FONT_DISPLAY_NEW		3
-#define DISPLAY_MODE				BIG_FONT_DISPLAY_OLD
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_NEW
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -279,7 +279,70 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define UPPER_ALARM				1
 #define LOWER_ALARM				2
 
+//--------------------------------------------------
+
+#define LED1_RED_DIR_OP			PORTG_DIRSET = BIT0
+#define LED1_RED_ON 			PORTG_OUTSET = BIT0
+#define LED1_RED_OFF			PORTG_OUTCLR = BIT0
+#define LED1_RED_TOGGLE			PORTG_OUTTGL = BIT0
+
+#define LED1_GREEN_DIR_OP		PORTG_DIRSET = BIT1
+#define LED1_GREEN_ON 			PORTG_OUTSET = BIT1
+#define LED1_GREEN_OFF			PORTG_OUTCLR = BIT1
+#define LED1_GREEN_TOGGLE		PORTG_OUTTGL = BIT1
+
+#define LED2_RED_DIR_OP			PORTG_DIRSET = BIT2
+#define LED2_RED_ON 			PORTG_OUTSET = BIT2
+#define LED2_RED_OFF			PORTG_OUTCLR = BIT2
+#define LED2_RED_TOGGLE			PORTG_OUTTGL = BIT2
+
+#define LED2_GREEN_DIR_OP		PORTG_DIRSET = BIT3
+#define LED2_GREEN_ON 			PORTG_OUTSET = BIT3
+#define LED2_GREEN_OFF			PORTG_OUTCLR = BIT3
+#define LED2_GREEN_TOGGLE		PORTG_OUTTGL = BIT3
+
+#define LED3_RED_DIR_OP			PORTG_DIRSET = BIT4
+#define LED3_RED_ON 			PORTG_OUTSET = BIT4
+#define LED3_RED_OFF			PORTG_OUTCLR = BIT4
+#define LED3_RED_TOGGLE			PORTG_OUTTGL = BIT4
+
+#define LED3_GREEN_DIR_OP		PORTG_DIRSET = BIT5
+#define LED3_GREEN_ON 			PORTG_OUTSET = BIT5
+#define LED3_GREEN_OFF			PORTG_OUTCLR = BIT5
+#define LED3_GREEN_TOGGLE		PORTG_OUTTGL = BIT5
+
+#define LED4_RED_DIR_OP			PORTG_DIRSET = BIT6
+#define LED4_RED_ON 			PORTG_OUTSET = BIT6
+#define LED4_RED_OFF			PORTG_OUTCLR = BIT6
+#define LED4_RED_TOGGLE			PORTG_OUTTGL = BIT6
+
+#define LED4_GREEN_DIR_OP		PORTG_DIRSET = BIT7
+#define LED4_GREEN_ON 			PORTG_OUTSET = BIT7
+#define LED4_GREEN_OFF			PORTG_OUTCLR = BIT7
+#define LED4_GREEN_TOGGLE		PORTG_OUTTGL = BIT7
+
 #ifdef ROUND_MODULE
+
+	//LED Definition
+	#define TM_GREEN_ON 			LED3_GREEN_ON
+	#define TM_GREEN_OFF			LED3_GREEN_OFF
+	#define TM_RED_ON 				LED3_RED_ON
+	#define TM_RED_OFF				LED3_RED_OFF
+	
+	#define RH_GREEN_ON 			LED2_GREEN_ON
+	#define RH_GREEN_OFF			LED2_GREEN_OFF
+	#define RH_RED_ON 				LED2_RED_ON
+	#define RH_RED_OFF				LED2_RED_OFF
+
+	#define DP1_GREEN_ON 			LED1_GREEN_ON
+	#define DP1_GREEN_OFF			LED1_GREEN_OFF
+	#define DP1_RED_ON 				LED1_RED_ON
+	#define DP1_RED_OFF				LED1_RED_OFF
+
+	#define DP2_GREEN_ON 			LED4_GREEN_ON
+	#define DP2_GREEN_OFF			LED4_GREEN_OFF
+	#define DP2_RED_ON 				LED4_RED_ON
+	#define DP2_RED_OFF				LED4_RED_OFF
 	
 	//Key Definition
 	#define PROG_ENT_KEY		(PORTA_IN & BIT5)
@@ -289,6 +352,27 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 	#define KEY1				(PORTA_IN & BIT4)
 
 #else
+
+	//LED Definition
+	#define TM_GREEN_ON 			LED1_GREEN_ON
+	#define TM_GREEN_OFF			LED1_GREEN_OFF
+	#define TM_RED_ON 				LED1_RED_ON
+	#define TM_RED_OFF				LED1_RED_OFF
+	
+	#define RH_GREEN_ON 			LED2_GREEN_ON
+	#define RH_GREEN_OFF			LED2_GREEN_OFF
+	#define RH_RED_ON 				LED2_RED_ON
+	#define RH_RED_OFF				LED2_RED_OFF
+
+	#define DP1_GREEN_ON 			LED3_GREEN_ON
+	#define DP1_GREEN_OFF			LED3_GREEN_OFF
+	#define DP1_RED_ON 				LED3_RED_ON
+	#define DP1_RED_OFF				LED3_RED_OFF
+
+	#define DP2_GREEN_ON 			LED4_GREEN_ON
+	#define DP2_GREEN_OFF			LED4_GREEN_OFF
+	#define DP2_RED_ON 				LED4_RED_ON
+	#define DP2_RED_OFF				LED4_RED_OFF
 
 	#define PROG_ENT_KEY		(PORTA_IN & BIT0)
 	#define PARA_SELECT_KEY		(PORTA_IN & BIT1)
@@ -1457,7 +1541,15 @@ int main(void)
 	//-------------------------------------------------------
 	//Init_Timer0();
 	
-	BUZZER_ON;
+	TM_GREEN_ON;
+	TM_RED_ON;
+	RH_GREEN_ON;
+	RH_RED_ON;
+	DP2_GREEN_ON;
+	DP2_RED_ON;
+	DP1_GREEN_ON;
+	DP1_RED_ON;
+	BUZZER_OFF;
 	XBEE_RST_LOW;
 	//RED_BLIT_ON;
 	//WHITE_BLIT_ON;
@@ -2254,6 +2346,14 @@ int main(void)
 	RS485_TX0_DIS;
 	RS485_RX1_ENB;
 	RS485_TX1_DIS;
+	TM_GREEN_OFF;
+	TM_RED_OFF;
+	RH_GREEN_OFF;
+	RH_RED_OFF;
+	DP1_GREEN_OFF;
+	DP1_RED_OFF;
+	DP2_GREEN_OFF;
+	DP2_RED_OFF;
 	BUZZER_OFF;
 	XBEE_RST_HIGH;
 	
@@ -2431,7 +2531,1024 @@ int main(void)
 					WHITE_BLIT_ON;		RED_BLIT_OFF;
 				}
 			}
+			
+			//Check Alarm if any ================================
+			if(gu16_parameterWord & ENABLE_DP1)
+			{
+				if(DP1_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
 
+						DP1_RED_ON;
+						if(b.led_toggle)
+						{
+							DP1_GREEN_ON;
+						}
+						else
+						{
+							DP1_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(DP1_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP1_GREEN_OFF;
+						if(b.led_toggle) DP1_RED_ON;
+						else			 DP1_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP1_GREEN_ON;
+						DP1_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP1_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP1_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP1_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+			}
+			
+			if(gu16_parameterWord & ENABLE_DP2)
+			{
+				if(DP2_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+
+						DP2_RED_ON;
+						if(b.led_toggle)
+						{
+							DP2_GREEN_ON;
+						}
+						else
+						{
+							DP2_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(DP2_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP2_GREEN_OFF;
+						if(b.led_toggle) DP2_RED_ON;
+						else			 DP2_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						DP2_GREEN_ON;
+						DP2_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_DP2_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_DP2_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==DP2_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+
+						#endif
+					}
+				}
+			}
+			
+			if(gu16_parameterWord & ENABLE_TEMP)
+			{
+				if(TM_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+
+						TM_RED_ON;
+						if(b.led_toggle)
+						{
+							TM_GREEN_ON;
+						}
+						else
+						{
+							TM_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(TM_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						TM_GREEN_OFF;
+						if(b.led_toggle) TM_RED_ON;
+						else			 TM_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						TM_GREEN_ON;
+						TM_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_TM_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_TM_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==TEMP_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+			}
+			
+			if(gu16_parameterWord & ENABLE_RH)
+			{
+				if(RH_Alrm_ON==LOWER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_RED_ON;
+						if(b.led_toggle)
+						{
+							RH_GREEN_ON;
+						}
+						else
+						{
+							RH_GREEN_OFF;
+						}
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_RED_ON;
+								if(b.led_toggle)
+								{
+									TM_GREEN_ON;
+								}
+								else
+								{
+									TM_GREEN_OFF;
+								}
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_RED_ON;
+								if(b.led_toggle)
+								{
+									RH_GREEN_ON;
+								}
+								else
+								{
+									RH_GREEN_OFF;
+								}
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_RED_ON;
+								if(b.led_toggle)
+								{
+									DP1_GREEN_ON;
+								}
+								else
+								{
+									DP1_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_RED_ON;
+								if(b.led_toggle)
+								{
+									DP2_GREEN_ON;
+								}
+								else
+								{
+									DP2_GREEN_OFF;
+								}
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else if(RH_Alrm_ON==UPPER_ALARM)
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_GREEN_OFF;
+						if(b.led_toggle) RH_RED_ON;
+						else			 RH_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_GREEN_OFF;
+								if(b.led_toggle) TM_RED_ON;
+								else			 TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_GREEN_OFF;
+								if(b.led_toggle) RH_RED_ON;
+								else			 RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_GREEN_OFF;
+								if(b.led_toggle) DP1_RED_ON;
+								else			 DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_GREEN_OFF;
+								if(b.led_toggle) DP2_RED_ON;
+								else			 DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+				else
+				{
+					if(gu16_parameterWord & ENABLE_ALERT)
+					{
+						#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW))
+						
+						RH_GREEN_ON;
+						RH_RED_OFF;
+						
+						#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+
+						if(gu8_RH_LEDBlinkForPara & BIT0)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								TM_GREEN_ON;
+								TM_RED_OFF;
+							}
+							else
+							{
+								TM_GREEN_OFF;
+								TM_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT1)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								RH_GREEN_ON;
+								RH_RED_OFF;
+							}
+							else
+							{
+								RH_GREEN_OFF;
+								RH_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT2)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP1_GREEN_ON;
+								DP1_RED_OFF;
+							}
+							else
+							{
+								DP1_GREEN_OFF;
+								DP1_RED_OFF;
+							}
+						}
+						
+						if(gu8_RH_LEDBlinkForPara & BIT3)
+						{
+							if(para_cnt1==RH_DISPLAY)
+							{
+								DP2_GREEN_ON;
+								DP2_RED_OFF;
+							}
+							else
+							{
+								DP2_GREEN_OFF;
+								DP2_RED_OFF;
+							}
+						}
+						
+						#endif
+					}
+				}
+			}
+			
 			b.AlarmLED=0;
 		}
 		
