@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				840  //means 8.40
+#define SOFT_VER				850  //means 8.50
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			5
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -6223,13 +6223,21 @@ void ServePCMsg(unsigned char SrcPort)
 			{
 				lu8_sendResponse = 1;
 				
+				if(gu8_groupID>1)
+				{
+					for(unsigned char m=0;m<gu8_groupID;m++)
+					{
+						_delay_ms(100);
+					}
+				}
+				
 				lu8_GroupDelay = (DeviceID - 1)%gu8_DeviceInGroup;
 				
 				if(lu8_GroupDelay) 
 				{
 					for(unsigned char m=0;m<lu8_GroupDelay;m++)
 					{
-						_delay_ms(6);
+						_delay_ms(10);
 					}
 				}
 			}
@@ -10389,7 +10397,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 18;
-	data[6] = 4;
+	data[6] = 5;
 						
 	disp_value();
 	
