@@ -65,7 +65,6 @@
 
 //***********************************************************************************
 //#define ENABLE_BATTERY_DISPLAY
-#define USE_SM9541_SENSOR
 //#define ENABLE_KEY_LOGIC
 //#define DISABLE_DOOR_SENSING
 //#define BOARD_5_13
@@ -104,8 +103,6 @@ static volatile bool main_b_cdc_enable = false;
 
 #define ENABLE_M3LOG		0x1000
 
-//ENABLE_LOGO
-
 #if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 
 	#define NO_DIGIT	13
@@ -134,7 +131,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				960  //means 9.60
+#define SOFT_VER				970  //means 9.70
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -147,8 +144,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DEFAULT_XBEE_RST_INTERVAL	 360
 #define DEFAULT_DEVICES_IN_GROUP	 5
 
-#define DP_SW_FACT_DIVISION			 10
-
+#define DP_SW_FACT_DIVISION			 15
 
 #define DISP_PER			82.0 // PWM
  
@@ -166,17 +162,14 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 // DISPLAY CONSTANTS
 //*************************************************************************
+#define USE_SM9541_SENSOR		1
+#define USE_XGZP6891D_SENSOR	2
 
-#ifdef USE_SM9541_SENSOR
-	#define ZERO_AP1_COUNT			2200
-	#define ZERO_DP1_COUNT			8192
-	#define ZERO_DP2_COUNT			8192
-	#define PASCAL_PER_CNT			8.0
-#else
-	#define ZERO_DP1_COUNT			16065
-	#define ZERO_DP2_COUNT			16065
-	#define PASCAL_PER_CNT			270.0
-#endif
+#define DP_SENSOR_TYPE			USE_SM9541_SENSOR
+#define ZERO_DP1_COUNT			8192
+#define ZERO_DP2_COUNT			8192
+
+
 
 #define RAW_DP_CNT_IND			10//5
 #define XBEE_RX_IND_MAX			20
@@ -1524,8 +1517,8 @@ unsigned char Raw_pressure_cnt_ind2=0;
 signed short Raw_pressure_cnt2[RAW_DP_CNT_IND];
 
 float Dpressure1=0.0,Dpressure2=0.0;
-float LastDpressure1=0.0,LastDpressure2=0.0;
-float TempDpressure1=0.0,TempDpressure2=0.0;
+float LastDpressure[3]={0};
+float TempDpressure[3]={0};
 
 unsigned char FirstTimeCheck=0;	
 unsigned char progTimeout=0;
@@ -1673,9 +1666,16 @@ void Init_variables(void);
 
 void AllSegment(unsigned char);
 void Check_RTC(void);
-void ReadDiffPressure1(void);
-void ReadDiffPressure2(void);
 
+#if (DP_SENSOR_TYPE == USE_SM9541_SENSOR)
+void Read_SM9541_Sensor1(void);
+void Read_SM9541_Sensor2(void);
+#else
+void Read_XGZP6891D_Sensor1(void);
+void Read_XGZP6891D_Sensor2(void);
+#endif
+
+void Read_SM9541_Sensor2(void);
 void InitLCDController(void);
 void disp_value(void);
 void conv_value(void);
@@ -2680,7 +2680,11 @@ int main(void)
 			//Read Differential Pressure -----------------------------------------
 			if(gu16_parameterWord & ENABLE_DP1)
 			{
-				ReadDiffPressure1();
+				#if (DP_SENSOR_TYPE == USE_SM9541_SENSOR)
+				Read_SM9541_Sensor1();
+				#else
+				Read_XGZP6891D_Sensor1();
+				#endif
 			}
 			else
 			{
@@ -2698,7 +2702,11 @@ int main(void)
 			
 			if(gu16_parameterWord & ENABLE_DP2)
 			{
-				ReadDiffPressure2();
+				#if (DP_SENSOR_TYPE == USE_SM9541_SENSOR)
+				Read_SM9541_Sensor2();
+				#else
+				Read_XGZP6891D_Sensor2();
+				#endif
 			}
 			else
 			{
@@ -6566,6 +6574,7 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		j=3;
 		
+		RxBuffer[j]=0x00;
 		if(b.DP1_NC) 			
 		{
 			RxBuffer[j++] |= DP1_FAULTY;
@@ -6611,6 +6620,7 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		j=3;
 		
+		RxBuffer[j]=0x00;
 		if(b.DP2_NC) 			
 		{
 			RxBuffer[j++] |= DP2_FAULTY;
@@ -6656,6 +6666,7 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		j=3;
 		
+		RxBuffer[j]=0x00;
 		if(b.RH_TEMP_NC) 			
 		{
 			RxBuffer[j++] |= RH_TEMP_FAULTY;
@@ -6708,7 +6719,8 @@ void ServePCMsg(unsigned char SrcPort)
 		RxBuffer[0]=0xFD;
 		
 		j=3;
-			
+		
+		RxBuffer[j]=0x00;	
 		if(b.RH_TEMP_NC) 			
 		{
 			RxBuffer[j++] |= RH_TEMP_FAULTY;
@@ -7261,6 +7273,8 @@ void ServePCMsg(unsigned char SrcPort)
 						su16_dp_sw_factor[index]=tempshort;
 						f32_dp_sw_factor[index]=(float)su16_dp_sw_factor[index]/100.0;
 						eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(index*2)),su16_dp_sw_factor[index]);
+						gu8_dp_sw_factor_add_cnt[index]=0;
+						TempDpressure[index]=0;
 					}
 				}	
 				
@@ -9364,7 +9378,8 @@ void Init_Timer0(void)
 	//*/
 //}
 
-void ReadDiffPressure1(void)
+#if (DP_SENSOR_TYPE == USE_SM9541_SENSOR)
+void Read_SM9541_Sensor1(void)
 {	
 	unsigned short differanceDP=0;
 	unsigned char DpError=0;
@@ -9434,43 +9449,24 @@ void ReadDiffPressure1(void)
 			{
 				if(gu8_dp_sw_factor_add_cnt[0]<DP_SW_FACT_DIVISION)
 				{
-					TempDpressure1 += (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
+					TempDpressure[0] += (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
 					gu8_dp_sw_factor_add_cnt[0]++;
-					LastDpressure1 = Dpressure1;
+					LastDpressure[0] = Dpressure1;
 				}
 			}
-			/*else if(Dpressure1<-1.5)
-			{
-				if(gu8_dp_sw_factor_add_cnt[0]<DP_SW_FACT_DIVISION)
-				{
-					TempDpressure1 -= (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
-					gu8_dp_sw_factor_add_cnt[0]++;
-					LastDpressure1 = Dpressure1;
-				}
-			}*/
 			else
 			{
 				if(gu8_dp_sw_factor_add_cnt[0])
 				{
-					TempDpressure1 -= (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
+					TempDpressure[0] -= (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
 					gu8_dp_sw_factor_add_cnt[0]--;
-					LastDpressure1 = Dpressure1;
+					LastDpressure[0] = Dpressure1;
 				}
-				
-				//gu8_dp_sw_factor_add_cnt[0] = 0;
-				//TempDpressure1 = 0;
 			}
 			
 			b.dp_sw_factor_add1 = 0;
 		}
-		Dpressure1 += TempDpressure1;
-		//-----------------------------------------------------------------
-		/*if(((LastDpressure1<0) && (Dpressure1>0)) || ((LastDpressure1>0) && (Dpressure1<0)))
-		{
-			gu8_dp_sw_factor_add_cnt[0] = 0;
-			TempDpressure1 = 0;
-			LastDpressure1 = Dpressure1;
-		}*/
+		Dpressure1 += TempDpressure[0];
 		//-----------------------------------------------------------------
 		if(Dpressure1 > f32_dp_limit[0]) 
 		{
@@ -9619,7 +9615,7 @@ void ReadDiffPressure1(void)
 	#endif	
 }
 
-void ReadDiffPressure2(void)
+void Read_SM9541_Sensor2(void)
 {
 	unsigned short differanceDP=0;
 	unsigned char DpError=0;
@@ -9688,43 +9684,24 @@ void ReadDiffPressure2(void)
 			{
 				if(gu8_dp_sw_factor_add_cnt[1]<DP_SW_FACT_DIVISION)
 				{
-					TempDpressure2 += (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
+					TempDpressure[1] += (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
 					gu8_dp_sw_factor_add_cnt[1]++;
-					LastDpressure2 = Dpressure2;
+					LastDpressure[1] = Dpressure2;
 				}
 			}
-			/*else if(Dpressure2<-1.5)
-			{
-				if(gu8_dp_sw_factor_add_cnt[1]<DP_SW_FACT_DIVISION)
-				{
-					TempDpressure2 -= (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
-					gu8_dp_sw_factor_add_cnt[1]++;
-					LastDpressure2 = Dpressure2;
-				}
-			}*/
 			else
 			{
 				if(gu8_dp_sw_factor_add_cnt[1])
 				{
-					TempDpressure2 -= (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
+					TempDpressure[1] -= (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
 					gu8_dp_sw_factor_add_cnt[1]--;
-					LastDpressure2 = Dpressure2;
+					LastDpressure[1] = Dpressure2;
 				}
-				
-				//gu8_dp_sw_factor_add_cnt[1] = 0;
-				//TempDpressure2 = 0;
 			}
 			
 			b.dp_sw_factor_add2 = 0;
 		}
-		Dpressure2 += TempDpressure2;
-		//-----------------------------------------------------------------
-		/*if(((LastDpressure2<0) && (Dpressure2>0)) || ((LastDpressure2>0) && (Dpressure2<0)))
-		{
-			gu8_dp_sw_factor_add_cnt[1] = 0;
-			TempDpressure2 = 0;
-			LastDpressure2 = Dpressure2;
-		}*/
+		Dpressure2 += TempDpressure[1];
 		//---------------------------------------------------------------------------
 		
 		if(Dpressure2 > f32_dp_limit[1]) 
@@ -9871,14 +9848,546 @@ void ReadDiffPressure2(void)
 	opstr(1,"DP2 Count: ");
 	print_float(1,differanceDP,test,0);
 	opstr(1,"    ");
-	//opstr(0,"Temp Count: ");
-	//print_float(0,tempDp,test,0);
-	//opstr(0,"    ");
 	opstr(1,"DP2 Value: ");
 	print_float(1,Dpressure2,test,2);
 	opstr(1,"\r\n\r\n\r\n");
 	#endif
 }
+
+#else
+
+void Read_XGZP6891D_Sensor1(void)
+{	
+	unsigned long differanceDP=0;
+	uint8_t temp=0;
+	uint8_t data[3]={0x00,0x00,0x00};
+	uint8_t DpError=0;
+	
+	Dpressure1=0.0;
+	
+	//Start Command Mode ----------------------------------
+	I2C_Start();						// Start condition
+	Write_Byte_I2C(0xFE); 				// Write device address
+	Write_Byte_I2C(0x30);
+	Write_Byte_I2C(0x0A);
+	I2C_Stop();              // Send a STOP condition on the TWI bus.
+	
+	do
+	{
+		I2C_Start();						// Start condition
+		Write_Byte_I2C(0xFE); 				// Write device address
+		Write_Byte_I2C(0x30);
+		I2C_Start();						// Start condition
+		Write_Byte_I2C(0xFE|1); 			// Write device address
+		SDA_DIR_IN;
+		data[1] = Read_Byte_I2C(ACK);
+		SDA_DIR_OUT;
+		I2C_Stop();              // Send a STOP condition on the TWI bus.
+		
+		_delay_ms(5);
+		if(++temp>4) break;
+		
+	}while(data[1] & 0x08);
+	
+	I2C_Start();						// Start condition
+	Write_Byte_I2C(0xFE); 				// Write device address
+	Write_Byte_I2C(0x06);
+	I2C_Start();						// Start condition
+	Write_Byte_I2C(0xFE|1); 			// Write device address
+	SDA_DIR_IN;
+	data[0] = Read_Byte_I2C(ACK);
+	data[1] = Read_Byte_I2C(ACK);
+	data[2] = Read_Byte_I2C(NO_ACK);
+	SDA_DIR_OUT;
+	I2C_Stop();              // Send a STOP condition on the TWI bus.
+	
+	differanceDP = data[0];
+	differanceDP<<=8;
+	differanceDP |= data[1];
+	differanceDP<<=8;
+	differanceDP |= data[2];
+	
+	differanceDP &= 0x7FFFFF;
+	
+	if(differanceDP == 0x7FFFFF) DpError=1;
+			
+	if(DpError)
+	{
+		b.DP1_NC=1;
+		DP1_Alrm_ON=NO_ALARM;
+		
+		gu8_Dp1AlarmSensingTimer=0;
+		
+		#ifdef DEBUG_DP1
+		opstr(1,"DP1 ERROR  ");
+		#endif
+	}
+	else
+	{
+		b.DP1_NC=0;
+		
+		RealDpressure1 = (float)differanceDP;
+		RealDpressure1 = (RealDpressure1 * 0.000149012) - 625.0000559;
+		
+		float f32_temp=0;
+		f32_temp = RealDpressure1;
+		f32_temp -= DP1_Cal_float_Value_F;
+		f32_temp -= DP1_Cal_float_Value_C;
+				
+		Dpressure1 = f32_temp;
+		
+		Dpressure1 = Kalman_Update(&Kalman[0], Dpressure1);
+		
+		//---------------------------------------------------------------------------
+		if((Dpressure1<1.0) && (Dpressure1>-1.0))
+		{
+			Dpressure1 = 0;
+		}
+		
+		//Add Zero offset -----------------------------------------------------------
+		Dpressure1 += f32_dp_offset[0];
+		
+		//Add manipulation offset ---------------------------------------------------
+		if(b.dp_sw_factor_add1)
+		{
+			if(Dpressure1>1.5)
+			{
+				if(gu8_dp_sw_factor_add_cnt[0]<DP_SW_FACT_DIVISION)
+				{
+					TempDpressure[0] += (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[0]++;
+					LastDpressure[0] = Dpressure1;
+				}
+			}
+			else
+			{
+				if(gu8_dp_sw_factor_add_cnt[0])
+				{
+					TempDpressure[0] -= (f32_dp_sw_factor[0]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[0]--;
+					LastDpressure[0] = Dpressure1;
+				}
+			}
+			
+			b.dp_sw_factor_add1 = 0;
+		}
+		Dpressure1 += TempDpressure[0];
+		//-----------------------------------------------------------------
+		if(Dpressure1 > f32_dp_limit[0]) 
+		{
+			Dpressure1 = f32_dp_limit[0];
+			b.DP1_limit = 1;
+		}
+		else if(Dpressure1 < -f32_dp_limit[0]) 
+		{
+			Dpressure1 = -f32_dp_limit[0];
+			b.DP1_limit = 2;
+		}
+		else
+		{
+			b.DP1_limit = 0;
+		}
+		//-----------------------------------------------------------------
+		if(!DP_StartUpTimer)
+		{
+			//Find DP1 Min/Max
+			if(Dpressure1 > DP1_Max)
+			{
+				DP1_Max = Dpressure1;
+				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+			}
+						
+			if(Dpressure1 < DP1_Min)
+			{
+				DP1_Min = Dpressure1;
+				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+			}
+			
+			if(gu16_parameterWord & ENABLE_ALERT)
+			{	
+				//Check Alarm Limit for DP ------------------------------------------------------------------------
+				if(Dpressure1 > (float)DP1_Upper_Alm_ON/10.0)
+				{
+					if(gu8_Dp1AlarmSensingTimer<=gu8_Dp2AlarmSensingTime)
+					{
+						gu8_Dp1AlarmSensingTimer++;
+					}
+					else
+					{
+						DP1_Alrm_ON=UPPER_ALARM;
+				
+						if(!b.DP1Log)
+						{
+							LastDP1_Alrm_ON=DP1_Alrm_ON;
+							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+					
+							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
+							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
+					
+							if(gu16_parameterWord & ENABLE_ALERT) 
+							{
+								//StartBuzzer();
+								b.autoSendResponse = true;
+							}
+						
+							b.DP1Log=1;
+						}
+						else
+						{
+							if(LastDP1_Alrm_ON!=DP1_Alrm_ON)
+							{
+								LogReading(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+						
+								LastDP1_Alrm_ON=NO_ALARM;
+								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+						
+								b.DP1Log=0;
+							}
+						}
+					}
+				}
+				else if(Dpressure1 < (float)DP1_Lower_Alm_ON/10.0)
+				{
+					if(gu8_Dp1AlarmSensingTimer<=gu8_Dp2AlarmSensingTime)
+					{
+						gu8_Dp1AlarmSensingTimer++;
+					}
+					else
+					{
+						DP1_Alrm_ON=LOWER_ALARM;
+					
+						if(!b.DP1Log)
+						{
+							LastDP1_Alrm_ON=DP1_Alrm_ON;
+							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+						
+							LogReading(DP1_ALM_OCCURE_LOG,0,0xFFFF);
+							FillRamBuffer(DP1_ALM_OCCURE_LOG,0,0xFFFF);
+						
+							if(gu16_parameterWord & ENABLE_ALERT)
+							{
+								//StartBuzzer();
+								b.autoSendResponse = true;
+							}
+						
+							b.DP1Log=1;
+						}
+						else
+						{
+							if(LastDP1_Alrm_ON!=DP1_Alrm_ON)
+							{
+								LogReading(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+								FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+							
+								LastDP1_Alrm_ON=NO_ALARM;
+								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+							
+								b.DP1Log=0;
+							}
+						}
+					}
+				}
+				else if((Dpressure1 < (float)DP1_Upper_Alm_OFF/10.0) && (Dpressure1 > (float)DP1_Lower_Alm_OFF/10.0))
+				{
+					DP1_Alrm_ON=NO_ALARM;
+					
+					gu8_Dp1AlarmSensingTimer=0;
+					
+					if(b.DP1Log==1)
+					{
+						LogReading(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+						FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
+						
+						b.DP1Log=0;
+						
+						LastDP1_Alrm_ON=DP1_Alrm_ON;
+						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
+					}
+				}
+			}
+		}
+	}
+		
+	#ifdef DEBUG_DP1				
+	opstr(1," XGZP6891D Reading:  ");
+	opstr(1,"DP1 Count: ");
+	print_float(1,differanceDP,test,0);
+	opstr(1,"    ");
+	opstr(1,"DP1 Value: ");
+	print_float(1,Dpressure1,test,2);
+	opstr(1,"\r\n");
+	#endif	
+}
+
+void Read_XGZP6891D_Sensor2(void)
+{
+	long differanceDP=0;
+	uint8_t temp=0;
+	uint8_t data[3]={0x00,0x00,0x00};
+	uint8_t DpError=0;
+	
+	Dpressure2=0.0;
+	
+	//Start Command Mode ----------------------------------
+	I2C_DP2_Start();						// Start condition
+	Write_Byte_I2C_DP2(0xFE); 				// Write device address
+	Write_Byte_I2C_DP2(0x30);
+	Write_Byte_I2C_DP2(0x0A);
+	I2C_DP2_Stop();              // Send a STOP condition on the TWI bus.
+	
+	do
+	{
+		I2C_DP2_Start();						// Start condition
+		Write_Byte_I2C_DP2(0xFE); 				// Write device address
+		Write_Byte_I2C_DP2(0x30);
+		I2C_DP2_Start();						// Start condition
+		Write_Byte_I2C_DP2(0xFE|1); 			// Write device address
+		SDA_DP2_DIR_IN;
+		data[1] = Read_Byte_I2C_DP2(ACK);
+		SDA_DP2_DIR_OUT;
+		I2C_DP2_Stop();              // Send a STOP condition on the TWI bus.
+		
+		_delay_ms(5);
+		if(++temp>4) break;
+		
+	}while(data[1] & 0x08);
+	
+	I2C_DP2_Start();						// Start condition
+	Write_Byte_I2C_DP2(0xFE); 				// Write device address
+	Write_Byte_I2C_DP2(0x06);
+	I2C_DP2_Start();						// Start condition
+	Write_Byte_I2C_DP2(0xFE|1); 			// Write device address
+	SDA_DP2_DIR_IN;
+	data[0] = Read_Byte_I2C_DP2(ACK);
+	data[1] = Read_Byte_I2C_DP2(ACK);
+	data[2] = Read_Byte_I2C_DP2(NO_ACK);
+	SDA_DP2_DIR_OUT;
+	I2C_DP2_Stop();              // Send a STOP condition on the TWI bus.
+	
+	differanceDP = data[0];
+	differanceDP<<=8;
+	differanceDP |= data[1];
+	differanceDP<<=8;
+	differanceDP |= data[2];
+	
+	differanceDP &= 0x7FFFFF;
+	
+	if(differanceDP == 0x7FFFFF) DpError=1;
+	
+	if(DpError)
+	{
+		b.DP2_NC=1;
+		DP2_Alrm_ON=NO_ALARM;
+		
+		gu8_Dp2AlarmSensingTimer=0;
+		
+		#ifdef DEBUG_DP2
+		opstr(1,"DP2 ERROR  ");
+		#endif
+	}
+	else
+	{
+		b.DP2_NC=0;
+
+		RealDpressure2 = (float)differanceDP;
+		RealDpressure2 = (RealDpressure2 * 0.000149012) - 625.0000559;
+		
+		float f32_temp=0;
+		f32_temp = RealDpressure2;
+		f32_temp -= DP2_Cal_float_Value_F;
+		f32_temp -= DP2_Cal_float_Value_C;
+		
+		Dpressure2 = f32_temp;
+		
+		Dpressure2 = Kalman_Update(&Kalman[1], Dpressure2);
+		
+		//---------------------------------------------------------------------------
+		if((Dpressure2<1.0) && (Dpressure2>-1.0))
+		{
+			Dpressure2 = 0;
+		}
+		//Add Zero offset -----------------------------------------------------------
+		Dpressure2 += f32_dp_offset[1];
+		
+		//Add manipulation offset ---------------------------------------------------
+		if(b.dp_sw_factor_add2)
+		{
+			if(Dpressure2>1.5)
+			{
+				if(gu8_dp_sw_factor_add_cnt[1]<DP_SW_FACT_DIVISION)
+				{
+					TempDpressure[1] += (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[1]++;
+					LastDpressure[1] = Dpressure2;
+				}
+			}
+			else
+			{
+				if(gu8_dp_sw_factor_add_cnt[1])
+				{
+					TempDpressure[1] -= (f32_dp_sw_factor[1]/DP_SW_FACT_DIVISION);
+					gu8_dp_sw_factor_add_cnt[1]--;
+					LastDpressure[1] = Dpressure2;
+				}
+			}
+			
+			b.dp_sw_factor_add2 = 0;
+		}
+		Dpressure2 += TempDpressure[1];
+		//---------------------------------------------------------------------------
+		
+		if(Dpressure2 > f32_dp_limit[1]) 
+		{
+			Dpressure2 = f32_dp_limit[1];
+			b.DP2_limit = 1;
+		}
+		else if(Dpressure2 < -f32_dp_limit[1]) 
+		{
+			Dpressure2 = -f32_dp_limit[1];
+			b.DP2_limit = 2;
+		}
+		else
+		{
+			b.DP2_limit = 0;
+		}
+		//---------------------------------------------------------------------------
+		
+		if(!DP_StartUpTimer)
+		{
+			//Find DP Min/Max
+			if(Dpressure2 > DP2_Max)
+			{
+				DP2_Max = Dpressure2;
+				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+			}
+		
+			if(Dpressure2 < DP2_Min)
+			{
+				DP2_Min = Dpressure2;
+				eeprom_busy_wait();  eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+			}
+			
+			if(gu16_parameterWord & ENABLE_ALERT)
+			{
+				//Check Alarm Limit for DP ------------------------------------------------------------------------
+				if(Dpressure2 > (float)DP2_Upper_Alm_ON/10.0)
+				{
+					if(gu8_Dp2AlarmSensingTimer<=gu8_Dp2AlarmSensingTime)
+					{
+						gu8_Dp2AlarmSensingTimer++;
+					}
+					else
+					{
+						DP2_Alrm_ON=UPPER_ALARM;
+					
+						if(!b.DP2Log)
+						{
+							LastDP2_Alrm_ON=DP2_Alrm_ON;
+							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+						
+							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
+							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
+						
+							if(gu16_parameterWord & ENABLE_ALERT)
+							{
+								//StartBuzzer();
+								b.autoSendResponse = true;
+							}
+						
+							b.autoSendResponse = true;
+							b.DP2Log=1;
+						}
+						else
+						{
+							if(LastDP2_Alrm_ON!=DP2_Alrm_ON)
+							{
+								LogReading(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+							
+								LastDP2_Alrm_ON=NO_ALARM;
+								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							
+								b.DP2Log=0;
+							}
+						}
+					}
+				}
+				else if(Dpressure2 < (float)DP2_Lower_Alm_ON/10.0)
+				{
+					if(gu8_Dp2AlarmSensingTimer<=gu8_Dp2AlarmSensingTime)
+					{
+						gu8_Dp2AlarmSensingTimer++;
+					}
+					else
+					{
+						DP2_Alrm_ON=LOWER_ALARM;
+					
+						if(!b.DP2Log)
+						{
+							LastDP2_Alrm_ON=DP2_Alrm_ON;
+							eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+						
+							LogReading(DP2_ALM_OCCURE_LOG,0,0xFFFF);
+							FillRamBuffer(DP2_ALM_OCCURE_LOG,0,0xFFFF);
+						
+							if(gu16_parameterWord & ENABLE_ALERT)
+							{
+								//StartBuzzer();
+								b.autoSendResponse = true;
+							}
+						
+							b.autoSendResponse = true;
+							b.DP2Log=1;
+						}
+						else
+						{
+							if(LastDP2_Alrm_ON!=DP2_Alrm_ON)
+							{
+								LogReading(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+								FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+							
+								LastDP2_Alrm_ON=NO_ALARM;
+								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+							
+								b.DP2Log=0;
+							}
+						}
+					}
+				}
+				else if((Dpressure2 < (float)DP2_Upper_Alm_OFF/10.0) && (Dpressure2 > (float)DP2_Lower_Alm_OFF/10.0))
+				{
+					DP2_Alrm_ON=NO_ALARM;
+					
+					gu8_Dp2AlarmSensingTimer=0;
+					
+					if(b.DP2Log==1)
+					{
+						LogReading(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+						FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
+						
+						b.DP2Log=0;
+						
+						LastDP2_Alrm_ON=DP2_Alrm_ON;
+						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
+					}
+				}
+			}
+		}
+	}
+
+	#ifdef DEBUG_DP2
+	opstr(1," XGZP6891D Reading:  ");
+	opstr(1,"DP2 Count: ");
+	print_float(1,differanceDP,test,0);
+	opstr(1,"    ");
+	opstr(1,"DP2 Value: ");
+	print_float(1,Dpressure2,test,2);
+	opstr(1,"\r\n\r\n\r\n");
+	#endif
+}
+
+#endif
 
 /**@brief Convert 8 digit ascii serial# into hex format
  */
@@ -10142,14 +10651,7 @@ void Init_variables(void)
 	memset(&RxBuffer[0],0,sizeof(RxBuffer));
 	memset(&RAMBuffer[0],0,sizeof(RAMBuffer));
 	
-	if(!(gu16_parameterWord & ENABLE_DP1))
-	{
-		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=ZERO_AP1_COUNT;
-	}
-	else
-	{
-		for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=ZERO_DP1_COUNT;
-	}
+	for(i=0;i<RAW_DP_CNT_IND;i++) Raw_pressure_cnt1[i]=ZERO_DP1_COUNT;
 	
 	DP_StartUpTimer=0;
 	TMRH_StartUpTimer=0;
@@ -10626,7 +11128,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 19;
-	data[6] = 6;
+	data[6] = 7;
 						
 	disp_value();
 	
@@ -12897,7 +13399,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 							}
@@ -12945,7 +13447,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -13065,7 +13567,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 
@@ -13112,7 +13614,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -13202,7 +13704,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 							}
@@ -13248,7 +13750,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -13471,7 +13973,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[7],0);
+								convert_float(99.9,&data[7],1);
 							}
 						}
 						//----------------------------------------------------
@@ -13515,7 +14017,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[10],0);
+								convert_float(99.9,&data[10],1);
 							}
 							//----------------------------------------------------
 						}
@@ -13604,7 +14106,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[7],0);
+								convert_float(99.9,&data[7],1);
 							}
 							//----------------------------------------------------
 						}
@@ -13646,7 +14148,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[10],0);
+								convert_float(99.9,&data[10],1);
 							}
 							//----------------------------------------------------
 						}
@@ -14625,7 +15127,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 							}
@@ -14672,7 +15174,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -14791,7 +15293,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 
@@ -14837,7 +15339,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -14926,7 +15428,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[7],0);
+									convert_float(99.9,&data[7],1);
 								}
 								//----------------------------------------------------
 							}
@@ -14971,7 +15473,7 @@ void AllSegment(unsigned char state)
 								}
 								else
 								{
-									convert_float(99.9,&data[10],0);
+									convert_float(99.9,&data[10],1);
 								}
 								//----------------------------------------------------
 							}
@@ -15193,7 +15695,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[7],0);
+								convert_float(99.9,&data[7],1);
 							}
 						}
 						//----------------------------------------------------
@@ -15236,7 +15738,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[10],0);
+								convert_float(99.9,&data[10],1);
 							}
 							//----------------------------------------------------
 						}
@@ -15324,7 +15826,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[7],0);
+								convert_float(99.9,&data[7],1);
 							}
 							//----------------------------------------------------
 						}
@@ -15365,7 +15867,7 @@ void AllSegment(unsigned char state)
 							}
 							else
 							{
-								convert_float(99.9,&data[10],0);
+								convert_float(99.9,&data[10],1);
 							}
 							//----------------------------------------------------
 						}

@@ -264,13 +264,13 @@ unsigned char SHT25_I2CReadByte(unsigned char ACK_Bit)
 		SCL_SHT25_HIGH;		
 		Data<<= 1;
 		
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 		
 		if(SDA_SHT25_SENSE) Data  |= 0x01;
 		
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 		SCL_SHT25_LOW;
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	}
     
 	SDA_SHT25_DIR_OUT;
@@ -281,9 +281,9 @@ unsigned char SHT25_I2CReadByte(unsigned char ACK_Bit)
 	else		
 		SDA_SHT25_HIGH; // Send NO ACK				
 
-	if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	SCL_SHT25_HIGH;		
-	if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	SCL_SHT25_LOW;
 	
 	return Data;
@@ -295,13 +295,13 @@ unsigned char SHT25_I2CReadByte(unsigned char ACK_Bit)
 //void SHT25_I2CStartCondition(void)
 //{
 	//SDA_SHT25_HIGH;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SCL_SHT25_HIGH;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SDA_SHT25_LOW;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SCL_SHT25_LOW;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 //}
 //
 /*---------------------------------------------------------------
@@ -318,12 +318,12 @@ unsigned char SHT25_I2CWriteByte(unsigned char datum)
 		if(datum & 0x80) SDA_SHT25_HIGH;
 		else 			 SDA_SHT25_LOW;
 		
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 		
 		SCL_SHT25_HIGH;
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 		SCL_SHT25_LOW;
-		if(!clkmode) _delay_us(1);		else	_delay_us(5);
+		if(!clkmode) _delay_us(1);		else	_delay_us(50);
 		
 		datum<<=1;
 	}
@@ -331,7 +331,7 @@ unsigned char SHT25_I2CWriteByte(unsigned char datum)
 	SDA_SHT25_DIR_IN;
 	
   	SCL_SHT25_HIGH; 
-	if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	if(SDA_SHT25_SENSE) error=ACK_ERROR; //check ack from i2c slave
 	SCL_SHT25_LOW;
 	
@@ -350,13 +350,13 @@ unsigned char SHT25_I2CWriteByte(unsigned char datum)
 //void SHT25_I2CStopCondition(void)
 //{
 	//SDA_SHT25_LOW;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SCL_SHT25_HIGH;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SDA_SHT25_HIGH;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 	//SCL_SHT25_LOW;
-	//if(!clkmode) _delay_us(1);		else	_delay_us(5);
+	//if(!clkmode) _delay_us(1);		else	_delay_us(50);
 //}
 
 
@@ -590,9 +590,9 @@ unsigned char Read_Byte_I2C(unsigned char ACK_Bit)
 		
 		if(SDA_SENSE) Data  |= 0x01;
 		
-		_delay_us(5);
+		_delay_us(50);
 		SCL_LOW;
-		_delay_us(5);
+		_delay_us(50);
 	}
     
 	SDA_DIR_OUT;
@@ -602,9 +602,9 @@ unsigned char Read_Byte_I2C(unsigned char ACK_Bit)
 	else		
 		SDA_HIGH; // Send NO ACK				
 
-	_delay_us(5);
+	_delay_us(50);
 	SCL_HIGH;		
-	_delay_us(5);
+	_delay_us(50);
 	SCL_LOW;
 	
 	return Data;
@@ -616,13 +616,13 @@ unsigned char Read_Byte_I2C(unsigned char ACK_Bit)
 void I2C_Start(void)
 {
 	SDA_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SDA_LOW;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_LOW;
-	_delay_us(5);
+	_delay_us(50);
 }
 
 /*---------------------------------------------------------------
@@ -639,12 +639,12 @@ void Write_Byte_I2C(unsigned char datum)
 		if(datum & 0x80) SDA_HIGH;
 		else 			 SDA_LOW;
 		
-		_delay_us(5);
+		_delay_us(50);
 		
 		SCL_HIGH;
-		_delay_us(5);
+		_delay_us(50);
 		SCL_LOW;
-		_delay_us(5);
+		_delay_us(50);
 		
 		datum<<=1;
 	}
@@ -652,7 +652,7 @@ void Write_Byte_I2C(unsigned char datum)
 	SDA_DIR_IN;
 	
   	SCL_HIGH; 
-	_delay_us(5);
+	_delay_us(50);
 	SCL_LOW;
 	
 	SDA_DIR_OUT;
@@ -666,13 +666,13 @@ void Write_Byte_I2C(unsigned char datum)
 void I2C_Stop(void)
 {
 	SDA_LOW;	    	
-	_delay_us(5);
+	_delay_us(50);
 	SCL_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SDA_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_LOW;
-	_delay_us(5);
+	_delay_us(50);
 }
 
 
@@ -707,9 +707,9 @@ unsigned char Read_Byte_I2C_DP2(unsigned char ACK_Bit)
 		
 		if(SDA_DP2_SENSE) Data  |= 0x01;
 		
-		_delay_us(5);
+		_delay_us(50);
 		SCL_DP2_LOW;
-		_delay_us(5);
+		_delay_us(50);
 	}
     
 	SDA_DP2_DIR_OUT;
@@ -719,9 +719,9 @@ unsigned char Read_Byte_I2C_DP2(unsigned char ACK_Bit)
 	else		
 		SDA_DP2_HIGH; // Send NO ACK				
 
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_HIGH;		
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_LOW;
 	
 	return Data;
@@ -733,13 +733,13 @@ unsigned char Read_Byte_I2C_DP2(unsigned char ACK_Bit)
 void I2C_DP2_Start(void)
 {
 	SDA_DP2_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SDA_DP2_LOW;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_LOW;
-	_delay_us(5);
+	_delay_us(50);
 }
 
 /*---------------------------------------------------------------
@@ -756,12 +756,12 @@ void Write_Byte_I2C_DP2(unsigned char datum)
 		if(datum & 0x80) SDA_DP2_HIGH;
 		else 			 SDA_DP2_LOW;
 		
-		_delay_us(5);
+		_delay_us(50);
 		
 		SCL_DP2_HIGH;
-		_delay_us(5);
+		_delay_us(50);
 		SCL_DP2_LOW;
-		_delay_us(5);
+		_delay_us(50);
 		
 		datum<<=1;
 	}
@@ -769,7 +769,7 @@ void Write_Byte_I2C_DP2(unsigned char datum)
 	SDA_DP2_DIR_IN;
 	
   	SCL_DP2_HIGH; 
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_LOW;
 	
 	SDA_DP2_DIR_OUT;
@@ -783,12 +783,12 @@ void Write_Byte_I2C_DP2(unsigned char datum)
 void I2C_DP2_Stop(void)
 {
 	SDA_DP2_LOW;	    	
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SDA_DP2_HIGH;
-	_delay_us(5);
+	_delay_us(50);
 	SCL_DP2_LOW;
-	_delay_us(5);
+	_delay_us(50);
 }
 
