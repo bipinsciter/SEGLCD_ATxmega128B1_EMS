@@ -76,7 +76,7 @@
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				SMALL_FONT_DISPLAY_OLD
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				890  //means 8.90
+#define SOFT_VER				900  //means 9.00
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -1326,7 +1326,8 @@ volatile static struct bits
 	unsigned char Sec_blink_flag : 1;	
 	unsigned char RTCChangeOccure : 1;
 	unsigned char sec_flag : 1;	
-	unsigned char msec_flag : 1;	
+	unsigned char msec500_flag : 1;	
+	unsigned char msec250_flag : 1;
 	unsigned char buzzerStart : 1;
 	unsigned char UARTChanged : 1;	
 	unsigned char keybit : 1;
@@ -1621,7 +1622,16 @@ unsigned long gu32_SrNumber;
 unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP,gu8_AutoSentTimer=0,gu8_groupID=0,gu8_broadcast=0,gu8_Mac2ValidTimer = 0;
 
 unsigned char gu8_deviceIDChangeTryTimer=0, gu8_deviceIDChangeTry=0;
-				
+// Kalman filter structure
+typedef struct 
+{
+	float Q1;       // Process noise covariance
+	float R1;       // Measurement noise covariance
+	float X1;       // State estimate
+	float P1;       // Estimate covariance
+	float K1;       // Kalman gain
+} KalmanFilter;
+static KalmanFilter Kalman[4] = {0};				
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1665,6 +1675,9 @@ void StartBuzzer(void);
 void StopBuzzer(void);
 void AutoSendDataResponse(unsigned char SrcPort);
 //----------------------------------------------------------------------------------------------------------------------------
+void Kalman_Init(KalmanFilter *kf, float qr, float rs, float initial_estimate);
+float Kalman_Update(KalmanFilter *kf, float measurement);
+//----------------------------------------------------------------------------------------------------------------------------
 static inline int leapyear (long int year);
 unsigned long  ydhms_diff (long int year1, long int yday1, int hour1, int min1, int sec1,int year0, int yday0, int hour0, int min0, int sec0);
 unsigned long get_epoch_time(struct RTCData);
@@ -1689,6 +1702,28 @@ uint32_t ascii2hex(uint8_t *data, uint8_t NoOfdigit);
 void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac);
 //****************************************************************************************************************************************
 
+// Initialize the Kalman filter
+void Kalman_Init(KalmanFilter *kf, float qr, float rs, float initial_estimate) 
+{
+	kf->Q1 = qr;          // Process noise covariance
+	kf->R1 = rs;          // Measurement noise covariance
+	kf->X1 = initial_estimate;  // Initial estimate
+	kf->P1 = 1.0;        // Initial estimate covariance
+}
+
+// Update the Kalman filter with a new measurement
+float Kalman_Update(KalmanFilter *kf, float measurement) 
+{
+	// Prediction update
+	kf->P1 += kf->Q1;
+
+	// Measurement update
+	kf->K1 = kf->P1 / (kf->P1 + kf->R1);
+	kf->X1 += kf->K1 * (measurement - kf->X1);
+	kf->P1 *= (1 - kf->K1);
+
+	return kf->X1;
+}
 
 /*! \brief Main function. Execution starts here.
  */
@@ -2034,6 +2069,11 @@ int main(void)
 
 	SetMAC2Xbee(&gu8arr_XbeeMac[0][0],1);
 
+	Kalman_Init(&Kalman[0], 0.01, 0.1, 0.0);  // Initialize with default values
+	Kalman_Init(&Kalman[1], 0.01, 0.1, 0.0);  // Initialize with default values
+	Kalman_Init(&Kalman[2], 0.01, 0.1, 0.0);  // Initialize with default values
+	Kalman_Init(&Kalman[3], 0.01, 0.1, 0.0);  // Initialize with default values
+	
  	while(1)
  	{	
 		if(b.resetDevice) 	
@@ -2634,34 +2674,59 @@ int main(void)
 		//====================================================
 		#ifdef ENABLE_KEY_LOGIC
 			check_key();		//Check Keyboard
-			if(b.msec_flag)
+			if(b.msec500_flag)
 			{
 				CheckUpDnKey();		//Check UP and Down key
 			}
 		#endif
+		if(b.msec250_flag)
+		{
+			Read_SHT25();
+			
+			b.msec250_flag=0;
+		}
 		
-		if(b.msec_flag)
+		if(b.msec500_flag)
+		{
+			//Read Differential Pressure -----------------------------------------
+			if(gu16_parameterWord & ENABLE_DP1)
 			{
-				if(gu16_parameterWord & ENABLE_DP2)
-				{
-					ReadDiffPressure2();
-				}
-				else
-				{
-					b.DP2_NC = 0;
-					
-					Dpressure2=0.0;
-
-					DP2_Max=0.0;
-					DP2_Min=0.0;
-
-					DP2_Alrm_ON=NO_ALARM;
-					
-					DP_StartUpTimer=0;
-				}
-				
-				b.msec_flag=0;
+				ReadDiffPressure1();
 			}
+			else
+			{
+				b.DP1_NC = 0;
+				
+				Dpressure1=0.0;
+
+				DP1_Max=0.0;
+				DP1_Min=0.0;
+
+				DP1_Alrm_ON=NO_ALARM;
+				
+				DP_StartUpTimer=0;
+			}
+	
+			if(gu16_parameterWord & ENABLE_DP2)
+			{
+				ReadDiffPressure2();
+			}
+			else
+			{
+				b.DP2_NC = 0;
+				
+				Dpressure2=0.0;
+
+				DP2_Max=0.0;
+				DP2_Min=0.0;
+
+				DP2_Alrm_ON=NO_ALARM;
+				
+				DP_StartUpTimer=0;
+			}
+			
+			b.msec500_flag=0;
+		}
 		//====================================================
 		if(gu16_parameterWord & ENABLE_LCD)
 		{		
@@ -9130,6 +9195,7 @@ void ReadDiffPressure1(void)
 			f32_temp = RealDpressure1;
 			f32_temp -= DP1_Cal_float_Value_F;
 			f32_temp -= DP1_Cal_float_Value_C;
+			
 			lu32_temp = f32_temp;
 			f32_temp = lu32_temp;
 			
@@ -9141,9 +9207,17 @@ void ReadDiffPressure1(void)
 			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
 			else if(f32_temp > 800) f32_temp -= 7;
 			
+			if((f32_temp<1.0) && (Dpressure1>-1.0))
+			{
+				f32_temp = 0;
+			}
+			
 			Dpressure1 = f32_temp;
 			
+			Dpressure1 = Kalman_Update(&Kalman[0], Dpressure1);
+			
 			//if(!DP_CHANGE_SENSE) //ENABLE for switch
+			if(b.doorSense)
 			{
 				if(!gu8_dp_sw_enb)
 				{
@@ -9546,9 +9620,17 @@ void ReadDiffPressure2(void)
 			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
 			else if(f32_temp > 800) f32_temp -= 7;
 			
+			if((f32_temp<1.0) && (Dpressure1>-1.0))
+			{
+				f32_temp = 0;
+			}
+			
 			Dpressure2 = f32_temp;
 			
+			Dpressure2 = Kalman_Update(&Kalman[1], Dpressure2);
+			
 			//if(!DP_CHANGE_SENSE) //ENABLE for switch
+			if(b.doorSense)
 			{
 				if(!gu8_dp_sw_enb)
 				{
@@ -9892,7 +9974,7 @@ void Init_InternalRTC(void)
 {
 	while(RTC.STATUS & RTC_SYNCBUSY_bm);
 	
-	RTC.PER = 511;
+	RTC.PER = 256;//511;
 	RTC.CNT = 0;
 	RTC.COMP = 0;
 	RTC.CTRL = RTC_PRESCALER_DIV1_gc;
@@ -9901,44 +9983,41 @@ void Init_InternalRTC(void)
 
 ISR(RTC_OVF_vect)
 {
-	static unsigned char mcnt=0;
+	static unsigned char mcnt=0,mcnt1=0;
 	
-	b.mec500_blink_flag ^= 1;
-	b.led_toggle^=1;
-	b.AlarmLED=1;
+	b.msec250_flag = 1;
+	
+	mcnt1++;
+	if(mcnt1>=2)
+	{
+		mcnt1=0;
+		
+		b.mec500_blink_flag ^= 1;
+		b.led_toggle ^= 1;
+		b.AlarmLED = 1;
+		
+		b.msec500_flag = 1;
+		
+		if(RxTimeout)
+		{
+			RxTimeout--;
+			if(!RxTimeout)
+			{
+				b.msgRcvOK=0;
+				rxMode=0;
+				RxInd=0;
+			}
+		}
+	}
+	
 	//---------------------------------------------
 	mcnt++;
-	if(mcnt>=2)
+	if(mcnt>=4)
 	{
 		mcnt=0;
 		b.sec_flag=1;
-		
-		//b.blink ^= 1;
-		
-		/*if(FlashlogTimer)
-		{
-			FlashlogTimer--;
-			if(!FlashlogTimer)
-			{
-				b.logDataflag=1;
-				FlashlogTimer=60;
-			}
-		}*/
 	}
-	
-	b.msec_flag=1;
 	//---------------------------------------------
-	
-	if(RxTimeout)
-	{
-		RxTimeout--;
-		if(!RxTimeout)
-		{
-			b.msgRcvOK=0;
-			rxMode=0;
-			RxInd=0;
-		}
-	}
 }
 
 //**********************************************************************************************************
@@ -10325,13 +10404,13 @@ void SecondTick(void)
 		}
 	}
 
-	acnt1++;
-	if(acnt1>=gu8_TM_RH_ScanTime)
-	{
-		acnt1=0;
-			
-		Read_SHT25();
-	}
+	//acnt1++;
+	//if(acnt1>=gu8_TM_RH_ScanTime)
+	//{
+		//acnt1=0;
+			//
+		//Read_SHT25();
+	//}
 	
 	#ifdef ENABLE_BATTERY_DISPLAY
 	static unsigned char acnt2=0;
@@ -10369,45 +10448,8 @@ void SecondTick(void)
 			//opstr(1,"DoorClose\n");
 			//gu8_doorSensingTimer=0;
 		}
-	}
-				
+	}			
 	#endif
-	
-	
-	//Read Differential Pressure -----------------------------------------
-	if(gu16_parameterWord & ENABLE_DP1)
-	{
-		ReadDiffPressure1();
-	}
-	else
-	{
-		b.DP1_NC = 0;
-		
-		Dpressure1=0.0;
-
-		DP1_Max=0.0;
-		DP1_Min=0.0;
-
-		DP1_Alrm_ON=NO_ALARM;
-		
-		DP_StartUpTimer=0;
-	}
-	
-	//if(gu16_parameterWord & ENABLE_DP2)
-	//{
-		//ReadDiffPressure2();
-	//}
-	//else
-	//{
-		//Dpressure2=0.0;
-//
-		//DP2_Max=0.0;
-		//DP2_Min=0.0;
-//
-		//DP2_Alrm_ON=NO_ALARM;
-		//
-		//DP_StartUpTimer=0;
-	//}
 	
 	#if ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 
@@ -10514,8 +10556,8 @@ void InitLCDController(void)
 	data[2] = E;
 	data[3] = r;
 	
-	data[5] = 18;
-	data[6] = 9;
+	data[5] = 19;
+	data[6] = 0;
 						
 	disp_value();
 	
@@ -20767,6 +20809,8 @@ void Read_SHT25(void)
 			temperatureC -= TM_Cal_float_Value_F;
 			temperatureC -= TM_Cal_float_Value_C;
 			
+			temperatureC = Kalman_Update(&Kalman[2], temperatureC);
+			
 			if(TM_Unit) 
 			{
 				temperatureF = (temperatureC * 1.8) + 32.0;
@@ -20900,6 +20944,8 @@ void Read_SHT25(void)
 			RealhumidityRH = humidityRH;
 			humidityRH -= RH_Cal_float_Value_F;
 			humidityRH -= RH_Cal_float_Value_C;
+			
+			humidityRH = Kalman_Update(&Kalman[3], humidityRH);
 			
 			if(!TMRH_StartUpTimer)
 			{
