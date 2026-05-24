@@ -64,19 +64,17 @@
 #include "AT45DB321D.c"
 
 //***********************************************************************************
-//#define ENABLE_BATTERY_DISPLAY
+//#define ROUND_MODULE
 #define USE_SM9541_SENSOR
-//#define ENABLE_KEY_LOGIC
-//#define DISABLE_DOOR_SENSING
-//#define BOARD_5_13
-
+#define ENABLE_KEY_LOGIC
+//#define ENABLE_BATTERY_DISPLAY
 
 #define SMALL_FONT_DISPLAY_OLD		0
 #define SMALL_FONT_DISPLAY_NEW		1
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
+#define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -104,7 +102,6 @@ static volatile bool main_b_cdc_enable = false;
 
 #define ENABLE_M3LOG		0x1000
 
-//ENABLE_LOGO
 
 #if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 
@@ -288,12 +285,25 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define UPPER_ALARM				1
 #define LOWER_ALARM				2
 
-#define PROG_ENT_KEY		(PORTA_IN & BIT0)
-#define PARA_SELECT_KEY		(PORTA_IN & BIT1)
-#define UP_KEY				(PORTA_IN & BIT5)
-#define DN_KEY				(PORTA_IN & BIT3)
-//#define KEY1				(PORTA_IN & BIT5)
-//#define KEY2				(PORTA_IN & BIT0)
+#ifdef ROUND_MODULE
+	
+	//Key Definition
+	#define PROG_ENT_KEY		(PORTA_IN & BIT5)
+	#define PARA_SELECT_KEY		(PORTA_IN & BIT0)
+	#define UP_KEY				(PORTA_IN & BIT1)
+	#define DN_KEY				(PORTA_IN & BIT3)
+	#define KEY1				(PORTA_IN & BIT4)
+
+#else
+
+	#define PROG_ENT_KEY		(PORTA_IN & BIT0)
+	#define PARA_SELECT_KEY		(PORTA_IN & BIT1)
+	#define UP_KEY				(PORTA_IN & BIT5)
+	#define DN_KEY				(PORTA_IN & BIT3)
+	//#define KEY1				(PORTA_IN & BIT5)
+	//#define KEY2				(PORTA_IN & BIT0)
+	
+#endif
 
 //#define 	UP				0x01
 #define PROG_ENT			0x01
@@ -307,25 +317,21 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 
 #define DP_CHANGE_SENSE			(PORTD_IN & BIT0)
 
-#ifdef BOARD_5_13
+//#define BUZZER_DIR_OP			PORTE_DIRSET = BIT0
+//#define BUZZER_ON 				{TCE0_CTRLA = TC_CLKSEL_DIV1_gc;  TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc); }
+//#define BUZZER_OFF				{TCE0_CTRLA = 0;	TCE0_CTRLB = 0;  PORTE_OUTCLR = BIT0; }
+//#define TOGGLE_BUZZER			PORTE_OUTTGL = BIT0
 
-#define BUZZER_DIR_OP			PORTE_DIRSET = BIT0
-#define BUZZER_ON 				PORTE_OUTSET = BIT0
-#define BUZZER_OFF				PORTE_OUTCLR = BIT0
-#define TOGGLE_BUZZER			PORTE_OUTTGL = BIT0
-
-#define WHITE_BLIT_SET_DIR		PORTE_DIRSET = BIT1
-#define WHITE_BLIT_ON			PORTE_OUTSET = BIT1
-#define WHITE_BLIT_OFF			PORTE_OUTCLR = BIT1
-#define WHITE_BLIT_TOGGLE		PORTE_OUTTGL = BIT1
-
-#else
-	
 #define BUZZER_DIR_OP			PORTG_DIRSET = BIT7
 #define BUZZER_ON 				PORTG_OUTSET = BIT7
 #define BUZZER_OFF				PORTG_OUTCLR = BIT7
 #define TOGGLE_BUZZER			PORTG_OUTTGL = BIT7
-	
+
+#define RED_BLIT_SET_DIR		PORTE_DIRSET = BIT1
+#define RED_BLIT_ON				PORTE_OUTSET = BIT1
+#define RED_BLIT_OFF			PORTE_OUTCLR = BIT1
+#define RED_BLIT_TOGGLE			PORTE_OUTTGL = BIT1
+
 #define WHITE_BLIT_SET_DIR		PORTE_DIRSET = BIT0
 #define WHITE_BLIT_ON 			{TCE0_CTRLA = TC_CLKSEL_DIV1_gc;  TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc); }
 #define WHITE_BLIT_OFF			{TCE0_CTRLA = 0;	TCE0_CTRLB = 0;  PORTE_OUTCLR = BIT0; }
@@ -333,12 +339,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //#define WHITE_BLIT_OFF			PORTE_OUTCLR = BIT0
 #define WHITE_BLIT_TOGGLE		PORTE_OUTTGL = BIT0
 
-#define RED_BLIT_SET_DIR		PORTE_DIRSET = BIT1
-#define RED_BLIT_ON				PORTE_OUTSET = BIT1
-#define RED_BLIT_OFF			PORTE_OUTCLR = BIT1
-#define RED_BLIT_TOGGLE			PORTE_OUTTGL = BIT1
 
-#endif
 		
 #define RS485_TX0_DIR_OP		PORTB_DIRSET = BIT6
 #define RS485_TX0_ENB 			PORTB_OUTSET = BIT6
@@ -360,45 +361,6 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define XBEE_RST_HIGH			PORTA_OUTSET = BIT6
 #define XBEE_RST_LOW			PORTA_OUTCLR = BIT6
 
-#define RELAY1_DIR_OP			PORTG_DIRSET = BIT0
-#define RELAY1_ON				PORTG_OUTSET = BIT0
-#define RELAY1_OFF				PORTG_OUTCLR = BIT0
-#define RELAY1_STAT				(PORTG_OUT & BIT0)
-
-#define RELAY2_DIR_OP			PORTG_DIRSET = BIT1
-#define RELAY2_ON				PORTG_OUTSET = BIT1
-#define RELAY2_OFF				PORTG_OUTCLR = BIT1
-#define RELAY2_STAT				(PORTG_OUT & BIT1)
-
-#define RELAY3_DIR_OP			PORTG_DIRSET = BIT2
-#define RELAY3_ON				PORTG_OUTSET = BIT2
-#define RELAY3_OFF				PORTG_OUTCLR = BIT2
-#define RELAY3_STAT				(PORTG_OUT & BIT2)
-
-#define RELAY4_DIR_OP			PORTG_DIRSET = BIT3
-#define RELAY4_ON				PORTG_OUTSET = BIT3
-#define RELAY4_OFF				PORTG_OUTCLR = BIT3
-#define RELAY4_STAT				(PORTG_OUT & BIT3)
-
-#define RELAY5_DIR_OP			PORTG_DIRSET = BIT4
-#define RELAY5_ON				PORTG_OUTSET = BIT4
-#define RELAY5_OFF				PORTG_OUTCLR = BIT4
-#define RELAY5_STAT				(PORTG_OUT & BIT4)
-
-#define RELAY6_DIR_OP			PORTG_DIRSET = BIT5
-#define RELAY6_ON				PORTG_OUTSET = BIT5
-#define RELAY6_OFF				PORTG_OUTCLR = BIT5
-#define RELAY6_STAT				(PORTG_OUT & BIT5)
-
-#define RELAY7_DIR_OP			PORTG_DIRSET = BIT6
-#define RELAY7_ON				PORTG_OUTSET = BIT6
-#define RELAY7_OFF				PORTG_OUTCLR = BIT6
-#define RELAY7_STAT				(PORTG_OUT & BIT6)
-
-#define RELAY8_DIR_OP			PORTG_DIRSET = BIT7
-#define RELAY8_ON				PORTG_OUTSET = BIT7
-#define RELAY8_OFF				PORTG_OUTCLR = BIT7
-#define RELAY8_STAT				(PORTG_OUT & BIT7)
 //--------------------------------------------------
 
 #define SHR(a, b) (-1 >> 1 == -1 ? (a) >> (b) : (a) / (1 << (b)) - ((a) % (1 << (b)) < 0))
@@ -501,7 +463,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP2_ALM_SENSE_TIME_ID		0x5D
 #define LCD_BRIGHT_CNT_ID			0x5E
 #define DP_SW_FACT_ID				0x5F
-#define RELAY_CNTL_ID				0x60
+
 
 #define CORR_RTC_DATA_ID	0x99		
 //************************************************************************/
@@ -639,7 +601,6 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define LCD_BRIGHT_CNT_ADDR				(DP_AUTO_CAL_FLAG+1)
 #define DP_SW_FACT_ADDR					(LCD_BRIGHT_CNT_ADDR+1)
 #define DP_FACT_ENB_ADDR				(DP_SW_FACT_ADDR+2)
-#define RELAY_STAT_ADDR					(DP_FACT_ENB_ADDR+2)
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
 
@@ -1553,7 +1514,7 @@ unsigned char rtcCorruptionCheckCnt=INIT_RTC_CORRUPTION_CHECK_CNT;
 unsigned char gu8_BackLitOnOff=0;
 unsigned char gu8_TM_RH_ScanTime=0;
 unsigned char gu8_DP1_LEDBlinkForPara=0,gu8_DP2_LEDBlinkForPara=0,gu8_TM_LEDBlinkForPara=0,gu8_RH_LEDBlinkForPara=0;
-unsigned char gu8_masterEnable=0,gu8_dp_sw_enb=0,gu8_rly_stat=0;
+unsigned char gu8_masterEnable=0,gu8_dp_sw_enb=0;
 //volatile unsigned char RTCSetFlag=0;
 
 unsigned char MinMaxMeanDayLogInd=0;
@@ -1659,9 +1620,7 @@ int main(void)
 	//-------------------------------------------------------
 	//Initialize Timer0
 	//-------------------------------------------------------
-	#ifndef BOARD_5_13
 	Init_Timer0();
-	#endif
 	
 	BUZZER_ON;
 	XBEE_RST_LOW;
@@ -1680,15 +1639,6 @@ int main(void)
 	{
 		WHITE_BLIT_ON;
 	}
-	
-	if(gu8_rly_stat & 0x01) RELAY1_ON;	else 	RELAY1_OFF;	
-	if(gu8_rly_stat & 0x02) RELAY2_ON;	else 	RELAY2_OFF;
-	if(gu8_rly_stat & 0x04) RELAY3_ON;	else 	RELAY3_OFF;
-	if(gu8_rly_stat & 0x08) RELAY4_ON;	else 	RELAY4_OFF;
-	if(gu8_rly_stat & 0x10) RELAY5_ON;	else 	RELAY5_OFF;
-	if(gu8_rly_stat & 0x20) RELAY6_ON;	else 	RELAY6_OFF;
-	if(gu8_rly_stat & 0x40) RELAY7_ON;	else 	RELAY7_OFF;
-	if(gu8_rly_stat & 0x80) RELAY8_ON;	else 	RELAY8_OFF;
 	
 	//-------------------------------------------------------
 	//Initialize Internal LCD Module
@@ -2561,7 +2511,7 @@ int main(void)
 			SecondTick();
 			
 			//WHITE_BLIT_TOGGLE;
-			//RED_BLIT_OFF;
+			RED_BLIT_OFF;
 			
 			//--------------------------------------------
 			if(gu16_parameterWord & ENABLE_USB)
@@ -3103,12 +3053,6 @@ int main(void)
 			check_key();		//Check Keyboard
 			if(b.msec_flag)
 			{
-				CheckUpDnKey();		//Check UP and Down key
-			}
-		#endif
-		
-		if(b.msec_flag)
-			{
 				if(gu16_parameterWord & ENABLE_DP2)
 				{
 					ReadDiffPressure2();
@@ -3128,7 +3072,9 @@ int main(void)
 				}
 				
 				b.msec_flag=0;
+				CheckUpDnKey();		//Check UP and Down key
 			}
+		#endif
 		//====================================================
 		if(gu16_parameterWord & ENABLE_LCD)
 		{		
@@ -6642,14 +6588,6 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
-		#ifdef DISABLE_DOOR_SENSING
-
-			//Door Close
-			RxBuffer[j++] = 0x0F;
-			RxBuffer[j++] = 0x0F;
-		
-		#else
-			
 		if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 		{
 			//Door Open
@@ -6662,8 +6600,6 @@ void ServePCMsg(unsigned char SrcPort)
 			RxBuffer[j++] = 0x0F;
 			RxBuffer[j++] = 0x0F;
 		}
-			
-		#endif
 		
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
@@ -7237,59 +7173,6 @@ void ServePCMsg(unsigned char SrcPort)
 				
 			break;
 			
-			case RELAY_CNTL_ID:
-			
-				switch(RxBuffer[4])
-				{
-					case '1':
-						if(RxBuffer[5]=='0') RELAY1_OFF;
-						else 			RELAY1_ON;
-					break;
-					case '2':
-						if(RxBuffer[5]=='0') RELAY2_OFF;
-						else 			RELAY2_ON;
-					break;
-					case '3':
-						if(RxBuffer[5]=='0') RELAY3_OFF;
-						else 			RELAY3_ON;
-					break;
-					case '4':
-						if(RxBuffer[5]=='0') RELAY4_OFF;
-						else 			RELAY4_ON;
-					break;
-					case '5':
-						if(RxBuffer[5]=='0') RELAY5_OFF;
-						else 			RELAY5_ON;
-					break;
-					case '6':
-						if(RxBuffer[5]=='0') RELAY6_OFF;
-						else 			RELAY6_ON;
-					break;
-					case '7':
-						if(RxBuffer[5]=='0') RELAY7_OFF;
-						else 			RELAY7_ON;
-					break;
-					case '8':
-						if(RxBuffer[5]=='0') RELAY8_OFF;
-						else 			RELAY8_ON;
-					break;
-				}
-				
-				gu8_rly_stat = 0;
-				
-				if(RELAY1_STAT) gu8_rly_stat |= 0x01;
-				if(RELAY2_STAT) gu8_rly_stat |= 0x02;
-				if(RELAY3_STAT) gu8_rly_stat |= 0x04;
-				if(RELAY4_STAT) gu8_rly_stat |= 0x08;
-				if(RELAY5_STAT) gu8_rly_stat |= 0x10;
-				if(RELAY6_STAT) gu8_rly_stat |= 0x20;
-				if(RELAY7_STAT) gu8_rly_stat |= 0x40;
-				if(RELAY8_STAT) gu8_rly_stat |= 0x80;
-				
-				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RELAY_STAT_ADDR,gu8_rly_stat);
-
-			break;
-
 			case DP1CAL_ID:
 				
 				if(b.FactoryCalibrationOn==1)
@@ -7308,7 +7191,6 @@ void ServePCMsg(unsigned char SrcPort)
 					su16_dp_sw_factor=0;
 					f32_dp_sw_factor=0.0;
 					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
-					
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7411,7 +7293,7 @@ void ServePCMsg(unsigned char SrcPort)
 					su16_dp_sw_factor=0;
 					f32_dp_sw_factor=0.0;
 					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
-					
+		
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -9247,13 +9129,13 @@ void ReadDiffPressure1(void)
 			
 			if(gu16_parameterWord & DIFP1_ABSP1)
 			{
-				RealDpressure1 *= 0.0762951094834821;//0.1496910048065919;
-				RealDpressure1 -= 500;//981;
+				RealDpressure1 *= 0.1496910048065919;
+				RealDpressure1 -= 981;
 			}
 			else
 			{
-				RealDpressure1 *= 0.0762951094834821;//0.1496910048065919;
-				RealDpressure1 -= 500;//981;
+				RealDpressure1 *= 0.1496910048065919;
+				RealDpressure1 -= 981;
 			}
 			
 			float f32_temp=0;
@@ -9277,7 +9159,7 @@ void ReadDiffPressure1(void)
 			{
 				if(!gu8_dp_sw_enb)
 				{
-					if(Dpressure1>-1.0) Dpressure1 += f32_dp_sw_factor; //MINUS LIMIT
+					if(Dpressure1>-1.0) Dpressure1 += f32_dp_sw_factor;
 					else Dpressure1 -= f32_dp_sw_factor;
 				}
 				else
@@ -9653,8 +9535,8 @@ void ReadDiffPressure2(void)
 			Avg_Raw_pressure_cnt2 -= 1638;
 
 			RealDpressure2 = (float)Avg_Raw_pressure_cnt2;			
-			RealDpressure2 *= 0.0762951094834821;//0.1496910048065919;//0762951094834821 original  by changing it will  change DP value 0762951094834821
-			RealDpressure2 -= 500;//981; pressure range  
+			RealDpressure2 *= 0.1496910048065919;
+			RealDpressure2 -= 981;
 			
 			float f32_temp=0;
 			f32_temp = RealDpressure2;
@@ -9678,7 +9560,7 @@ void ReadDiffPressure2(void)
 			{
 				if(!gu8_dp_sw_enb)
 				{
-					if(Dpressure2>-1.0) Dpressure2 += f32_dp_sw_factor;  //MINUS LIMIT 2
+					if(Dpressure2>-1.0) Dpressure2 += f32_dp_sw_factor;
 					else Dpressure2 -= f32_dp_sw_factor;
 				}
 				else
@@ -10162,7 +10044,7 @@ void Init_GPIO(void)
 	PORTE_OUT = 0b00011100;
 
 	PORTG_DIR = 0b11111111;							//LED7,LED6,LED5,LED4,LED3,LED2,LED1,LED0
-	//PORTG_OUT = 0b00000000;
+	PORTG_OUT = 0b00000000;
 	
 	PORTM_DIR = 0b11110011;							//SEG24,SEG25,SEG26,SEG27,VEXT,RTC_INT,DP2_SDA,DP2_SCL
 	PORTM_OUT = 0b00000011;
@@ -10375,8 +10257,6 @@ void SecondTick(void)
 	}
 	#endif
 	
-	#ifndef DISABLE_DOOR_SENSING
-
 	if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 	{
 		if(!b.doorSense)
@@ -10398,8 +10278,6 @@ void SecondTick(void)
 			//gu8_doorSensingTimer=0;
 		}
 	}
-				
-	#endif
 	
 	
 	//Read Differential Pressure -----------------------------------------
@@ -10864,8 +10742,6 @@ void AllSegment(unsigned char state)
 	
 		if(gu16_parameterWord & ENABLE_LOGO)
 		{
-			#ifndef DISABLE_DOOR_SENSING
-
 			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 			//if(b.doorSense)
 			{
@@ -10878,12 +10754,6 @@ void AllSegment(unsigned char state)
 			{
 				LOGO_on;
 			}
-			
-			#else
-				
-			LOGO_on;
-			
-			#endif
 		}
 	
 		for(unsigned char i=1;i<NO_DIGIT;i++) data[i] = BLANK;
@@ -12533,8 +12403,6 @@ void AllSegment(unsigned char state)
 		
 		if(gu16_parameterWord & ENABLE_LOGO)
 		{
-			#ifndef DISABLE_DOOR_SENSING
-
 			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 			//if(b.doorSense)
 			{
@@ -12547,12 +12415,6 @@ void AllSegment(unsigned char state)
 			{
 				LOGO_on;
 			}
-			
-			#else
-				
-			LOGO_on;
-			
-			#endif
 		}
 		
 		for(unsigned char i=1;i<NO_DIGIT;i++) data[i] = BLANK;
@@ -14244,8 +14106,6 @@ void AllSegment(unsigned char state)
 		
 		if(gu16_parameterWord & ENABLE_LOGO)
 		{
-			#ifndef DISABLE_DOOR_SENSING
-
 			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 			//if(b.doorSense)
 			{
@@ -14258,12 +14118,6 @@ void AllSegment(unsigned char state)
 			{
 				LOGO_on;
 			}
-			
-			#else
-				
-			LOGO_on;
-			
-			#endif
 		}
 		
 		for(unsigned char i=1;i<NO_DIGIT;i++) data[i] = BLANK;
@@ -15914,8 +15768,6 @@ void AllSegment(unsigned char state)
 		
 		if(gu16_parameterWord & ENABLE_LOGO)
 		{
-			#ifndef DISABLE_DOOR_SENSING
-
 			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 			//if(b.doorSense)
 			{
@@ -15928,12 +15780,6 @@ void AllSegment(unsigned char state)
 			{
 				LOGO_on;
 			}
-			
-			#else
-				
-			LOGO_on;
-			
-			#endif
 		}
 	
 		for(unsigned char i=0;i<NO_DIGIT;i++) data[i] = BLANK;
@@ -18116,8 +17962,6 @@ void AllSegment(unsigned char state)
 		
 		if(gu16_parameterWord & ENABLE_LOGO)
 		{
-			#ifndef DISABLE_DOOR_SENSING
-
 			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
 			//if(b.doorSense)
 			{
@@ -18130,12 +17974,6 @@ void AllSegment(unsigned char state)
 			{
 				LOGO_on;
 			}
-			
-			#else
-				
-			LOGO_on;
-			
-			#endif
 		}
 	
 		for(unsigned char i=0;i<NO_DIGIT;i++) data[i] = BLANK;
@@ -21169,9 +21007,6 @@ void boot_data(void)
 		gu8_dp_sw_enb = 0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
 		
-		gu8_rly_stat = 0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RELAY_STAT_ADDR,gu8_rly_stat);
-		
 		su16_dp_sw_factor=0;
 		f32_dp_sw_factor=0.0;
 		eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
@@ -21695,8 +21530,6 @@ void boot_data(void)
 			}
 		}
 		
-		gu8_rly_stat = eeprom_read_byte ((unsigned char*)RELAY_STAT_ADDR);
-
 		gu8_dp_sw_enb = eeprom_read_byte ((unsigned char*)DP_FACT_ENB_ADDR);
 		if(gu8_dp_sw_enb>1)
 		{	
