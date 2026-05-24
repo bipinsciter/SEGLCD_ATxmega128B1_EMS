@@ -366,7 +366,7 @@
         <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
       </AvrGcc>
     </ToolchainSettings>
-    <OutputFileName>NIYAMA_V7.8_SQUARE_SMALL_FONT_COLOR</OutputFileName>
+    <OutputFileName>NIYAMA_V7.9_SQUARE_SMALL_FONT_COLOR</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
   </PropertyGroup>
   <ItemGroup>

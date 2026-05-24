@@ -76,7 +76,7 @@
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
+#define DISPLAY_MODE				BIG_FONT_DISPLAY_NEW
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -134,13 +134,13 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				780  //means 7.80
+#define SOFT_VER				790  //means 7.90
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
 
 #define DEFAULT_LCD_BRIGHTNESS	 26
-
+#define DEFAULT_AUTO_SENT_INTERVAL	 5
 
 #define DISP_PER			82.0 // PWM
  
@@ -503,6 +503,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define LCD_BRIGHT_CNT_ID			0x5E
 #define DP_SW_FACT_ID				0x5F
 #define RELAY_CNTL_ID				0x60
+#define AUTO_SENT_INTERVAL_ID		0x61
+
 
 #define CORR_RTC_DATA_ID	0x99	
 #define PUT_DFU_ID			0xAA	
@@ -643,6 +645,9 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP_SW_FACT_ADDR					(LCD_BRIGHT_CNT_ADDR+1)
 #define DP_FACT_ENB_ADDR				(DP_SW_FACT_ADDR+10)
 #define RELAY_STAT_ADDR					(DP_FACT_ENB_ADDR+2)
+#define AUTO_SENT_INTERVAL_ADDR			(RELAY_STAT_ADDR+1)
+
+
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
 
@@ -1350,8 +1355,9 @@ volatile static struct bits
 	unsigned char doorSense : 1;
 	unsigned char AlarmLED : 1;
 	unsigned char buzzeralert : 1;
+	unsigned char autoSendResponse : 1;
 	
-}b={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+}b={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 unsigned char rtcCorrupt=0;
 unsigned char rtcValid=0;
@@ -1590,7 +1596,7 @@ unsigned char varusb=0;
 unsigned char gu8ar_SrNumber[16]={0};
 unsigned char *p_SrNumber;
 unsigned long gu32_SrNumber;
-
+unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_AutoSentTimer=0;
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1632,6 +1638,7 @@ void ResetMinMax(void);
 void TMUnitChange(void);
 void StartBuzzer(void);
 void StopBuzzer(void);
+void AutoSendDataResponse(unsigned char SrcPort);
 //----------------------------------------------------------------------------------------------------------------------------
 static inline int leapyear (long int year);
 unsigned long  ydhms_diff (long int year1, long int yday1, int hour1, int min1, int sec1,int year0, int yday0, int hour0, int min0, int sec0);
@@ -1995,6 +2002,12 @@ int main(void)
 						
 		//Serve Watchdog Timer
 		wdt_reset();
+		
+		if(b.autoSendResponse)
+		{
+			AutoSendDataResponse(1);
+			b.autoSendResponse = false;
+		}
 		
 		//1 Second Tick ====================================================
 		if(b.sec_flag)
@@ -5951,17 +5964,215 @@ void LogReading(unsigned char logtype,unsigned char userID,unsigned short passwo
 	#endif
 }
 
+void AutoSendDataResponse(unsigned char SrcPort)
+{
+	unsigned char j=0;
+	
+	Buffer1[0]=0xFD;
+	Buffer1[1]=DeviceID;
+	Buffer1[2]=PARA_WITH_ALM_READ_CMD;
+	Buffer1[3]=0x00;
+	if(b.paraIdNotValid) 	Buffer1[3] |= INVALID_PARA;
+	if(b.DP1_NC) 			Buffer1[3] |= DP1_FAULTY;
+	if(b.DP2_NC) 			Buffer1[3] |= DP2_FAULTY;
+	if(b.RH_TEMP_NC) 		Buffer1[3] |= RH_TEMP_FAULTY;
+	
+	j=4;
+	
+	if(b.DP1_NC) 			
+	{
+		Buffer1[j++] |= DP1_FAULTY;
+	}
+	else
+	{
+		Buffer1[j++]=0;
+		
+		//Fill DP value
+		templong = Dpressure1*100;
+		j += fillValue(&Buffer1[j],templong);	
+	}
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	if(b.DP2_NC)
+	{
+		Buffer1[j++] |= DP2_FAULTY;
+	}
+	else
+	{
+		Buffer1[j++]=0;
+		
+		//Fill DP value
+		templong = Dpressure2*100;
+		j += fillValue(&Buffer1[j],templong);
+	}
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	if(b.RH_TEMP_NC) 			
+	{
+		Buffer1[j++] |= RH_TEMP_FAULTY;
+	}
+	else
+	{
+		Buffer1[j++]=0;
+		
+		//Fill Temp value
+		if(!TM_Unit)
+		{
+			tempshort = temperatureC*100;
+		}
+		else
+		{
+			tempshort = temperatureF*100;
+		}
+		
+		j += fillValue(&Buffer1[j],tempshort);
+	}
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	if(b.RH_TEMP_NC) 			
+	{
+		Buffer1[j++] |= RH_TEMP_FAULTY;
+	}
+	else
+	{
+		Buffer1[j++]=0;
+		
+		//Fill Temp value
+		tempshort = humidityRH*100;
+		j += fillValue(&Buffer1[j],tempshort);
+	}
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+
+	if(gu16_parameterWord & ENABLE_DP1)
+	{
+		if(!DP1_Alrm_ON)
+		{
+			Buffer1[j++] = 0;
+		}
+		else
+		{
+			if(DP1_Alrm_ON==UPPER_ALARM) Buffer1[j++] = 1;
+			else						  Buffer1[j++] = 2;
+		}
+	}
+	else
+	{
+		Buffer1[j++] = 0;
+	}
+	
+	if(gu16_parameterWord & ENABLE_DP2)
+	{
+		if(!DP2_Alrm_ON)
+		{
+			Buffer1[j++] = 0;
+		}
+		else
+		{
+			if(DP2_Alrm_ON==UPPER_ALARM) Buffer1[j++] = 1;
+			else						  Buffer1[j++] = 2;
+		}
+	}
+	else
+	{
+		Buffer1[j++] = 0;
+	}
+	
+	if(gu16_parameterWord & ENABLE_TEMP)
+	{
+		if(!TM_Alrm_ON)
+		{
+			Buffer1[j++] = 0;
+		}
+		else
+		{
+			if(TM_Alrm_ON==UPPER_ALARM) Buffer1[j++] = 1;
+			else						  Buffer1[j++] = 2;
+		}
+	}
+	else
+	{
+		Buffer1[j++] = 0;
+	}
+	
+	if(gu16_parameterWord & ENABLE_RH)
+	{
+		if(!RH_Alrm_ON)
+		{
+			Buffer1[j++] = 0;
+		}
+		else
+		{
+			if(RH_Alrm_ON==UPPER_ALARM) Buffer1[j++] = 1;
+			else						  Buffer1[j++] = 2;
+		}
+	}
+	else
+	{
+		Buffer1[j++] = 0;
+	}
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	#ifdef DISABLE_DOOR_SENSING
+
+		//Door Close
+		Buffer1[j++] = 0x0F;
+		Buffer1[j++] = 0x0F;
+	
+	#else
+		
+	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+	{
+		//Door Open
+		Buffer1[j++] = 0x0E;
+		Buffer1[j++] = 0x0E;	
+	}
+	else
+	{
+		//Door Close
+		Buffer1[j++] = 0x0F;
+		Buffer1[j++] = 0x0F;
+	}
+		
+	#endif
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	memcpy(&Buffer1[j],&gu8ar_SrNumber[8],8);
+	j+=8;
+	
+	Buffer1[j++] = 0xEE;	//Field Separator
+	
+	memcpy(&Buffer1[j],(unsigned char*)&ep.currentEpochTime,4);
+	j+=4;
+	
+	Buffer1[j]=CalCRC(&Buffer1[1],j-1);
+	j++;
+	
+	Buffer1[j++]=0xFC;
+	
+	SendToUART(SrcPort,&Buffer1[0],j);
+	//SetTxmode(SrcPort,Buffer1,j);
+}
+
 void ServePCMsg(unsigned char SrcPort)
 {
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
-	unsigned char index=0;
+	unsigned char index=0,j=0;
 	
 	b.paraIdNotValid=0;
 	
 	if(RxBuffer[2]==PARA_WITH_ALM_READ_CMD)
 	{
+		gu8_AutoSentTimeout = 60;
+		gu8_AutoSentTimer = 0;
+		
 		RxBuffer[0]=0xFD;
 		
 		RxBuffer[3]=0x00;
@@ -6118,7 +6329,8 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		#else
 			
-		if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
+		//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+		if(b.doorSense)
 		{
 			//Door Open
 			RxBuffer[j++] = 0x0E;
@@ -7264,6 +7476,13 @@ void ServePCMsg(unsigned char SrcPort)
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 				}
 			break;
+			case AUTO_SENT_INTERVAL_ID:
+				if((tempshort!=0) && (tempshort <= 240))
+				{
+					gu8_AutoSentInterval=tempshort;
+					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
+				}
+			break;
 			case DP1_ALM_SENSE_TIME_ID:
 				if(tempshort<=250)
 				{
@@ -7540,6 +7759,7 @@ void ServePCMsg(unsigned char SrcPort)
 			case DOOR_SENSE_POLARITY_ID:	tempshort = gu8_doorSensingPolarity;	break;
 			case DOOR_SENSE_TIME_ID:		tempshort = gu8_doorSensingTime;		break;
 			case LCD_BRIGHT_CNT_ID:			tempshort = gu8_LCDBrigthnessCnt;		break;
+			case AUTO_SENT_INTERVAL_ID:			tempshort = gu8_AutoSentInterval;		break;
 			case DP1_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp1AlarmSensingTime;	break;
 			case DP2_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp2AlarmSensingTime;	break;
 			case SRNO_ID:												break;
@@ -8739,6 +8959,7 @@ void ReadDiffPressure1(void)
 						
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+							b.autoSendResponse = true;
 							b.DP1Log=1;
 						}
 						else
@@ -8776,6 +8997,7 @@ void ReadDiffPressure1(void)
 							
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 							
+							b.autoSendResponse = true;
 							b.DP1Log=1;
 						}
 						else
@@ -8922,6 +9144,7 @@ void ReadDiffPressure1(void)
 							
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 							
+							b.autoSendResponse = true;
 							b.DP1Log=1;
 						}
 						else
@@ -8959,6 +9182,7 @@ void ReadDiffPressure1(void)
 							
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 							
+							b.autoSendResponse = true;
 							b.DP1Log=1;
 						}
 						else
@@ -9140,6 +9364,7 @@ void ReadDiffPressure2(void)
 							
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 							
+							b.autoSendResponse = true;
 							b.DP2Log=1;
 						}
 						else
@@ -9177,6 +9402,7 @@ void ReadDiffPressure2(void)
 							
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 							
+							b.autoSendResponse = true;
 							b.DP2Log=1;
 						}
 						else
@@ -9326,6 +9552,7 @@ void ReadDiffPressure2(void)
 						
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+							b.autoSendResponse = true;
 							b.DP2Log=1;
 						}
 						else
@@ -9363,6 +9590,7 @@ void ReadDiffPressure2(void)
 						
 							//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+							b.autoSendResponse = true;
 							b.DP2Log=1;
 						}
 						else
@@ -9630,6 +9858,8 @@ void Init_variables(void)
 	
 	DP_StartUpTimer=0;
 	TMRH_StartUpTimer=0;
+	
+	b.autoSendResponse = false;
 }
 
 //**************************************************************************************************************************************
@@ -9643,6 +9873,26 @@ void SecondTick(void)
 	if(gu8_masterEnable==1)
 	{
 		SendToSlave();
+	}
+	
+	if(gu8_AutoSentTimer)
+	{
+		gu8_AutoSentTimer--;
+		if(!gu8_AutoSentTimer)
+		{
+			b.autoSendResponse = true;
+			gu8_AutoSentTimer=gu8_AutoSentInterval;
+		}
+	}
+	
+	if(gu8_AutoSentTimeout)
+	{
+		gu8_AutoSentTimeout--;
+		if(!gu8_AutoSentTimeout)
+		{
+			b.autoSendResponse = true;
+			gu8_AutoSentTimer=gu8_AutoSentInterval;
+		}
 	}
 	
 	//gu8_LCDBrigthnessCnt++;
@@ -9818,7 +10068,7 @@ void SecondTick(void)
 	
 	#ifndef DISABLE_DOOR_SENSING
 
-	if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
+	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
 	{
 		if(!b.doorSense)
 		{
@@ -9827,6 +10077,8 @@ void SecondTick(void)
 			{
 			//	gu8_doorSensingTimer=0;
 				b.doorSense=1;
+				b.autoSendResponse = true;
+				//opstr(1,"DoorOpen\n");
 				//StartBuzzer();
 			}
 		}
@@ -9836,6 +10088,8 @@ void SecondTick(void)
 		if(b.doorSense)
 		{
 			b.doorSense=0;
+			b.autoSendResponse = true;
+			//opstr(1,"DoorClose\n");
 			//gu8_doorSensingTimer=0;
 		}
 	}
@@ -9985,7 +10239,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 8;
+	data[6] = 9;
 						
 	disp_value();
 	
@@ -10026,6 +10280,7 @@ void InitLCDController(void)
 	AllSegment(OFF);
 	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
 	
+	#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 	data[1] = B;
 	data[2] = r;
 	data[3] = t;
@@ -10043,7 +10298,23 @@ void InitLCDController(void)
 		case BAUD_57600:	convert_char(57600,&data[4],5);		break;
 		case BAUD_115200:	convert_float(115200,&data[4],0);	break;
 		default:			convert_char(9600,&data[4],4);		break; 
+	}						
+	#elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
+	switch(UART_BaudRate)
+	{
+		case BAUD_1200:		convert_char(1200,&data[3],4);		break;
+		case BAUD_2400:		convert_char(2400,&data[3],4);		break;
+		case BAUD_4800:		convert_char(4800,&data[3],4);		break;
+		case BAUD_9600:		convert_char(9600,&data[3],4);		break;
+		case BAUD_14400:	convert_char(14400,&data[2],5);		break;
+		case BAUD_19200:	convert_char(19200,&data[2],5);		break;
+		case BAUD_28800:	convert_char(28800,&data[2],5);		break;
+		case BAUD_38400:	convert_char(38400,&data[2],5);		break;
+		case BAUD_57600:	convert_char(57600,&data[2],5);		break;
+		case BAUD_115200:	convert_float(115200,&data[1],0);	break;
+		default:			convert_char(9600,&data[3],4);		break;
 	}
+	#endif
 
 	disp_value();
 	
@@ -10058,15 +10329,13 @@ void InitLCDController(void)
 		_delay_ms(4000);
 	}
 	//-------------------------------------------------------------------
+	#if ((DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_NEW) || (DISPLAY_MODE==SMALL_FONT_DISPLAY_COLOR))
 	AllSegment(OFF);
 	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
-	
 	data[2] = 5;
 	data[3] = r;
 
 	convert_float(gu32_SrNumber,&data[4],0);
-	//convert_char(gu32_SrNumber,&data[4],5);
-
 	disp_value();
 	
 	wdt_reset();
@@ -10079,6 +10348,7 @@ void InitLCDController(void)
 	{
 		_delay_ms(4000);
 	}
+	#endif
 	
 	wdt_reset();
 }
@@ -10352,8 +10622,8 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			//if(b.doorSense)
+			//if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
+			if(b.doorSense)
 			{
 				if(b.led_toggle)
 				{
@@ -12021,8 +12291,8 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			//if(b.doorSense)
+			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+			if(b.doorSense)
 			{
 				if(b.led_toggle)
 				{
@@ -13732,8 +14002,8 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			//if(b.doorSense)
+			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+			if(b.doorSense)
 			{
 				if(b.led_toggle)
 				{
@@ -15402,8 +15672,8 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			//if(b.doorSense)
+			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+			if(b.doorSense)
 			{
 				if(b.led_toggle)
 				{
@@ -17604,8 +17874,8 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			//if(b.doorSense)
+			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+			if(b.doorSense)
 			{
 				if(b.led_toggle)
 				{
@@ -20245,6 +20515,7 @@ void Read_SHT25(void)
 						
 						//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+						b.autoSendResponse = true;
 						b.TMLog=1;
 					}
 					else
@@ -20275,6 +20546,7 @@ void Read_SHT25(void)
 						
 						//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+						b.autoSendResponse = true;
 						b.TMLog=1;
 					}
 					else
@@ -20362,6 +20634,7 @@ void Read_SHT25(void)
 						
 						//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+						b.autoSendResponse = true;
 						b.RHLog=1;
 					}
 					else
@@ -20392,6 +20665,7 @@ void Read_SHT25(void)
 						
 						//if(gu16_parameterWord & ENABLE_ALERT) StartBuzzer();
 						
+						b.autoSendResponse = true;
 						b.RHLog=1;
 					}
 					else
@@ -20805,6 +21079,8 @@ void boot_data(void)
 		gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		
+		gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
+		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 		//EraseWholeFlash();
 	}
 	else
@@ -20821,6 +21097,13 @@ void boot_data(void)
 		{
 			gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
+		}
+		
+		gu8_AutoSentInterval  = eeprom_read_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR);
+		if((!gu8_AutoSentInterval) || (gu8_AutoSentInterval > 240))
+		{
+			gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
+			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 		}
 		
 		eeprom_read_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
