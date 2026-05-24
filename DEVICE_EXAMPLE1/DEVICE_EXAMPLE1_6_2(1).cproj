@@ -133,7 +133,7 @@
         <InterfaceName>PDI</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.ispmk2</ToolType>
-      <ToolNumber>001D2C881679</ToolNumber>
+      <ToolNumber>00B0180B0C86</ToolNumber>
       <ToolName>AVRISP mkII</ToolName>
     </com_atmel_avrdbg_tool_ispmk2>
     <preserveEEPROM>true</preserveEEPROM>
@@ -161,7 +161,7 @@
     </com_atmel_avrdbg_tool_jtagice3plus>
     <ResetRule>0</ResetRule>
     <EraseKey />
-    <avrtoolserialnumber>001D2C881679</avrtoolserialnumber>
+    <avrtoolserialnumber>00B0180B0C86</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x1E974D</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>0</avrtoolinterfaceclock>
     <custom>

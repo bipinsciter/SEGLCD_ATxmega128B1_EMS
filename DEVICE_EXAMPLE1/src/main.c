@@ -152,7 +152,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				760  //means 7.60
+#define SOFT_VER				770  //means 7.70
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -1606,6 +1606,9 @@ unsigned char clkmode=0;
 unsigned char comport=0;
 unsigned char varusb=0;
 unsigned char gu8ar_SrNumber[16]={0};
+unsigned char *p_SrNumber;
+unsigned long gu32_SrNumber;
+
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1632,6 +1635,7 @@ void conv_value(void);
 void chartostr(unsigned short,unsigned char *,unsigned char);
 void convert_float(float,unsigned char*,unsigned char);
 void convert_char(unsigned short,unsigned char*,unsigned char);
+void convert_long(unsigned long,unsigned char*,unsigned char);
 //-----------------------------------------------------------------------------------------------------------------------------------------
 void check_key(void);
 void keyboard(void);
@@ -1667,6 +1671,7 @@ unsigned char find_Checksum(unsigned short Count,unsigned char *msg);
 void FillRamBuffer(unsigned char,unsigned char,unsigned short);
 void SetTxmode(unsigned char txmode,unsigned char *buffer,unsigned short bytes);
 void SendToSlave(void);
+uint32_t ascii2hex(uint8_t *data, uint8_t NoOfdigit);
 //****************************************************************************************************************************************
 
 
@@ -2541,30 +2546,7 @@ int main(void)
 
 	#endif
 	
-	WHITE_BLIT_ON;
-
-
-
-
-	// print_Hex(1,DEVICE_SR_NO);
-	//print_Hex(1,sizeof(gu8ar_SrNumber));
-	
-	//memset(gu8ar_SrNumber,1,sizeof(gu8ar_SrNumber));
-	////eeprom_busy_wait();
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber)); eeprom_busy_wait();
-	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
-	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
-
-	//memset(gu8ar_SrNumber,2,sizeof(gu8ar_SrNumber));
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
-	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
-	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
-	
-	//memset(gu8ar_SrNumber,3,sizeof(gu8ar_SrNumber));
-	//eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
-	//eeprom_read_block(gu8ar_SrNumber,(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));eeprom_busy_wait();
-	//SendToUART(1,gu8ar_SrNumber,sizeof(gu8ar_SrNumber));
-
+	//WHITE_BLIT_ON;
 
  	while(1)
  	{	
@@ -2736,12 +2718,18 @@ int main(void)
 							rxMode=1;
 							RxTimeout=4;
 						}
+						else if((varusb==0xEA) && (!rxMode))
+						{
+							RxBuffer1[RxInd++]=varusb;
+							rxMode=2;
+							RxTimeout=4;	
+						}
 						else if(rxMode==1)
 						{
 							if((varusb==DeviceID) || (varusb==0x00))
 							{
 								RxBuffer1[RxInd++]=varusb;
-								rxMode=2;
+								rxMode=3;
 								RxTimeout=4;
 							}
 							else
@@ -2754,9 +2742,29 @@ int main(void)
 						else if(rxMode==2)
 						{
 							RxBuffer1[RxInd++]=varusb;
+							
+							if(RxInd==9)
+							{
+								if(!memcmp(&RxBuffer1[1],&gu8ar_SrNumber[8],8))
+								{
+									rxMode=3;
+									RxInd=1;
+									RxTimeout=4;
+								}
+								else
+								{
+									rxMode=0;
+									RxTimeout=0;
+									RxInd=0;
+								}
+							}
+						}
+						else if(rxMode==3)
+						{
+							RxBuffer1[RxInd++]=varusb;
 							RxTimeout=4;
 					
-							if(varusb==0xFE)
+							if((varusb==0xFE) || (varusb==0xEB))
 							{
 								crcVal=CalCRC(&RxBuffer1[1],RxInd-3);
 						
@@ -6689,8 +6697,8 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
-		memcpy(&RxBuffer[j],gu8ar_SrNumber,16);
-		j+=16;
+		memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
+		j+=4;
 		
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
@@ -7961,6 +7969,8 @@ void ServePCMsg(unsigned char SrcPort)
 			case SRNO_ID:
 				memcpy(gu8ar_SrNumber,&RxBuffer[4],16);
 				eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
+				//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
+				gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 			break;	
 			case BRDSTP_ID:
 				b.brodcastEnb=0;
@@ -8270,9 +8280,7 @@ void ServePCMsg(unsigned char SrcPort)
 			if(b.RH_TEMP_NC) 		TxBuffer[3] |= RH_TEMP_FAULTY;
 			TxBuffer[4]=RxBuffer[3];
 			
-			//cli();			//Global Interrupt Disable
 			memcpy(&TxBuffer[5],gu8ar_SrNumber,16);
-			//sei();			//Global Interrupt Enable
 			
 			TxBuffer[21]=CalCRC(&TxBuffer[1],20);	
 			TxBuffer[22]=0xFC;
@@ -10041,6 +10049,24 @@ void ReadDiffPressure2(void)
 		}
 	#endif
 }
+
+/**@brief Convert 8 digit ascii serial# into hex format
+ */
+uint32_t ascii2hex(uint8_t *data, uint8_t NoOfdigit)
+{
+    uint8_t i,val;
+    uint32_t num=0;
+
+    for(i=0; i<NoOfdigit; i++)
+    {
+        val = (*data - 0x30);
+        //num = num + (uint32_t)((double)val * pow(10,((NoOfdigit-1)-i)));
+		num = (num*10) + val;
+        data++;
+    }
+
+    return num;
+}
 //**********************************************************************************************************
 //	Internal RTC related functions
 //*********************************************************************************************************
@@ -10597,8 +10623,9 @@ void InitLCDController(void)
 		_delay_ms(2000);
 	}
 	LCD_CTRLA |= LCD_SEGON_bm;
-	AllSegment(OFF);
 	
+	//-------------------------------------------------------------------
+	AllSegment(OFF);
 	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
 	
 	data[1] = V;
@@ -10606,13 +10633,12 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 6;
+	data[6] = 7;
 						
 	disp_value();
 	
 	wdt_reset();
 	
-	//----------Just to check display segment healthiness------------
 	if(!clkmode)
 	{
 		_delay_ms(2000);
@@ -10622,10 +10648,13 @@ void InitLCDController(void)
 		_delay_ms(4000);
 	}
 	
+	//-------------------------------------------------------------------
 	AllSegment(OFF);
 	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
 	
-	ID_on;
+	//ID_on;
+	data[2] = I;
+	data[3] = D;
 	convert_char(DeviceID,&data[4],3);
 	disp_value();
 	
@@ -10640,23 +10669,51 @@ void InitLCDController(void)
 		_delay_ms(4000);
 	}
 	
+	//-------------------------------------------------------------------
 	AllSegment(OFF);
 	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
+	
+	data[1] = B;
+	data[2] = r;
+	data[3] = t;
+	
 	switch(UART_BaudRate)
 	{
-		case BAUD_1200:		convert_char(1200,&data[3],4);		break;
-		case BAUD_2400:		convert_char(2400,&data[3],4);		break;
-		case BAUD_4800:		convert_char(4800,&data[3],4);		break;
-		case BAUD_9600:		convert_char(9600,&data[3],4);		break;
-		case BAUD_14400:	convert_char(14400,&data[2],5);		break;
-		case BAUD_19200:	convert_char(19200,&data[2],5);		break;
-		case BAUD_28800:	convert_char(28800,&data[2],5);		break;
-		case BAUD_38400:	convert_char(38400,&data[2],5);		break;
-		case BAUD_57600:	convert_char(57600,&data[2],5);		break;
-		case BAUD_115200:	convert_float(115200,&data[1],0);		break;
-		default:			convert_char(9600,&data[3],4);		break; //9600
+		case BAUD_1200:		convert_char(1200,&data[4],4);		break;
+		case BAUD_2400:		convert_char(2400,&data[4],4);		break;
+		case BAUD_4800:		convert_char(4800,&data[4],4);		break;
+		case BAUD_9600:		convert_char(9600,&data[4],4);		break;
+		case BAUD_14400:	convert_char(14400,&data[4],5);		break;
+		case BAUD_19200:	convert_char(19200,&data[4],5);		break;
+		case BAUD_28800:	convert_char(28800,&data[4],5);		break;
+		case BAUD_38400:	convert_char(38400,&data[4],5);		break;
+		case BAUD_57600:	convert_char(57600,&data[4],5);		break;
+		case BAUD_115200:	convert_float(115200,&data[4],0);	break;
+		default:			convert_char(9600,&data[4],4);		break; 
 	}
+
+	disp_value();
 	
+	wdt_reset();
+	
+	if(!clkmode)
+	{
+		_delay_ms(2000);
+	}
+	else
+	{
+		_delay_ms(4000);
+	}
+	//-------------------------------------------------------------------
+	AllSegment(OFF);
+	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
+	
+	data[2] = 5;
+	data[3] = r;
+
+	convert_float(gu32_SrNumber,&data[4],0);
+	//convert_char(gu32_SrNumber,&data[4],5);
+
 	disp_value();
 	
 	wdt_reset();
@@ -10687,6 +10744,19 @@ void chartostr(unsigned short val,unsigned char *data1,unsigned char no_of_digit
 }
 	
 void convert_char(unsigned short val,unsigned char* data1,unsigned char no_of_digit)
+{
+	data1+=(no_of_digit-1);
+		
+	while(no_of_digit)
+	{
+		*data1=(val%10);
+		val/=10;
+		data1--;
+		no_of_digit--;
+	}
+}
+
+void convert_long(unsigned long val,unsigned char* data1,unsigned char no_of_digit)
 {
 	data1+=(no_of_digit-1);
 		
@@ -12339,7 +12409,7 @@ void AllSegment(unsigned char state)
 							case BAUD_28800:	convert_char(28800,&data[4],5);		break;
 							case BAUD_38400:	convert_char(38400,&data[4],5);		break;
 							case BAUD_57600:	convert_char(57600,&data[4],5);		break;
-							case BAUD_115200:	convert_char(115200,&data[4],6);	break;
+							case BAUD_115200:	convert_float(115200,&data[4],0);	break;
 						}
 
 					break;
@@ -14038,7 +14108,7 @@ void AllSegment(unsigned char state)
 							case BAUD_28800:	convert_char(28800,&data[4],5);		break;
 							case BAUD_38400:	convert_char(38400,&data[4],5);		break;
 							case BAUD_57600:	convert_char(57600,&data[4],5);		break;
-							case BAUD_115200:	convert_char(115200,&data[4],6);	break;
+							case BAUD_115200:	convert_float(115200,&data[4],6);	break;
 						}
 
 					break;
@@ -15734,7 +15804,7 @@ void AllSegment(unsigned char state)
 							case BAUD_28800:	convert_char(28800,&data[4],5);		break;
 							case BAUD_38400:	convert_char(38400,&data[4],5);		break;
 							case BAUD_57600:	convert_char(57600,&data[4],5);		break;
-							case BAUD_115200:	convert_char(115200,&data[4],6);	break;
+							case BAUD_115200:	convert_float(115200,&data[4],0);	break;
 						}
 
 					break;
@@ -21100,6 +21170,8 @@ void boot_data(void)
 		
 		memset(gu8ar_SrNumber,0,sizeof(gu8ar_SrNumber));
 		eeprom_busy_wait();  eeprom_write_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
+		//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
+		gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 		
 		gu8_DP1_LEDBlinkForPara=0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP1_LED_SETTING_ADDR,gu8_DP1_LEDBlinkForPara);
@@ -21435,6 +21507,8 @@ void boot_data(void)
 		}
 		
 		eeprom_read_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
+		//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
+		gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 		
 		gu8_doorSensingTime  = eeprom_read_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR);
 		if(gu8_doorSensingTime > 250)
@@ -22681,12 +22755,18 @@ ISR(USARTC0_RXC_vect)
 			rxMode=1;
 			RxTimeout=4;
 		}
+		else if((var==0xEA) && (!rxMode))
+		{
+			RxBuffer1[RxInd++]=var;
+			rxMode=2;
+			RxTimeout=4;	
+		}
 		else if(rxMode==1)
 		{
 			if((var==DeviceID) || (var==0x00))
 			{
 				RxBuffer1[RxInd++]=var;
-				rxMode=2;
+				rxMode=3;
 				RxTimeout=4;
 			}
 			else
@@ -22699,9 +22779,29 @@ ISR(USARTC0_RXC_vect)
 		else if(rxMode==2)
 		{
 			RxBuffer1[RxInd++]=var;
+			
+			if(RxInd==9)
+			{
+				if(!memcmp(&RxBuffer1[1],&gu8ar_SrNumber[8],8))
+				{
+					rxMode=3;
+					RxInd=1;
+					RxTimeout=4;
+				}
+				else
+				{
+					rxMode=0;
+					RxTimeout=0;
+					RxInd=0;
+				}
+			}
+		}
+		else if(rxMode==3)
+		{
+			RxBuffer1[RxInd++]=var;
 			RxTimeout=4;
 
-			if(var==0xFE)
+			if((var==0xFE) || (var==0xEB))
 			{
 				crcVal=CalCRC(&RxBuffer1[1],RxInd-3);
 				
@@ -22749,12 +22849,18 @@ ISR(USARTE0_RXC_vect)
 			rxMode=1;
 			RxTimeout=4;	
 		}
+		else if((var==0xEA) && (!rxMode))
+		{
+			RxBuffer1[RxInd++]=var;
+			rxMode=2;
+			RxTimeout=4;	
+		}
 		else if(rxMode==1)
 		{
 			if((var==DeviceID) || (var==0x00))
 			{
 				RxBuffer1[RxInd++]=var;
-				rxMode=2;
+				rxMode=3;
 				RxTimeout=4;
 			}
 			else
@@ -22767,9 +22873,29 @@ ISR(USARTE0_RXC_vect)
 		else if(rxMode==2)
 		{
 			RxBuffer1[RxInd++]=var;
+			
+			if(RxInd==9)
+			{
+				if(!memcmp(&RxBuffer1[1],&gu8ar_SrNumber[8],8))
+				{
+					rxMode=3;
+					RxInd=1;
+					RxTimeout=4;
+				}
+				else
+				{
+					rxMode=0;
+					RxTimeout=0;
+					RxInd=0;
+				}
+			}
+		}
+		else if(rxMode==3)
+		{
+			RxBuffer1[RxInd++]=var;
 			RxTimeout=4;
 
-			if(var==0xFE)
+			if((var==0xFE) || (var==0xEB))
 			{
 				crcVal=CalCRC(&RxBuffer1[1],RxInd-3);
 				
