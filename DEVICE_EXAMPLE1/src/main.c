@@ -129,7 +129,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				640  //means 6.40
+#define SOFT_VER				650  //means 6.50
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -3917,6 +3917,22 @@ int main(void)
 			check_key();		//Check Keyboard
 			if(b.msec_flag)
 			{
+				if(gu16_parameterWord & ENABLE_DP2)
+				{
+					ReadDiffPressure2();
+				}
+				else
+				{
+					Dpressure2=0.0;
+
+					DP2_Max=0.0;
+					DP2_Min=0.0;
+
+					DP2_Alrm_ON=NO_ALARM;
+					
+					DP_StartUpTimer=0;
+				}
+				
 				b.msec_flag=0;
 				CheckUpDnKey();		//Check UP and Down key
 			}
@@ -9669,9 +9685,11 @@ void Init_Timer0(void)
 	//*/
 //}
 
+unsigned short lastdifferanceDP1=0,lastdifferanceDP2=0;
+unsigned char gu8_DP2StandbyTimer = 0;
+
 void ReadDiffPressure1(void)
 {	
-	unsigned char i=0;
 	unsigned short differanceDP=0;
 
 	Dpressure1=0.0;
@@ -9717,50 +9735,55 @@ void ReadDiffPressure1(void)
 		{
 			b.DP1_NC=0;
 			
-			Avg_Raw_pressure_cnt1=0;
-			for(i=0;i<RAW_DP_CNT_IND;i++) Avg_Raw_pressure_cnt1 += Raw_pressure_cnt1[i];
-			Avg_Raw_pressure_cnt1 /= RAW_DP_CNT_IND;
-			
 			Raw_pressure_cnt1[Raw_pressure_cnt_ind1++] = differanceDP;
 			if(Raw_pressure_cnt_ind1>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind1=0;
-					
-			//Avg_Raw_pressure_cnt1 += DP1_Cal_Count;
-			//Avg_Raw_pressure_cnt1 += DP1_Cal_Count_C;
 			
-			if(gu16_parameterWord & DIFP1_ABSP1)
+			signed long lu32_temp=0;
+			
+			lu32_temp = 0;
+			for(i=0;i<RAW_DP_CNT_IND;i++) lu32_temp += Raw_pressure_cnt1[i];
+			lu32_temp /= RAW_DP_CNT_IND;
+
+			if((Avg_Raw_pressure_cnt1<=(lu32_temp+5)) && (Avg_Raw_pressure_cnt1>=(lu32_temp-5)))
 			{
-				if(Avg_Raw_pressure_cnt1 >= ZERO_DP1_COUNT)
-				{
-					Avg_Raw_pressure_cnt1 = Avg_Raw_pressure_cnt1 - ZERO_DP1_COUNT;
-					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.119751;
-				}
-				else
-				{
-					Avg_Raw_pressure_cnt1 = ZERO_DP1_COUNT - Avg_Raw_pressure_cnt1;
-					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.119751;
-					Dpressure1 *= (-1.0);
-				}
+				Avg_Raw_pressure_cnt1=(lu32_temp+Avg_Raw_pressure_cnt1+Avg_Raw_pressure_cnt1)/3;
 			}
 			else
 			{
-				if(Avg_Raw_pressure_cnt1 >= ZERO_AP1_COUNT)
-				{
-					Avg_Raw_pressure_cnt1 = Avg_Raw_pressure_cnt1 - ZERO_AP1_COUNT;
-					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.06287;
-				}
-				else
-				{
-					Avg_Raw_pressure_cnt1 = ZERO_AP1_COUNT - Avg_Raw_pressure_cnt1;
-					Dpressure1 = (float)Avg_Raw_pressure_cnt1 * 0.06287;
-					Dpressure1 *= (-1.0);
-				}
+				Avg_Raw_pressure_cnt1=lu32_temp;
 			}
 			
-			RealDpressure1 = Dpressure1;
-			Dpressure1 -= DP1_Cal_float_Value_F;
-			Dpressure1 -= DP1_Cal_float_Value_C;
+			Avg_Raw_pressure_cnt1 -= 1638;
+
+			RealDpressure1 = (float)Avg_Raw_pressure_cnt1;
 			
-			if((Dpressure1<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure1>DP_ZERO_DISP_LIMIT_LOW)) Dpressure1=0.0;
+			if(gu16_parameterWord & DIFP1_ABSP1)
+			{
+				RealDpressure1 *= 0.1496910048065919;
+				RealDpressure1 -= 981;
+			}
+			else
+			{
+				RealDpressure1 *= 0.1496910048065919;
+				RealDpressure1 -= 981;
+			}
+			
+			float f32_temp=0;
+			f32_temp = RealDpressure1;
+			f32_temp -= DP1_Cal_float_Value_F;
+			f32_temp -= DP1_Cal_float_Value_C;
+			lu32_temp = f32_temp;
+			f32_temp = lu32_temp;
+			
+			if((f32_temp > 200) && (f32_temp <= 300)) f32_temp -= 1;
+			else if((f32_temp > 300) && (f32_temp <= 400)) f32_temp -= 2;
+			else if((f32_temp > 400) && (f32_temp <= 500)) f32_temp -= 3;
+			else if((f32_temp > 500) && (f32_temp <= 600)) f32_temp -= 4;
+			else if((f32_temp > 600) && (f32_temp <= 700)) f32_temp -= 5;
+			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
+			else if(f32_temp > 800) f32_temp -= 7;
+			
+			Dpressure1 = f32_temp;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10057,10 +10080,8 @@ void ReadDiffPressure1(void)
 	#endif
 }
 
-
 void ReadDiffPressure2(void)
 {
-	unsigned char i=0;
 	unsigned short differanceDP=0;
 
 	Dpressure2=0.0;
@@ -10105,39 +10126,47 @@ void ReadDiffPressure2(void)
 		else
 		{
 			b.DP2_NC=0;
-		
-			Avg_Raw_pressure_cnt2 = 0;
-			
-			for(i=0;i<RAW_DP_CNT_IND;i++) 
-			{
-				Avg_Raw_pressure_cnt2 += Raw_pressure_cnt2[i];
-			}
-			
-			Avg_Raw_pressure_cnt2 /= RAW_DP_CNT_IND;
-			
+
 			Raw_pressure_cnt2[Raw_pressure_cnt_ind2++] = differanceDP;
 			if(Raw_pressure_cnt_ind2>=RAW_DP_CNT_IND) Raw_pressure_cnt_ind2=0;
 			
-			//Avg_Raw_pressure_cnt2 += DP2_Cal_Count;
-			//Avg_Raw_pressure_cnt2 += DP2_Cal_Count_C;
-		
-			if(Avg_Raw_pressure_cnt2 >= ZERO_DP2_COUNT)
+			signed long lu32_temp=0;
+			
+			lu32_temp = 0;
+			for(i=0;i<RAW_DP_CNT_IND;i++) lu32_temp += Raw_pressure_cnt2[i];
+			lu32_temp /= RAW_DP_CNT_IND;       
+
+			if((Avg_Raw_pressure_cnt2<=(lu32_temp+5)) && (Avg_Raw_pressure_cnt2>=(lu32_temp-5)))
 			{
-				Avg_Raw_pressure_cnt2 = Avg_Raw_pressure_cnt2 - ZERO_DP2_COUNT;
-				Dpressure2 = (float)Avg_Raw_pressure_cnt2 * 0.119751;
+				Avg_Raw_pressure_cnt2=(lu32_temp+Avg_Raw_pressure_cnt2+Avg_Raw_pressure_cnt2)/3;
 			}
 			else
 			{
-				Avg_Raw_pressure_cnt2 = ZERO_DP2_COUNT - Avg_Raw_pressure_cnt2;
-				Dpressure2 = (float)Avg_Raw_pressure_cnt2 * 0.119751;
-				Dpressure2 *= (-1.0);
+				Avg_Raw_pressure_cnt2=lu32_temp;
 			}
+	
+			Avg_Raw_pressure_cnt2 -= 1638;
+
+			RealDpressure2 = (float)Avg_Raw_pressure_cnt2;			
+			RealDpressure2 *= 0.1496910048065919;
+			RealDpressure2 -= 981;
 			
-			RealDpressure2 = Dpressure2;
-			Dpressure2 -= DP2_Cal_float_Value_F;
-			Dpressure2 -= DP2_Cal_float_Value_C;
+			float f32_temp=0;
+			f32_temp = RealDpressure2;
+			f32_temp -= DP2_Cal_float_Value_F;
+			f32_temp -= DP2_Cal_float_Value_C;
+			lu32_temp = f32_temp;
+			f32_temp = lu32_temp;
 			
-			if((Dpressure2<DP_ZERO_DISP_LIMIT_HIGH) && (Dpressure2>DP_ZERO_DISP_LIMIT_LOW)) Dpressure2=0.0;
+			if((f32_temp > 200) && (f32_temp <= 300)) f32_temp -= 1;
+			else if((f32_temp > 300) && (f32_temp <= 400)) f32_temp -= 2;
+			else if((f32_temp > 400) && (f32_temp <= 500)) f32_temp -= 3;
+			else if((f32_temp > 500) && (f32_temp <= 600)) f32_temp -= 4;
+			else if((f32_temp > 600) && (f32_temp <= 700)) f32_temp -= 5;
+			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
+			else if(f32_temp > 800) f32_temp -= 7;
+			
+			Dpressure2 = f32_temp;
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10863,21 +10892,21 @@ void SecondTick(void)
 		DP_StartUpTimer=0;
 	}
 	
-	if(gu16_parameterWord & ENABLE_DP2)
-	{
-		ReadDiffPressure2();
-	}
-	else
-	{
-		Dpressure2=0.0;
-
-		DP2_Max=0.0;
-		DP2_Min=0.0;
-
-		DP2_Alrm_ON=NO_ALARM;
-		
-		DP_StartUpTimer=0;
-	}
+	//if(gu16_parameterWord & ENABLE_DP2)
+	//{
+		//ReadDiffPressure2();
+	//}
+	//else
+	//{
+		//Dpressure2=0.0;
+//
+		//DP2_Max=0.0;
+		//DP2_Min=0.0;
+//
+		//DP2_Alrm_ON=NO_ALARM;
+		//
+		//DP_StartUpTimer=0;
+	//}
 	
 	#if ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 
@@ -10985,7 +11014,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 16;
-	data[6] = 4;
+	data[6] = 5;
 						
 	disp_value();
 	
