@@ -130,7 +130,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				700  //means 7.00
+#define SOFT_VER				710  //means 7.10
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -9801,6 +9801,11 @@ void SecondTick(void)
 	{
 		SendToSlave();
 	}
+	
+	//gu8_LCDBrigthnessCnt++;
+	//if(gu8_LCDBrigthnessCnt>63) gu8_LCDBrigthnessCnt=0;
+	//LCD_CTRLF = gu8_LCDBrigthnessCnt;
+	
 	//--------------------------------------------
 	/*if(gu8_DPAutoCalTimer)
 	{
@@ -10054,8 +10059,8 @@ void SecondTick(void)
 
 void InitLCDController(void)
 {
-	//
-	LCD_CTRLB = LCD_PRESC_bm | LCD_CLKDIV_DivBy1_gc | LCD_LPWAV_bm;
+	
+	LCD_CTRLB = LCD_PRESC_bm | LCD_CLKDIV_DivBy7_gc | LCD_LPWAV_bm;
 	
 	//Segment Line 0 to 27 used
 	LCD_CTRLC = 0b00011100;	
@@ -10120,7 +10125,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 0;
+	data[6] = 1;
 						
 	disp_value();
 	
@@ -12129,7 +12134,8 @@ void AllSegment(unsigned char state)
 						if(b.mec500_blink_flag)
 						{
 							convert_char(rtc.minute,&data[2],2);
-						
+							//convert_char(gu8_LCDBrigthnessCnt,&data[2],2);
+							
 							if(b.AM_PM_Flag)
 							{
 								RTC_AM_on;
@@ -20877,7 +20883,7 @@ void boot_data(void)
 		gu8_Dp2AlarmSensingTime=5;
 		eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 		
-		gu8_LCDBrigthnessCnt=55;
+		gu8_LCDBrigthnessCnt=27;
 		eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		
 		//EraseWholeFlash();
@@ -20894,7 +20900,7 @@ void boot_data(void)
 		gu8_LCDBrigthnessCnt  = eeprom_read_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR);
 		if(gu8_LCDBrigthnessCnt > 63)
 		{
-			gu8_LCDBrigthnessCnt=55;
+			gu8_LCDBrigthnessCnt=27;
 			eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		}
 		
