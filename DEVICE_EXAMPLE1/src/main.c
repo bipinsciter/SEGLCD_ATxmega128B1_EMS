@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				950  //means 9.50
+#define SOFT_VER				960  //means 9.60
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -424,6 +424,10 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define PARA_WRITE_CMD				0x11
 #define PARA_READ_CMD				0x10
 #define PARA_WITH_ALM_READ_CMD		0x00
+#define READ_DP1_VALUE				0x01
+#define READ_DP2_VALUE				0x02
+#define READ_TEMP_VALUE         	0x03
+#define READ_HUMIDITY_VALUE     	0x04
 //-------------------------------------------------
 #define NO_ERROR			0x00
 #define INVALID_CMD			0x01
@@ -6556,6 +6560,194 @@ void ServePCMsg(unsigned char SrcPort)
 			//SetTxmode(SrcPort,RxBuffer,j);
 		}
 	}
+	else if(RxBuffer[2]==READ_DP1_VALUE)
+	{	
+		RxBuffer[0]=0xFD;
+		
+		j=3;
+		
+		if(b.DP1_NC) 			
+		{
+			RxBuffer[j++] |= DP1_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill DP value
+			templong = Dpressure1*100;
+			j += fillValue(&RxBuffer[j],templong);	
+		}
+
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_DP1)
+		{
+			if(!DP1_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(DP1_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+		
+		RxBuffer[j++]=0xFC;
+	
+		SendToUART(SrcPort,RxBuffer,j);
+	}
+	else if(RxBuffer[2]==READ_DP2_VALUE)
+	{	
+		RxBuffer[0]=0xFD;
+		
+		j=3;
+		
+		if(b.DP2_NC) 			
+		{
+			RxBuffer[j++] |= DP2_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill DP value
+			templong = Dpressure2*100;
+			j += fillValue(&RxBuffer[j],templong);	
+		}
+
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_DP2)
+		{
+			if(!DP2_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(DP2_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+		
+		RxBuffer[j++]=0xFC;
+	
+		SendToUART(SrcPort,RxBuffer,j);
+	}
+	else if(RxBuffer[2]==READ_TEMP_VALUE)
+	{	
+		RxBuffer[0]=0xFD;
+		
+		j=3;
+		
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill Temp value
+			if(!TM_Unit)
+			{
+				tempshort = temperatureC*100;
+			}
+			else
+			{
+				tempshort = temperatureF*100;
+			}
+			
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_TEMP)
+		{
+			if(!TM_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(TM_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+		
+		RxBuffer[j++]=0xFC;
+	
+		SendToUART(SrcPort,RxBuffer,j);
+	}
+	else if(RxBuffer[2]==READ_HUMIDITY_VALUE)
+	{	
+		RxBuffer[0]=0xFD;
+		
+		j=3;
+			
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill Temp value
+			tempshort = humidityRH*100;
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_RH)
+		{
+			if(!RH_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(RH_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+		
+		RxBuffer[j++]=0xFC;
+	
+		SendToUART(SrcPort,RxBuffer,j);
+	}
 	else if(RxBuffer[2]==PARA_WRITE_CMD)
 	{
 		#ifdef DEBUG_RCV_CMD
@@ -10434,7 +10626,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 19;
-	data[6] = 5;
+	data[6] = 6;
 						
 	disp_value();
 	
