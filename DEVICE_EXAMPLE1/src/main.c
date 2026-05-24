@@ -130,11 +130,16 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				710  //means 7.10
+#define SOFT_VER				720  //means 7.20
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
 
+#define DEFAULT_LCD_BRIGHTNESS	 26
+
+
+#define DISP_PER			82.0 // PWM
+ 
 //*************************************************************************
 #define INIT_RTC_CORRUPTION_CHECK_CNT	5
 #define BATTERY_VOLTAGE_READ_TIME		5
@@ -206,8 +211,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DEFAULT_UART_DATABITS		3		//8
 #define DEFAULT_UART_PARITYBITS		0		//NONE
 #define DEFAULT_UART_STOPBITS		0		//1
-#define DEFAULT_CUSTOMER_PWD		0
-#define DEFAULT_FACTORY_PWD			0
+#define DEFAULT_CUSTOMER_PWD		100
+#define DEFAULT_FACTORY_PWD			4321
 #define DEFAULT_PARA_SCROLL_TIME	5
 //--------------------------------------------------
 	
@@ -307,7 +312,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //#define 	DN				0x10
 
 #define DOOR_SENSE				(PORTA_IN & BIT7)
-		
+	
 #define USB_SENSE				(PORTD_IN & BIT2)
 
 #define DP_CHANGE_SENSE			(PORTD_IN & BIT0)
@@ -328,9 +333,13 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define RED_BLIT_TOGGLE			PORTE_OUTTGL = BIT1
 
 #define WHITE_BLIT_SET_DIR		PORTE_DIRSET = BIT0
-#define WHITE_BLIT_ON			PORTE_OUTSET = BIT0
-#define WHITE_BLIT_OFF			PORTE_OUTCLR = BIT0
+#define WHITE_BLIT_ON 			{TCE0_CTRLA = TC_CLKSEL_DIV1_gc;  TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc); }
+#define WHITE_BLIT_OFF			{TCE0_CTRLA = 0;	TCE0_CTRLB = 0;  PORTE_OUTCLR = BIT0; }
+//#define WHITE_BLIT_ON			PORTE_OUTSET = BIT0
+//#define WHITE_BLIT_OFF			PORTE_OUTCLR = BIT0
 #define WHITE_BLIT_TOGGLE		PORTE_OUTTGL = BIT0
+
+
 		
 #define RS485_TX0_DIR_OP		PORTB_DIRSET = BIT6
 #define RS485_TX0_ENB 			PORTB_OUTSET = BIT6
@@ -1440,7 +1449,7 @@ unsigned char mode=NORMAL_MODE;
 unsigned char keybyte=0;
 unsigned char debounce=DEBOUNCE;
 
-float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor=0.0;
+float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor=0;
 short tempshort=0;
 unsigned char tempchar=0;
 unsigned char a1=0,a2=0,a3=0;
@@ -1490,7 +1499,8 @@ unsigned char rxMode=0;
 unsigned long LowEpoch=0,MidEpoch=0,MidEpoch1=0,HighEpoch=0,MidLogInd=0;
 unsigned long InitLogInd=0,LastLogInd=0,StartEpoch=0,EndEpoch=0,StartEpochTime=0,EndEpochTime=0,TotalLog=0,StartLogInd=0,EndLogInd=0;
 
-unsigned short logtransfer=0,gu16_dp_sw_factor=0;
+unsigned short logtransfer=0;
+signed short su16_dp_sw_factor=0;
 
 volatile unsigned long templong=0;
 volatile unsigned short flash24_StartInd=0,flash24_EndInd=0;
@@ -1609,7 +1619,7 @@ int main(void)
 	//-------------------------------------------------------
 	//Initialize Timer0
 	//-------------------------------------------------------
-	//Init_Timer0();
+	Init_Timer0();
 	
 	BUZZER_ON;
 	XBEE_RST_LOW;
@@ -2456,6 +2466,8 @@ int main(void)
 		//--------------------------------------------------------------------------------------
 
 	#endif
+	
+	WHITE_BLIT_ON;
 
  	while(1)
  	{	
@@ -2474,6 +2486,9 @@ int main(void)
 		{
 			SecondTick();
 			
+			//WHITE_BLIT_TOGGLE;
+			RED_BLIT_OFF;
+			
 			//--------------------------------------------
 			if(gu16_parameterWord & ENABLE_USB)
 			{
@@ -2489,7 +2504,7 @@ int main(void)
 						udc_start();
 						Init_USARTC0(UART_BaudRate,UART_DataBits,UART_Parity,UART_StopBit);
 						Init_USARTE0(BAUD_57600,DATABIT_8,PARITY_NONE,STOP_BIT_1);
-						//Init_Timer0();
+						Init_Timer0();
 						#ifdef ENABLE_BATTERY_DISPLAY
 						InitADC();
 						#endif
@@ -2509,7 +2524,7 @@ int main(void)
 						InitSystemClock();
 						Init_USARTC0(UART_BaudRate,UART_DataBits,UART_Parity,UART_StopBit);
 						Init_USARTE0(BAUD_57600,DATABIT_8,PARITY_NONE,STOP_BIT_1);
-						//Init_Timer0();
+						Init_Timer0();
 						#ifdef ENABLE_BATTERY_DISPLAY
 						InitADC();
 						#endif
@@ -2572,7 +2587,9 @@ int main(void)
 			b.sec_flag=0;
 		}
 		
-		if(b.AlarmLED)
+		//TM_Alrm_ON=UPPER_ALARM;
+		
+		/*if(b.AlarmLED)
 		{
 			if(b.doorSense==1)
 			{
@@ -2604,7 +2621,7 @@ int main(void)
 			}
 
 			b.AlarmLED=0;
-		}
+		}*/
 		
 		
 		// Check for any USB Command ================================================
@@ -6599,9 +6616,15 @@ void ServePCMsg(unsigned char SrcPort)
 			case DP2CAL_ID:
 			case TMCAL_ID:
 			case RHCAL_ID:
-			case DP_SW_FACT_ID:
 			
 				tempshort = findValue(&RxBuffer[4],5);
+				
+			break;
+			
+			case DP_SW_FACT_ID:
+			
+				tempshort = findValue(&RxBuffer[5],5);
+				if(RxBuffer[4]=='-'); tempshort *= (-1);	
 				
 			break;
 			
@@ -7102,15 +7125,49 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			case DP_SW_FACT_ID:
 			
-				gu16_dp_sw_factor=tempshort;
-				f32_dp_sw_factor=(float)gu16_dp_sw_factor/100.0;
-				eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,gu16_dp_sw_factor);
+				su16_dp_sw_factor=tempshort;
+				f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
+				eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 				
 			break;
 			
 			case DP1CAL_ID:
 				
 				if(b.FactoryCalibrationOn==1)
+				{
+					//DP1_Cal_Count=tempshort;
+					//DP1_Cal_Count_C=0;
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT,DP1_Cal_Count);
+					
+					DP1_Cal_Value_F = RealDpressure1*10.0;
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+					DP1_Cal_float_Value_F = (float)DP1_Cal_Value_F/10.0;
+					
+					DP1_Cal_Value_C = 0;
+					DP1_Cal_float_Value_C = 0;
+				}
+				else if(b.CustmerCalibrationOn==1)
+				{
+					//DP1_Cal_Count_C=tempshort;
+					
+					DP1_Cal_Value_C = (RealDpressure1 - DP1_Cal_float_Value_F)*10.0;
+					DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
+				}
+				
+				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
+				{
+					PCCalibrationTimer=60;
+					
+					//eeprom_write_word ((unsigned int*)DP1_CAL_CNT_C,DP1_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+					
+					DP1_Max = DEFAUT_DP1_MAX;
+					DP1_Min = DEFAUT_DP1_MIN;
+					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
+				}
+				
+				/*if(b.FactoryCalibrationOn==1)
 				{
 					//DP1_Cal_Count=tempshort;
 					//DP1_Cal_Count_C=0;
@@ -7168,12 +7225,47 @@ void ServePCMsg(unsigned char SrcPort)
 					DP1_Min = DEFAUT_DP1_MIN;
 					eeprom_write_block((unsigned char*)&DP1_Max,(unsigned char*)DP1_MAXIMUM,4);
 					eeprom_write_block((unsigned char*)&DP1_Min,(unsigned char*)DP1_MINIMUM,4);
-				}
+				}*/
 				
 			break;
+			
 			case DP2CAL_ID:
 			
 				if(b.FactoryCalibrationOn==1)
+				{
+					//DP2_Cal_Count=tempshort;
+					//DP2_Cal_Count_C=0;
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT,DP2_Cal_Count);
+					
+					DP2_Cal_Value_F = RealDpressure2*10.0;
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+					DP2_Cal_float_Value_F = (float)DP2_Cal_Value_F/10.0;
+					
+					DP2_Cal_Value_C = 0;
+					DP2_Cal_float_Value_C = 0;
+				}
+				else if(b.CustmerCalibrationOn==1)
+				{
+					//DP2_Cal_Count_C=tempshort;
+					
+					DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
+					DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
+				}
+			
+				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
+				{
+					PCCalibrationTimer=60;
+					
+					//eeprom_write_word ((unsigned int*)DP2_CAL_CNT_C,DP2_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+					
+					DP2_Max = DEFAUT_DP2_MAX;
+					DP2_Min = DEFAUT_DP2_MIN;
+					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
+				}
+				
+				/*if(b.FactoryCalibrationOn==1)
 				{
 					//DP2_Cal_Count=tempshort;
 					//DP2_Cal_Count_C=0;
@@ -7231,12 +7323,75 @@ void ServePCMsg(unsigned char SrcPort)
 					DP2_Min = DEFAUT_DP2_MIN;
 					eeprom_write_block((unsigned char*)&DP2_Max,(unsigned char*)DP2_MAXIMUM,4);
 					eeprom_write_block((unsigned char*)&DP2_Min,(unsigned char*)DP2_MINIMUM,4);
-				}
+				}*/
 				
 			break;
 			case TMCAL_ID:
 				
 				if(b.FactoryCalibrationOn==1)
+				{
+					//TM_Cal_Count=tempshort;
+					//TM_Cal_Count_C=0;
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT,TM_Cal_Count);
+					
+					if(!TM_Unit)
+					{
+						ss1 = RealtemperatureC*10.0;
+						TM_Cal_Value_F = ss1 - tempshort;
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
+					}
+					else
+					{
+						ss1 = RealtemperatureF*10.0;
+						TM_Cal_Value_F = ss1 - tempshort;
+						TM_Cal_Value_F = ((float)TM_Cal_Value_F * 1.8) + 32.0;
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+						
+						TM_Cal_Value_F = (TM_Cal_Value_F-320) / 1.8;
+						TM_Cal_float_Value_F = (float)TM_Cal_Value_F/10.0;
+					}
+										
+					TM_Cal_Value_C = 0;
+					TM_Cal_float_Value_C = 0;
+					eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+				}
+				else if(b.CustmerCalibrationOn==1)
+				{
+					//TM_Cal_Count_C=tempshort;
+					
+					if(!TM_Unit)
+					{
+						ss1 = (RealtemperatureC - TM_Cal_float_Value_F)*10.0;
+						TM_Cal_Value_C = ss1 - tempshort;
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
+					}
+					else
+					{
+						ss1 = (RealtemperatureF - TM_Cal_float_Value_F)*10.0;
+						TM_Cal_Value_C = ss1 - tempshort;
+						TM_Cal_Value_C = ((float)TM_Cal_Value_C * 1.8) + 32.0;
+						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+						
+						TM_Cal_Value_C = (TM_Cal_Value_C-320) / 1.8;
+						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
+					}
+				}
+				
+				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
+				{
+					PCCalibrationTimer=60;
+					
+					//eeprom_write_word ((unsigned int*)TEMP_CAL_CNT_C,TM_Cal_Count_C);
+
+					TM_Max = DEFAUT_TEMP_C_MAX;
+					TM_Min = DEFAUT_TEMP_C_MIN;
+					eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
+				}
+				
+				/*if(b.FactoryCalibrationOn==1)
 				{
 					//TM_Cal_Count=tempshort;
 					//TM_Cal_Count_C=0;
@@ -7323,12 +7478,52 @@ void ServePCMsg(unsigned char SrcPort)
 					TM_Min = DEFAUT_TEMP_C_MIN;
 					eeprom_write_block((unsigned char*)&TM_Max,(unsigned char*)TEMP_MAXIMUM,4);
 					eeprom_write_block((unsigned char*)&TM_Min,(unsigned char*)TEMP_MINIMUM,4);
-				}
+				}*/
 				
 			break;
 			case RHCAL_ID:
 				
 				if(b.FactoryCalibrationOn==1)
+				{
+					ss1 = RealhumidityRH*10.0;
+					RH_Cal_Value_F = ss1 - tempshort;
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+					RH_Cal_float_Value_F = (float)RH_Cal_Value_F/10.0;
+				
+					RH_Cal_Value_C = 0;
+					RH_Cal_float_Value_C = 0;
+				}
+				
+				//else if(b.CustmerCalibrationOn==1)
+				{
+					ss1 = (RealhumidityRH - RH_Cal_float_Value_F)*10.0;
+					RH_Cal_Value_C = ss1 - tempshort;
+					RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
+				}
+				
+				opstr(0,"\r\nRH_Cal_float_Value_F:");
+				print_float(0,RH_Cal_float_Value_F,test,1);		
+				opstr(0,"\r\n");
+					
+				opstr(0,"\r\nRH_Cal_float_Value_C:");
+				print_float(0,RH_Cal_float_Value_C,test,1);		
+				opstr(0,"\r\n");
+				
+				//if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
+				{
+					PCCalibrationTimer=60;
+					
+					//eeprom_write_word ((unsigned int*)RH_CAL_CNT_C,RH_Cal_Count_C);
+					eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+					
+					RH_Max = DEFAUT_RH_MAX;
+					RH_Min = DEFAUT_RH_MIN;
+					eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
+					eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
+				}
+				
+			
+				/*if(b.FactoryCalibrationOn==1)
 				{
 					//RH_Cal_Count=tempshort;
 					//RH_Cal_Count_C=0;
@@ -7388,7 +7583,7 @@ void ServePCMsg(unsigned char SrcPort)
 					RH_Min = DEFAUT_RH_MIN;
 					eeprom_write_block((unsigned char*)&RH_Max,(unsigned char*)RH_MAXIMUM,4);
 					eeprom_write_block((unsigned char*)&RH_Min,(unsigned char*)RH_MINIMUM,4);
-				}
+				}*/
 				
 			break;
 			case TMUNT_ID:
@@ -7648,7 +7843,7 @@ void ServePCMsg(unsigned char SrcPort)
 			case RHMAX_ID:		tempshort = RH_Max*100;					break;
 			case TMUNT_ID:		tempshort = TM_Unit;					break;
 			case DP_SW_FACT_ID:
-				tempshort = gu16_dp_sw_factor;
+				tempshort = su16_dp_sw_factor;
 			break;
 			case DP1CAL_ID:		
 					if(b.FactoryCalibrationOn==1)
@@ -8760,10 +8955,15 @@ unsigned char CalCRC(unsigned char *ptr,unsigned short NoOfByte)
 
 void Init_Timer0(void)
 {
-	BUZZER_DIR_OP;							//Set PE0 as output to generate PWM for BUZZER 
-		
+	unsigned short temp=0;
+	
+	//BUZZER_DIR_OP;							//Set PE0 as output to generate PWM for BUZZER 
+	WHITE_BLIT_SET_DIR;							//Set PE0 as output to generate PWM for BACKLIT 
+	
+	temp=(unsigned short)(2728.0*(DISP_PER/100));
+	
 	TCE0_CTRLB = (TC0_CCAEN_bm | TC_WGMODE_SS_gc);
-	TCE0_CCA = 1364;//535;//1364;
+	TCE0_CCA = temp;//1636;//1364;//535;//1364;
 	TCE0_PER = 2728;//1070;//2728;
 	TCE0_CTRLA = TC_CLKSEL_DIV1_gc;
 	TCE0_INTCTRLA = 0b00000000;
@@ -8890,7 +9090,14 @@ void ReadDiffPressure1(void)
 			
 			Dpressure1 = f32_temp;
 			
-			if(!DP_CHANGE_SENSE && gu16_dp_sw_factor) Dpressure1 *= f32_dp_sw_factor;
+			//if(!DP_CHANGE_SENSE) //ENABLE for switch
+			{
+				if((Dpressure1>0.03) || (Dpressure1<-0.03))
+				{
+					if(Dpressure1>0.03) Dpressure1 += f32_dp_sw_factor;
+					if(Dpressure1<-0.03) Dpressure1 -= f32_dp_sw_factor;
+				}
+			}
 			
 			if(!DP_StartUpTimer)
 			{
@@ -9276,8 +9483,14 @@ void ReadDiffPressure2(void)
 			
 			Dpressure2 = f32_temp;
 			
-			if(!DP_CHANGE_SENSE && gu16_dp_sw_factor) Dpressure2 *= f32_dp_sw_factor;
-				
+			//if(!DP_CHANGE_SENSE) //ENABLE for switch
+			{
+				if((Dpressure2>0.03) || (Dpressure2<-0.03))
+				{
+					if(Dpressure2>0.03) Dpressure2 += f32_dp_sw_factor;
+					if(Dpressure2<-0.03) Dpressure2 -= f32_dp_sw_factor;
+				}
+			}
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10060,7 +10273,7 @@ void SecondTick(void)
 void InitLCDController(void)
 {
 	
-	LCD_CTRLB = LCD_PRESC_bm | LCD_CLKDIV_DivBy7_gc | LCD_LPWAV_bm;
+	LCD_CTRLB = LCD_PRESC_bm | LCD_CLKDIV_DivBy6_gc | LCD_LPWAV_bm;
 	
 	//Segment Line 0 to 27 used
 	LCD_CTRLC = 0b00011100;	
@@ -10125,7 +10338,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 1;
+	data[6] = 2;
 						
 	disp_value();
 	
@@ -20535,7 +20748,7 @@ void Read_SHT25(void)
 
     //-- write humidity and temperature values on LCD --
     //sprintf(humitityOutStr,    "Humidity RH:%6.2f %% ",humidityRH);
-    //sprintf(temperatureOutStr, "Temperature:%6.2f€C",temperatureC);
+    //sprintf(temperatureOutStr, "Temperature:%6.2fÂ€C",temperatureC);
     //DisplayWriteString(2,0,humitityOutStr);
     //DisplayWriteString(3,0,temperatureOutStr);
 
@@ -20543,7 +20756,7 @@ void Read_SHT25(void)
     //if(error != 0)
     //{ DisplayWriteString(1,3,"Error occurred");
     //  DisplayWriteString(2,0,"Humidity RH: --.-- %%");
-    //  DisplayWriteString(3,0,"Temperature: --.--€C");
+    //  DisplayWriteString(3,0,"Temperature: --.--Â€C");
     //}
     //else if(endOfBattery) DisplayWriteString(1,3,"Low Batt");
     //else DisplayWriteString(1,0,"                    ");
@@ -20708,9 +20921,9 @@ void boot_data(void)
 			eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 		}
 		
-		gu16_dp_sw_factor=0;
+		su16_dp_sw_factor=0;
 		f32_dp_sw_factor=0.0;
-		eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,gu16_dp_sw_factor);
+		eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 		
 		if(gu16_parameterWord & ENABLE_TEMP)
 		{
@@ -20883,7 +21096,7 @@ void boot_data(void)
 		gu8_Dp2AlarmSensingTime=5;
 		eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 		
-		gu8_LCDBrigthnessCnt=27;
+		gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
 		eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		
 		//EraseWholeFlash();
@@ -20900,7 +21113,7 @@ void boot_data(void)
 		gu8_LCDBrigthnessCnt  = eeprom_read_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR);
 		if(gu8_LCDBrigthnessCnt > 63)
 		{
-			gu8_LCDBrigthnessCnt=27;
+			gu8_LCDBrigthnessCnt=DEFAULT_LCD_BRIGHTNESS;
 			eeprom_write_byte ((unsigned char*)LCD_BRIGHT_CNT_ADDR,gu8_LCDBrigthnessCnt);
 		}
 		
@@ -21231,13 +21444,13 @@ void boot_data(void)
 			}
 		}
 		
-		gu16_dp_sw_factor  = eeprom_read_word ((unsigned int*)DP_SW_FACT_ADDR);
-		if(gu16_dp_sw_factor>10000)
+		su16_dp_sw_factor  = eeprom_read_word ((unsigned int*)DP_SW_FACT_ADDR);
+		if((su16_dp_sw_factor<-10000) && (su16_dp_sw_factor>10000))
 		{	
-			gu16_dp_sw_factor=0;
-			eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,gu16_dp_sw_factor);
+			su16_dp_sw_factor=0;
+			eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
 		}
-		f32_dp_sw_factor=(float)gu16_dp_sw_factor/100.0;
+		f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
 		
 		if(gu16_parameterWord & ENABLE_TEMP)
 		{
@@ -22238,7 +22451,7 @@ ISR(USARTE0_RXC_vect)
 				
 				rxMode=0;
 				RxTimeout=0;
-				if(RxBuffer1[RxInd-2]==crcVal)
+				//if(RxBuffer1[RxInd-2]==crcVal)
 				{
 					if(!b.FlashReadCmd && !b.Flash24ReadCmd && !b.MinMaxMeanLogReadCmd && !b.MeanHrLogReadCmd && !b.RamReadCmd && !b.RamAllReadCmd)
 					{
