@@ -129,7 +129,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //*************************************************************************
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
-#define SOFT_VER				650  //means 6.50
+#define SOFT_VER				660  //means 6.60
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -8010,36 +8010,28 @@ void ServePCMsg(unsigned char SrcPort)
 					
 					DP1_Cal_Value_C = (RealDpressure1 - DP1_Cal_float_Value_F)*10.0;
 					DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
-										
-					if(!DP1_UserCalDateInd) a1=NO_OF_USER_CAL_DATE-1;
-					else a1=DP1_UserCalDateInd-1;
+						
+					Buffer1[0] = findValue(&RxBuffer[9],2);
+					Buffer1[1] = findValue(&RxBuffer[11],2);
+					Buffer1[2] = findValue(&RxBuffer[13],2);
+								
+					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					{	
+						if(!DP1_UserCalDateInd) a1=NO_OF_USER_CAL_DATE-1;
+						else a1=DP1_UserCalDateInd-1;
 					
-					us1 = DP1_USER_CAL_DATE_ADDR + (a1 * 6);
-					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+						us1 = DP1_USER_CAL_DATE_ADDR + (a1 * 6);
+						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
 						
-					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-					{
-						us1 = DP1_USER_CAL_DATE_ADDR + (DP1_UserCalDateInd * 6);
-						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+						{
+							us1 = DP1_USER_CAL_DATE_ADDR + (DP1_UserCalDateInd * 6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-						/*opstr(0,"Cal Date at ");
-						print_Hex(0,DP1_UserCalDateInd);
-						opstr(0," Date:");
-						opchar(0,RxBuffer[9]);
-						opchar(0,RxBuffer[10]);
-						opchar(0,RxBuffer[11]);
-						opchar(0,RxBuffer[12]);
-						opchar(0,RxBuffer[13]);
-						opchar(0,RxBuffer[14]);
-						*/
-						
-						DP1_UserCalDateInd++;
-						if(DP1_UserCalDateInd>=NO_OF_USER_CAL_DATE) DP1_UserCalDateInd=0;
-						eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
-					}
-					else
-					{
-						//opstr(0,"Cal On same date");
+							DP1_UserCalDateInd++;
+							if(DP1_UserCalDateInd>=NO_OF_USER_CAL_DATE) DP1_UserCalDateInd=0;
+							eeprom_write_byte ((unsigned char*)DP1_USER_CAL_DATE_IND_ADDR,DP1_UserCalDateInd);
+						}
 					}
 				}
 				
@@ -8082,34 +8074,27 @@ void ServePCMsg(unsigned char SrcPort)
 					DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
 					DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
 					
-					if(!DP2_UserCalDateInd) a1=14;
-					else a1=DP2_UserCalDateInd-1;
+					Buffer1[0] = findValue(&RxBuffer[9],2);
+					Buffer1[1] = findValue(&RxBuffer[11],2);
+					Buffer1[2] = findValue(&RxBuffer[13],2);
 					
-					us1 = DP2_USER_CAL_DATE_ADDR + (a1 * 6);
-					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
-					
-					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
 					{
-						us1 = DP2_USER_CAL_DATE_ADDR + (DP2_UserCalDateInd * 6);
-						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						if(!DP2_UserCalDateInd) a1=14;
+						else a1=DP2_UserCalDateInd-1;
+					
+						us1 = DP2_USER_CAL_DATE_ADDR + (a1 * 6);
+						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+						{
+							us1 = DP2_USER_CAL_DATE_ADDR + (DP2_UserCalDateInd * 6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-						/*opstr(0,"Cal Date at ");
-						print_Hex(0,DP2_UserCalDateInd);
-						opstr(0," Date:");
-						opchar(0,RxBuffer[9]);
-						opchar(0,RxBuffer[10]);
-						opchar(0,RxBuffer[11]);
-						opchar(0,RxBuffer[12]);
-						opchar(0,RxBuffer[13]);
-						opchar(0,RxBuffer[14]);
-						*/
-						DP2_UserCalDateInd++;
-						if(DP2_UserCalDateInd>14) DP2_UserCalDateInd=0;
-						eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
-					}
-					else
-					{
-						//opstr(0,"Cal On same date");
+							DP2_UserCalDateInd++;
+							if(DP2_UserCalDateInd>14) DP2_UserCalDateInd=0;
+							eeprom_write_byte ((unsigned char*)DP2_USER_CAL_DATE_IND_ADDR,DP2_UserCalDateInd);
+						}
 					}
 				}
 			
@@ -8182,35 +8167,27 @@ void ServePCMsg(unsigned char SrcPort)
 						TM_Cal_float_Value_C = (float)TM_Cal_Value_C/10.0;
 					}
 					
-					if(!TM_UserCalDateInd) a1=14;
-					else a1=TM_UserCalDateInd-1;
+					Buffer1[0] = findValue(&RxBuffer[9],2);
+					Buffer1[1] = findValue(&RxBuffer[11],2);
+					Buffer1[2] = findValue(&RxBuffer[13],2);
 					
-					us1 = TM_USER_CAL_DATE_ADDR + (a1 * 6);
-					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					{
+						if(!TM_UserCalDateInd) a1=14;
+						else a1=TM_UserCalDateInd-1;
 					
-					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-					{
-						us1 = TM_USER_CAL_DATE_ADDR + (TM_UserCalDateInd * 6);
-						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+						us1 = TM_USER_CAL_DATE_ADDR + (a1 * 6);
+						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+						{
+							us1 = TM_USER_CAL_DATE_ADDR + (TM_UserCalDateInd * 6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
 						
-						/*opstr(0,"Cal Date at ");
-						print_Hex(0,TM_UserCalDateInd);
-						opstr(0," Date:");
-						opchar(0,RxBuffer[9]);
-						opchar(0,RxBuffer[10]);
-						opchar(0,RxBuffer[11]);
-						opchar(0,RxBuffer[12]);
-						opchar(0,RxBuffer[13]);
-						opchar(0,RxBuffer[14]);
-						*/
-						
-						TM_UserCalDateInd++;
-						if(TM_UserCalDateInd>14) TM_UserCalDateInd=0;
-						eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
-					}
-					else
-					{
-						//opstr(0,"Cal On same date");
+							TM_UserCalDateInd++;
+							if(TM_UserCalDateInd>14) TM_UserCalDateInd=0;
+							eeprom_write_byte ((unsigned char*)TM_USER_CAL_DATE_IND_ADDR,TM_UserCalDateInd);
+						}
 					}
 				}
 				
@@ -8254,35 +8231,27 @@ void ServePCMsg(unsigned char SrcPort)
 					RH_Cal_Value_C = ss1 - tempshort;
 					RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 					
-					if(!RH_UserCalDateInd) a1=14;
-					else a1=RH_UserCalDateInd-1;
+					Buffer1[0] = findValue(&RxBuffer[9],2);
+					Buffer1[1] = findValue(&RxBuffer[11],2);
+					Buffer1[2] = findValue(&RxBuffer[13],2);
 					
-					us1 = RH_USER_CAL_DATE_ADDR + (a1 * 6);
-					eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					if(!Buffer1[0] && !Buffer1[1] && !Buffer1[2])
+					{
+						if(!RH_UserCalDateInd) a1=14;
+						else a1=RH_UserCalDateInd-1;
 					
-					if(memcmp(&Buffer1[0],&RxBuffer[9],6))
-					{
-						us1 = RH_USER_CAL_DATE_ADDR + (RH_UserCalDateInd * 6);
-						eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
-						
-						/*opstr(0,"Cal Date at ");
-						print_Hex(0,RH_UserCalDateInd);
-						opstr(0," Date:");
-						opchar(0,RxBuffer[9]);
-						opchar(0,RxBuffer[10]);
-						opchar(0,RxBuffer[11]);
-						opchar(0,RxBuffer[12]);
-						opchar(0,RxBuffer[13]);
-						opchar(0,RxBuffer[14]);
-						*/
-						
-						RH_UserCalDateInd++;
-						if(RH_UserCalDateInd>14) RH_UserCalDateInd=0;
-						eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
-					}
-					else
-					{
-						//opstr(0,"Cal On same date");
+						us1 = RH_USER_CAL_DATE_ADDR + (a1 * 6);
+						eeprom_read_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,6);
+					
+						if(memcmp(&Buffer1[0],&RxBuffer[9],6))
+						{
+							us1 = RH_USER_CAL_DATE_ADDR + (RH_UserCalDateInd * 6);
+							eeprom_write_block((unsigned char*)&RxBuffer[9],(unsigned char*)us1,6);
+
+							RH_UserCalDateInd++;
+							if(RH_UserCalDateInd>14) RH_UserCalDateInd=0;
+							eeprom_write_byte ((unsigned char*)RH_USER_CAL_DATE_IND_ADDR,RH_UserCalDateInd);
+						}
 					}
 				}
 				
@@ -11014,7 +10983,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 16;
-	data[6] = 5;
+	data[6] = 6;
 						
 	disp_value();
 	
