@@ -1628,12 +1628,12 @@ unsigned char clkmode=0;
 unsigned char comport=0;
 unsigned char varusb=0;
 unsigned char gu8ar_SrNumber[16]={0};
-unsigned char gu8arr_XbeeMac[NO_OF_XBEE_MAC][XBEE_MAC_SIZE]={0};
-unsigned char gu8arr_XbeeSelfMac[XBEE_MAC_SIZE]={'0'};
+//unsigned char gu8arr_XbeeMac[NO_OF_XBEE_MAC][XBEE_MAC_SIZE]={0};
+//unsigned char gu8arr_XbeeSelfMac[XBEE_MAC_SIZE]={'0'};
 
 unsigned char *p_SrNumber;
 unsigned long gu32_SrNumber;
-unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP,gu8_AutoSentTimer=0,gu8_groupID=0,gu8_broadcast=0,gu8_Mac2ValidTimer = 0;
+unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_AutoSentTimer=0,gu8_broadcast=0,gu8_Mac2ValidTimer = 0;
 
 unsigned char gu8_deviceIDChangeTryTimer=0, gu8_deviceIDChangeTry=0;
 
@@ -1723,7 +1723,7 @@ void FillRamBuffer(unsigned char,unsigned char,unsigned short);
 void SetTxmode(unsigned char txmode,unsigned char *buffer,unsigned short bytes);
 void SendToSlave(void);
 uint32_t ascii2hex(uint8_t *data, uint8_t NoOfdigit);
-void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac);
+//void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac);
 //****************************************************************************************************************************************
 
 // Initialize the Kalman filter
@@ -2092,7 +2092,7 @@ int main(void)
 		
 	#endif
 
-	SetMAC2Xbee(&gu8arr_XbeeMac[0][0],1);
+	//SetMAC2Xbee(&gu8arr_XbeeMac[0][0],1);
 
 	Kalman_Init(&Kalman[0], 0.01, 0.1, 0.0);  // Initialize with default values
 	Kalman_Init(&Kalman[1], 0.01, 0.1, 0.0);  // Initialize with default values
@@ -2737,7 +2737,7 @@ int main(void)
  	}//END OF WHILE LOOP
 }
 
-void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
+/*void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
 {
 	unsigned char buffer[5]={0};
 	
@@ -2788,7 +2788,7 @@ void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
 	//-------------------------
 	
 	//SendToUART(1,gu8arr_XbeeSelfMac,XBEE_MAC_SIZE);
-}
+}*/
 	
 void check_key(void)
 {
@@ -4371,7 +4371,6 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 							}
 						break;
@@ -4824,7 +4823,6 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,DeviceID);
 							}
 						break;
@@ -6319,7 +6317,7 @@ void ServePCMsg(unsigned char SrcPort)
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
-	unsigned char index=0,j=0,lu8_sendResponse=0,lu8_GroupDelay=0,m=0;
+	unsigned char index=0,j=0;
 	
 	if(gu8_IsCOMDisable)
 	{
@@ -6342,231 +6340,193 @@ void ServePCMsg(unsigned char SrcPort)
 	
 	if(RxBuffer[2]==PARA_WITH_ALM_READ_CMD)
 	{	
-		if(RxInd==6)
+		RxBuffer[0]=0xFD;
+			
+		RxBuffer[3]=0x00;
+		if(b.paraIdNotValid) 	RxBuffer[3] |= INVALID_PARA;
+		if(b.DP1_NC) 			RxBuffer[3] |= DP1_FAULTY;
+		if(b.DP2_NC) 			RxBuffer[3] |= DP2_FAULTY;
+		if(b.RH_TEMP_NC) 		RxBuffer[3] |= RH_TEMP_FAULTY;
+			
+		j=4;
+			
+		if(b.DP1_NC) 			
 		{
-			if((RxBuffer[3]==0x00) || (RxBuffer[3]==gu8_groupID))
+			RxBuffer[j++] |= DP1_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+				
+			//Fill DP value
+			templong = Dpressure1*100;
+			j += fillValue(&RxBuffer[j],templong);	
+		}
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		if(b.DP2_NC)
+		{
+			RxBuffer[j++] |= DP2_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+				
+			//Fill DP value
+			templong = Dpressure2*100;
+			j += fillValue(&RxBuffer[j],templong);
+		}
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+				
+			//Fill Temp value
+			if(!TM_Unit)
 			{
-				lu8_sendResponse = 1;
-				
-				//if(gu8_groupID>1)
-				//{
-					//for(m=0;m<gu8_groupID;m++)
-					//{
-						//_delay_ms(100);
-					//}
-				//}
-				
-				lu8_GroupDelay = (DeviceID - 1)%gu8_DeviceInGroup;
-				
-				if(lu8_GroupDelay)
-				{
-					for(m=0;m<lu8_GroupDelay;m++)
-					{
-						_delay_ms(1);
-					}
-				}
+				tempshort = temperatureC*100;
 			}
 			else
 			{
-				lu8_sendResponse = 0;
+				tempshort = temperatureF*100;
+			}
+				
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+				
+			//Fill Temp value
+			tempshort = humidityRH*100;
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_DP1)
+		{
+			if(!DP1_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(DP1_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
 			}
 		}
 		else
-		{	
-			lu8_sendResponse = 1;
-		}
-		
-		if(lu8_sendResponse==1)
 		{
-			RxBuffer[0]=0xFD;
-			
-			RxBuffer[3]=0x00;
-			if(b.paraIdNotValid) 	RxBuffer[3] |= INVALID_PARA;
-			if(b.DP1_NC) 			RxBuffer[3] |= DP1_FAULTY;
-			if(b.DP2_NC) 			RxBuffer[3] |= DP2_FAULTY;
-			if(b.RH_TEMP_NC) 		RxBuffer[3] |= RH_TEMP_FAULTY;
-			
-			j=4;
-			
-			if(b.DP1_NC) 			
-			{
-				RxBuffer[j++] |= DP1_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill DP value
-				templong = Dpressure1*100;
-				j += fillValue(&RxBuffer[j],templong);	
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.DP2_NC)
-			{
-				RxBuffer[j++] |= DP2_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill DP value
-				templong = Dpressure2*100;
-				j += fillValue(&RxBuffer[j],templong);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.RH_TEMP_NC) 			
-			{
-				RxBuffer[j++] |= RH_TEMP_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill Temp value
-				if(!TM_Unit)
-				{
-					tempshort = temperatureC*100;
-				}
-				else
-				{
-					tempshort = temperatureF*100;
-				}
-				
-				j += fillValue(&RxBuffer[j],tempshort);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.RH_TEMP_NC) 			
-			{
-				RxBuffer[j++] |= RH_TEMP_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill Temp value
-				tempshort = humidityRH*100;
-				j += fillValue(&RxBuffer[j],tempshort);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-
-			if(gu16_parameterWord & ENABLE_DP1)
-			{
-				if(!DP1_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(DP1_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			if(gu16_parameterWord & ENABLE_DP2)
-			{
-				if(!DP2_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(DP2_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			if(gu16_parameterWord & ENABLE_TEMP)
-			{
-				if(!TM_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(TM_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			if(gu16_parameterWord & ENABLE_RH)
-			{
-				if(!RH_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(RH_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			#ifdef DISABLE_DOOR_SENSING
-
-				//Door Close
-				RxBuffer[j++] = 0x0F;
-				RxBuffer[j++] = 0x0F;
-			
-			#else
-				
-			if(b.doorStatus==OPEN)
-			{
-				//Door Open
-				RxBuffer[j++] = 0x0E;
-				RxBuffer[j++] = 0x0E;	
-			}
-			else
-			{
-				//Door Close
-				RxBuffer[j++] = 0x0F;
-				RxBuffer[j++] = 0x0F;
-			}
-				
-			#endif
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
-			j+=8;
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			memcpy(&RxBuffer[j],(unsigned char*)&ep.currentEpochTime,4);
-			j+=4;
-			
-			RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
-			j++;
-			
-			RxBuffer[j++]=0xFC;
-		
-			SendToUART(SrcPort,RxBuffer,j);
-			//SetTxmode(SrcPort,RxBuffer,j);
+			RxBuffer[j++] = 0;
 		}
+			
+		if(gu16_parameterWord & ENABLE_DP2)
+		{
+			if(!DP2_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(DP2_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+			
+		if(gu16_parameterWord & ENABLE_TEMP)
+		{
+			if(!TM_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(TM_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+			
+		if(gu16_parameterWord & ENABLE_RH)
+		{
+			if(!RH_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(RH_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		#ifdef DISABLE_DOOR_SENSING
+
+			//Door Close
+			RxBuffer[j++] = 0x0F;
+			RxBuffer[j++] = 0x0F;
+			
+		#else
+				
+		if(b.doorStatus==OPEN)
+		{
+			//Door Open
+			RxBuffer[j++] = 0x0E;
+			RxBuffer[j++] = 0x0E;	
+		}
+		else
+		{
+			//Door Close
+			RxBuffer[j++] = 0x0F;
+			RxBuffer[j++] = 0x0F;
+		}
+				
+		#endif
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
+		j+=8;
+			
+		RxBuffer[j++] = 0xEE;	//Field Separator
+			
+		memcpy(&RxBuffer[j],(unsigned char*)&ep.currentEpochTime,4);
+		j+=4;
+			
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+			
+		RxBuffer[j++]=0xFC;
+		
+		SendToUART(SrcPort,RxBuffer,j);
 	}
 	else if(RxBuffer[2]==READ_DP1_VALUE)
 	{	
@@ -7087,7 +7047,6 @@ void ServePCMsg(unsigned char SrcPort)
 					gu8_deviceIDChangeTry=0;
 					
 					DeviceID=tempshort;
-					gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 				}
 				
@@ -7937,13 +7896,6 @@ void ServePCMsg(unsigned char SrcPort)
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 				}
 			break;
-			case DEVICES_IN_GROUP_ID:
-				if((tempshort>=1) && (tempshort <= 100))
-				{
-					gu8_DeviceInGroup=tempshort;
-					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
-				}
-			break;
 			case LCD_CONTROL_ID:
 				if((tempshort==0) || (tempshort==1))
 				{
@@ -7989,7 +7941,7 @@ void ServePCMsg(unsigned char SrcPort)
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP2_ALM_SENSE_TIME_ADDR,gu8_Dp2AlarmSensingTime);
 				}
 			break;
-			case XBEE_MAC_ADDR_ID:
+			/*case XBEE_MAC_ADDR_ID:
 				
 				tempchar=RxBuffer[4]-'1';
 				
@@ -8004,7 +7956,7 @@ void ServePCMsg(unsigned char SrcPort)
 					gu8_Mac2ValidTimer = 60;
 				}
 				
-			break;
+			break;*/
 			case ACK_TIMER_ID:
 				AckTimer=tempshort;
 				eeprom_busy_wait();  eeprom_write_word ((unsigned int*)ACK_TIMER,AckTimer);
@@ -8094,10 +8046,10 @@ void ServePCMsg(unsigned char SrcPort)
 			Init_USARTC0(UART_BaudRate,UART_DataBits,UART_Parity,UART_StopBit);
 		}	
 		
-		if(RxBuffer[3]==XBEE_MAC_ADDR_ID)
+		/*if(RxBuffer[3]==XBEE_MAC_ADDR_ID)
 		{
 			if(gu8_Mac2ValidTimer) SetMAC2Xbee(&gu8arr_XbeeMac[1][0],0);
-		}
+		}*/
 		
 	}
 	else if(RxBuffer[2]==PARA_READ_CMD)
@@ -8284,7 +8236,6 @@ void ServePCMsg(unsigned char SrcPort)
 			case DOOR_SENSE_TIME_ID:		tempshort = gu8_doorSensingTime;		break;
 			case LCD_BRIGHT_CNT_ID:			tempshort = gu8_LCDBrigthnessCnt;		break;
 			case AUTO_SENT_INTERVAL_ID:			tempshort = gu8_AutoSentInterval;		break;
-			case DEVICES_IN_GROUP_ID:			tempshort = gu8_DeviceInGroup;			break;
 			case LCD_CONTROL_ID:			tempshort = gu8_IsLCDDisable;			break;
 			case COM_CONTROL_ID:			tempshort = gu8_IsCOMDisable;			break;
 			case XBEE_RST_INTERVAL_ID:			tempshort = gu16_XbeeRstInterval;		break;
@@ -8392,7 +8343,7 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			SetTxmode(SrcPort,TxBuffer,23);
 		}
-		else if(RxBuffer[3]==XBEE_MAC_ADDR_ID)
+		/*else if(RxBuffer[3]==XBEE_MAC_ADDR_ID)
 		{
 			TxBuffer[0]=0xFD;
 			TxBuffer[1]=RxBuffer[1];
@@ -8432,7 +8383,7 @@ void ServePCMsg(unsigned char SrcPort)
 			TxBuffer[22]=0xFC;
 			
 			SetTxmode(SrcPort,TxBuffer,23);
-		}
+		}*/
 		else if(RxBuffer[3]==RAM_ALL_ID)
 		{
 			RAMBuffer[0]=0xFD;
@@ -10659,9 +10610,6 @@ void Init_variables(void)
 	b.autoSendResponse = false;
 	b.triggerXbeeReset = false;
 	gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
-	
-	//gu8_AutoSentTimer=gu8_AutoSentInterval;
-	gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 }
 
 //**************************************************************************************************************************************
@@ -10752,14 +10700,14 @@ void SecondTick(void)
 	}
 	
 
-	if(gu8_Mac2ValidTimer)
+	/*if(gu8_Mac2ValidTimer)
 	{
 		gu8_Mac2ValidTimer--;
 		if(!gu8_Mac2ValidTimer)
 		{
 			SetMAC2Xbee(&gu8arr_XbeeMac[0][0],0);
 		}
-	}
+	}*/
 	
 	if(gu32_triggerXbeeResetTimer)
 	{
@@ -11240,25 +11188,6 @@ void InitLCDController(void)
 	#endif
 	
 	//-------------------------------------------------------------------
-	//AllSegment(OFF);
-	//for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
-	//
-	////ID_on;
-	//data[2] = 9;
-	//data[3] = r;
-	//convert_char(gu8_DeviceInGroup,&data[4],3);
-	//disp_value();
-	//
-	//wdt_reset();
-	//
-	//if(!clkmode)
-	//{
-		//_delay_ms(2000);
-	//}
-	//else
-	//{
-		//_delay_ms(4000);
-	//}
 	
 	wdt_reset();
 }
@@ -22144,19 +22073,16 @@ void boot_data(void)
 		gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 		
-		gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
-		
 		gu16_XbeeRstInterval=DEFAULT_XBEE_RST_INTERVAL;
 		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR,gu16_XbeeRstInterval);
 		
-		memcpy(&gu8arr_XbeeMac[0][0],"000000000000FFFF",XBEE_MAC_SIZE);
+		/*memcpy(&gu8arr_XbeeMac[0][0],"000000000000FFFF",XBEE_MAC_SIZE);
 		eeprom_busy_wait();  eeprom_write_block(&gu8arr_XbeeMac[0][0],(unsigned char*)(XBEE_MAC_ADDR),XBEE_MAC_SIZE);
 		for(unsigned char i=1;i<NO_OF_XBEE_MAC;i++)
 		{
 			memset(&gu8arr_XbeeMac[i][0],'0',XBEE_MAC_SIZE);
 			eeprom_busy_wait();  eeprom_write_block(&gu8arr_XbeeMac[i][0],(unsigned char*)(XBEE_MAC_ADDR+(i*XBEE_MAC_SIZE)),XBEE_MAC_SIZE);
-		}
+		}*/
 		
 		gu8_IsLCDDisable=0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LCD_CONTROL_ADDR,gu8_IsLCDDisable);
@@ -22187,13 +22113,6 @@ void boot_data(void)
 		{
 			gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
-		}
-		
-		gu8_DeviceInGroup  = eeprom_read_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR);
-		if((gu8_DeviceInGroup < 1) || (gu8_DeviceInGroup > 100))
-		{
-			gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP;
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
 		}
 		
 		gu16_XbeeRstInterval  = eeprom_read_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR);
@@ -22882,7 +22801,7 @@ void boot_data(void)
 			}
 		}
 		
-		for(unsigned char i=0;i<NO_OF_XBEE_MAC;i++)
+		/*for(unsigned char i=0;i<NO_OF_XBEE_MAC;i++)
 		{
 			eeprom_read_block(&gu8arr_XbeeMac[i][0],(unsigned char*)(XBEE_MAC_ADDR+(i*XBEE_MAC_SIZE)),XBEE_MAC_SIZE);
 			
@@ -22891,7 +22810,7 @@ void boot_data(void)
 				memset(&gu8arr_XbeeMac[i][0],'0',XBEE_MAC_SIZE);
 				eeprom_busy_wait();  eeprom_write_block(&gu8arr_XbeeMac[i][0],(unsigned char*)(XBEE_MAC_ADDR+(i*XBEE_MAC_SIZE)),XBEE_MAC_SIZE);
 			}
-		}
+		}*/
 		
 		//Data Logging Parameter -------------------------------------------	
 		
