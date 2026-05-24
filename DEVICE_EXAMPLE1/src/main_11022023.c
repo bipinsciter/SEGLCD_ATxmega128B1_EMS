@@ -1606,7 +1606,7 @@ unsigned char gu8arr_XbeeMac[NO_OF_XBEE_MAC][XBEE_MAC_SIZE]={0};
 
 unsigned char *p_SrNumber;
 unsigned long gu32_SrNumber;
-unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_AutoSentTimer=0,gu8_groupID=0;
+unsigned char gu8_AutoSentTimeout=0,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_AutoSentTimer=0;
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1718,11 +1718,6 @@ int main(void)
 	if(gu8_rly_stat & 0x80) RELAY8_ON;	else 	RELAY8_OFF;
 	
 	//-------------------------------------------------------
-	//Initialize Variables
-	//-------------------------------------------------------
-	Init_variables();
-	
-	//-------------------------------------------------------
 	//Initialize Internal LCD Module
 	//-------------------------------------------------------
 	if(gu16_parameterWord & ENABLE_LCD)
@@ -1754,6 +1749,11 @@ int main(void)
 	//Initialize I2C for DP sensor
 	//-------------------------------------------------------
 	//I2C_DP_Init();
+	
+	//-------------------------------------------------------
+	//Initialize Variables
+	//-------------------------------------------------------
+	Init_variables();
 	
 	//-------------------------------------------------------
 	//Initialize USART
@@ -4225,7 +4225,6 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/10)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 							}
 						break;
@@ -4678,7 +4677,6 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/10)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,DeviceID);
 							}
 						break;
@@ -6188,7 +6186,7 @@ void ServePCMsg(unsigned char SrcPort)
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
-	unsigned char index=0,j=0,lu8_sendResponse=0;
+	unsigned char index=0,j=0;
 	
 	b.paraIdNotValid=0;
 	
@@ -6197,217 +6195,194 @@ void ServePCMsg(unsigned char SrcPort)
 		//gu8_AutoSentTimeout = 60;
 		//gu8_AutoSentTimer = 0;
 		
-		if(RxInd==6)
+		RxBuffer[0]=0xFD;
+		
+		RxBuffer[3]=0x00;
+		if(b.paraIdNotValid) 	RxBuffer[3] |= INVALID_PARA;
+		if(b.DP1_NC) 			RxBuffer[3] |= DP1_FAULTY;
+		if(b.DP2_NC) 			RxBuffer[3] |= DP2_FAULTY;
+		if(b.RH_TEMP_NC) 		RxBuffer[3] |= RH_TEMP_FAULTY;
+		
+		j=4;
+		
+		if(b.DP1_NC) 			
 		{
-			if(RxBuffer[3]==0x00)
+			RxBuffer[j++] |= DP1_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill DP value
+			templong = Dpressure1*100;
+			j += fillValue(&RxBuffer[j],templong);	
+		}
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		if(b.DP2_NC)
+		{
+			RxBuffer[j++] |= DP2_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill DP value
+			templong = Dpressure2*100;
+			j += fillValue(&RxBuffer[j],templong);
+		}
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill Temp value
+			if(!TM_Unit)
 			{
-				lu8_sendResponse=1;
-			}
-			else if(RxBuffer[3]==gu8_groupID)
-			{
-				lu8_sendResponse=1;
+				tempshort = temperatureC*100;
 			}
 			else
 			{
-				lu8_sendResponse=0;
+				tempshort = temperatureF*100;
+			}
+			
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		if(b.RH_TEMP_NC) 			
+		{
+			RxBuffer[j++] |= RH_TEMP_FAULTY;
+		}
+		else
+		{
+			RxBuffer[j++]=0;
+			
+			//Fill Temp value
+			tempshort = humidityRH*100;
+			j += fillValue(&RxBuffer[j],tempshort);
+		}
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+
+		if(gu16_parameterWord & ENABLE_DP1)
+		{
+			if(!DP1_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(DP1_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
 			}
 		}
 		else
 		{
-			lu8_sendResponse=1;
+			RxBuffer[j++] = 0;
 		}
 		
-		if(lu8_sendResponse==1)
+		if(gu16_parameterWord & ENABLE_DP2)
 		{
-			RxBuffer[0]=0xFD;
-			
-			RxBuffer[3]=0x00;
-			if(b.paraIdNotValid) 	RxBuffer[3] |= INVALID_PARA;
-			if(b.DP1_NC) 			RxBuffer[3] |= DP1_FAULTY;
-			if(b.DP2_NC) 			RxBuffer[3] |= DP2_FAULTY;
-			if(b.RH_TEMP_NC) 		RxBuffer[3] |= RH_TEMP_FAULTY;
-			
-			j=4;
-			
-			if(b.DP1_NC) 			
-			{
-				RxBuffer[j++] |= DP1_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill DP value
-				templong = Dpressure1*100;
-				j += fillValue(&RxBuffer[j],templong);	
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.DP2_NC)
-			{
-				RxBuffer[j++] |= DP2_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill DP value
-				templong = Dpressure2*100;
-				j += fillValue(&RxBuffer[j],templong);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.RH_TEMP_NC) 			
-			{
-				RxBuffer[j++] |= RH_TEMP_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill Temp value
-				if(!TM_Unit)
-				{
-					tempshort = temperatureC*100;
-				}
-				else
-				{
-					tempshort = temperatureF*100;
-				}
-				
-				j += fillValue(&RxBuffer[j],tempshort);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			if(b.RH_TEMP_NC) 			
-			{
-				RxBuffer[j++] |= RH_TEMP_FAULTY;
-			}
-			else
-			{
-				RxBuffer[j++]=0;
-				
-				//Fill Temp value
-				tempshort = humidityRH*100;
-				j += fillValue(&RxBuffer[j],tempshort);
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-
-			if(gu16_parameterWord & ENABLE_DP1)
-			{
-				if(!DP1_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(DP1_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
+			if(!DP2_Alrm_ON)
 			{
 				RxBuffer[j++] = 0;
 			}
-			
-			if(gu16_parameterWord & ENABLE_DP2)
-			{
-				if(!DP2_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(DP2_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
 			else
 			{
-				RxBuffer[j++] = 0;
+				if(DP2_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
 			}
-			
-			if(gu16_parameterWord & ENABLE_TEMP)
-			{
-				if(!TM_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(TM_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			if(gu16_parameterWord & ENABLE_RH)
-			{
-				if(!RH_Alrm_ON)
-				{
-					RxBuffer[j++] = 0;
-				}
-				else
-				{
-					if(RH_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
-					else						  RxBuffer[j++] = 2;
-				}
-			}
-			else
-			{
-				RxBuffer[j++] = 0;
-			}
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			#ifdef DISABLE_DOOR_SENSING
-
-				//Door Close
-				RxBuffer[j++] = 0x0F;
-				RxBuffer[j++] = 0x0F;
-			
-			#else
-				
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
-			{
-				//Door Open
-				RxBuffer[j++] = 0x0E;
-				RxBuffer[j++] = 0x0E;	
-			}
-			else
-			{
-				//Door Close
-				RxBuffer[j++] = 0x0F;
-				RxBuffer[j++] = 0x0F;
-			}
-				
-			#endif
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
-			j+=8;
-			
-			RxBuffer[j++] = 0xEE;	//Field Separator
-			
-			memcpy(&RxBuffer[j],(unsigned char*)&ep.currentEpochTime,4);
-			j+=4;
-			
-			RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
-			j++;
-			
-			RxBuffer[j++]=0xFC;
-			
-			SetTxmode(SrcPort,RxBuffer,j);
 		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		if(gu16_parameterWord & ENABLE_TEMP)
+		{
+			if(!TM_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(TM_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		if(gu16_parameterWord & ENABLE_RH)
+		{
+			if(!RH_Alrm_ON)
+			{
+				RxBuffer[j++] = 0;
+			}
+			else
+			{
+				if(RH_Alrm_ON==UPPER_ALARM) RxBuffer[j++] = 1;
+				else						  RxBuffer[j++] = 2;
+			}
+		}
+		else
+		{
+			RxBuffer[j++] = 0;
+		}
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		#ifdef DISABLE_DOOR_SENSING
+
+			//Door Close
+			RxBuffer[j++] = 0x0F;
+			RxBuffer[j++] = 0x0F;
+		
+		#else
+			
+		//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+		if(b.doorSense)
+		{
+			//Door Open
+			RxBuffer[j++] = 0x0E;
+			RxBuffer[j++] = 0x0E;	
+		}
+		else
+		{
+			//Door Close
+			RxBuffer[j++] = 0x0F;
+			RxBuffer[j++] = 0x0F;
+		}
+			
+		#endif
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
+		j+=8;
+		
+		RxBuffer[j++] = 0xEE;	//Field Separator
+		
+		memcpy(&RxBuffer[j],(unsigned char*)&ep.currentEpochTime,4);
+		j+=4;
+		
+		RxBuffer[j]=CalCRC(&RxBuffer[1],j-1);
+		j++;
+		
+		RxBuffer[j++]=0xFC;
+		
+		SetTxmode(SrcPort,RxBuffer,j);
 	}
 	else if(RxBuffer[2]==PARA_WRITE_CMD)
 	{
@@ -6722,7 +6697,6 @@ void ServePCMsg(unsigned char SrcPort)
 			break;
 			case DVCID_ID:		
 				DeviceID=tempshort;
-				gu8_groupID = ((DeviceID - 1)/10)+1;
 				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 			break;
 			case BZRON_ID:		
@@ -9955,8 +9929,7 @@ void Init_variables(void)
 	b.triggerXbeeReset = false;
 	gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
 	
-	//gu8_AutoSentTimer=gu8_AutoSentInterval;
-	gu8_groupID = ((DeviceID - 1)/10)+1;
+	gu8_AutoSentTimer=gu8_AutoSentInterval;
 }
 
 //**************************************************************************************************************************************
@@ -9996,7 +9969,7 @@ void SecondTick(void)
 			}
 		}
 		
-		if(gu8_AutoSentTimeout)
+		/*if(gu8_AutoSentTimeout)
 		{
 			gu8_AutoSentTimeout--;
 			if(!gu8_AutoSentTimeout)
@@ -10005,7 +9978,7 @@ void SecondTick(void)
 				
 				gu8_AutoSentTimer=gu8_AutoSentInterval;
 			}
-		}
+		}*/
 	}
 	
 	//gu8_LCDBrigthnessCnt++;
@@ -10285,6 +10258,7 @@ void SecondTick(void)
 
 void InitLCDController(void)
 {
+	
 	LCD_CTRLB = LCD_PRESC_bm | LCD_CLKDIV_DivBy6_gc | LCD_LPWAV_bm;
 	
 	//Segment Line 0 to 27 used
@@ -10461,27 +10435,6 @@ void InitLCDController(void)
 		_delay_ms(4000);
 	}
 	#endif
-	
-	//-------------------------------------------------------------------
-	AllSegment(OFF);
-	for(i=0;i<NO_DIGIT;i++) data[i]=BLANK;
-	
-	//ID_on;
-	data[2] = 9;
-	data[3] = r;
-	convert_char(gu8_groupID,&data[4],3);
-	disp_value();
-	
-	wdt_reset();
-	
-	if(!clkmode)
-	{
-		_delay_ms(2000);
-	}
-	else
-	{
-		_delay_ms(4000);
-	}
 	
 	wdt_reset();
 }
