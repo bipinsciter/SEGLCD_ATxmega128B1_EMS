@@ -63,24 +63,6 @@
 #include "SPI.c"
 #include "AT45DB321D.c"
 
-
-//FUSES =
-//{
-   //.high = (HFUSE_DEFAULT & FUSE_JTAGEN),
-   //.low  = FUSE_CKSEL1,
-   //.extended = (FUSE_BOOTSZ0 & FUSE_BOOTSZ1 & FUSE_BOOTRST);
-//};
-//LOCKBITS = (LB_MODE_1 & BLB0_MODE_3 & BLB1_MODE_4);
-//
-//const char eeprdata[] __attribute__ ((section (“.eeprom”))) = “Hello EEPROM”;
-//const char fusedata[] __attribute__ ((section (“.fuse”))) = {0xA2, 0x00, 0xFF, 0xFF, 0xFF, 0xF5};
-//const char lockbits[] __attribute__ ((section (“.lockbits”))) = {0xFC};
-//const char userdata[] __attribute__ ((section (“.user_signatures”))) = “Hello User Signatures”;
-
-
-//uint16_t bootvar __attribute__((at(0x2000)));
-
-
 //***********************************************************************************
 //#define ENABLE_BATTERY_DISPLAY
 #define USE_SM9541_SENSOR
@@ -152,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				770  //means 7.70
+#define SOFT_VER				780  //means 7.80
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -1763,477 +1745,12 @@ int main(void)
 	Init_USARTE0(BAUD_57600,DATABIT_8,PARITY_NONE,STOP_BIT_1);
 	
 	//-------------------------------------------------------
-	//Check RTC
-	//-------------------------------------------------------
-	rtcCorrupt=1;
-	rtcCorruptionCheckCnt=INIT_RTC_CORRUPTION_CHECK_CNT;
-	while(rtcCorruptionCheckCnt)
-	{
-		//Read RTC
-		Read_DS1307(0x00,&RTC_data[0],7);
-
-		//RTC_data[0] &= ~BIT7;
-		
-		rtc.second = BCD2HEX(RTC_data[0]);		//Second
-		rtc.minute = BCD2HEX(RTC_data[1]);		//Minute
-		rtc.hour = BCD2HEX(RTC_data[2]);		//Hour
-		rtc.day = BCD2HEX(RTC_data[4]);			//Date
-		rtc.month = BCD2HEX(RTC_data[5]);		//Month
-		rtc.year = 0;
-		rtc.year = BCD2HEX(RTC_data[6]);		//Year
-		
-		//If RTC corrupted then Read again 1 time
-		if((rtc.second>59) || (rtc.minute>59) || (rtc.hour>23) || (rtc.day==0) || (rtc.day>31) || (rtc.month==0) || (rtc.month>12) || (rtc.year>99))
-		{
-			rtcCorruptionCheckCnt--;
-			
-			//Serve Watchdog Timer
-			wdt_reset();
-			
-			_delay_ms(10);
-		}
-		else
-		{
-			rtcCorrupt=0;
-			
-			#ifdef ENABLE_PRINTF
-			opstr(0,"RTC Working\r\n");
-			#endif
-			
-			break;
-		}
-	}
-	
-	if(!rtcCorrupt)
-	{
-		rtcCorruptionCheckCnt=INIT_RTC_CORRUPTION_CHECK_CNT;
-		while(rtcCorruptionCheckCnt)
-		{
-			Read_DS1307(0x00,&RTC_data[0],7);
-
-			//RTC_data[0] &= ~BIT7;
-			
-			rtc.second = BCD2HEX(RTC_data[0]);		//Second
-			rtc.minute = BCD2HEX(RTC_data[1]);		//Minute
-			rtc.hour = BCD2HEX(RTC_data[2]);		//Hour
-			rtc.day = BCD2HEX(RTC_data[4]);			//Date
-			rtc.month = BCD2HEX(RTC_data[5]);		//Month
-			rtc.year = 0;
-			rtc.year = BCD2HEX(RTC_data[6]);		//Year
-			
-			rtc1.second = rtc.second;		//Second
-			rtc1.minute = rtc.minute;		//Minute
-			rtc1.hour = rtc.hour;	//Hour
-			rtc1.day = rtc.day;	//Date
-			rtc1.month = rtc.month;	//Month
-			rtc1.year = rtc.year + 2000;	//Year
-			
-			ep.currentEpochTime = get_epoch_time(rtc1);
-			
-			#ifdef ENABLE_PRINTF
-			opstr(0,"\r\nEpoch:");
-			print_Hex(0,ep.cept[3]);
-			print_Hex(0,ep.cept[2]);
-			print_Hex(0,ep.cept[1]);
-			print_Hex(0,ep.cept[0]);
-			opstr(0,"\r\n");
-			#endif
-			
-			if(ep.currentEpochTime < 1420070400)	//01/01/2015 00:00:00
-			{
-				rtcCorruptionCheckCnt--;
-				
-				//Serve Watchdog Timer
-				wdt_reset();
-				
-				_delay_ms(10);
-			}
-			else
-			{
-				break;
-			}
-		}
-		
-		//54A48E00
-		//If Date is below 01/01/2015 00:00:00 then set it to 01/01/2015 00:00:00
-		//if(ep.currentEpochTime < 1420070400)	//01/01/2015 00:00:00
-		if(!rtcCorruptionCheckCnt)
-		//if(ep.currentEpochTime < 946684860)	//01/01/2000 00:01:00
-		{
-			Buffer1[0]=1;
-			Buffer1[1]=rtc.second;
-			Buffer1[2]=rtc.minute;
-			Buffer1[3]=rtc.hour;
-			Buffer1[4]=rtc.day;
-			Buffer1[5]=rtc.month;
-			Buffer1[6]=rtc.year;
-			us1 = CORRUPT_RTC_DATA_ADDR + (RTCCorruptDataInd * 7);
-			eeprom_busy_wait();  eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
-			
-			RTCCorruptDataInd++;
-			if(RTCCorruptDataInd>15)
-			{
-				RTCCorruptDataInd=0;
-			}
-			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
-			
-			//RTCSetFlag=0;
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-			//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
-						
-			rtcValid=0;
-		}
-		else
-		{
-			#ifdef ENABLE_PRINTF
-			opstr(0,"VALID RTC\r\n");
-			#endif
-			
-			rtcValid=1;
-		}
-		
-		#ifdef ENABLE_PRINTF
-		opstr(0,"\r\nEpoch:");
-		print_Hex(0,ep.cept[3]);
-		print_Hex(0,ep.cept[2]);
-		print_Hex(0,ep.cept[1]);
-		print_Hex(0,ep.cept[0]);
-		
-		opstr(0,"  RTC:");
-		opchar(0,(rtc.day/10) + 0x30);
-		opchar(0,(rtc.day%10) + 0x30);
-		opchar(0,'/');
-		opchar(0,(rtc.month/10) + 0x30);
-		opchar(0,(rtc.month%10) + 0x30);
-		opchar(0,'/');
-		opchar(0,(rtc.year/10) + 0x30);
-		opchar(0,(rtc.year%10) + 0x30);
-		opchar(0,' ');
-		opchar(0,(rtc.hour/10) + 0x30);
-		opchar(0,(rtc.hour%10) + 0x30);
-		opchar(0,':');
-		opchar(0,(rtc.minute/10) + 0x30);
-		opchar(0,(rtc.minute%10) + 0x30);
-		opchar(0,':');
-		opchar(0,(rtc.second/10) + 0x30);
-		opchar(0,(rtc.second%10) + 0x30);
-		opstr(0,"\r\n");
-		#endif
-		
-		last_sec=rtc.second;//Read_byte_DS1307(0x00);
-		last_min=rtc.minute;//Read_byte_DS1307(0x01);
-		last_hr=rtc.hour;//Read_byte_DS1307(0x02);
-		current_min=last_min;
-		current_hr=last_hr;
-	}
-	else
-	{
-		rtcValid=0;
-		
-		Buffer1[0]=0;
-		Buffer1[1]=rtc.second;
-		Buffer1[2]=rtc.minute;
-		Buffer1[3]=rtc.hour;
-		Buffer1[4]=rtc.day;
-		Buffer1[5]=rtc.month;
-		Buffer1[6]=rtc.year;
-		us1 = CORRUPT_RTC_DATA_ADDR + (RTCCorruptDataInd * 7);
-		eeprom_busy_wait();  eeprom_write_block((unsigned char*)&Buffer1[0],(unsigned char*)us1,7);
-		
-		RTCCorruptDataInd++;
-		if(RTCCorruptDataInd>15)
-		{
-			RTCCorruptDataInd=0;
-		}
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
-	}
-	
-	/*Read_DS1307(0x00,&RTC_data[0],7);
-	rtc.second = BCD2HEX(RTC_data[0]);		//Second
-	rtc.minute = BCD2HEX(RTC_data[1]);		//Minute
-	rtc.hour = BCD2HEX(RTC_data[2]);		//Hour
-	rtc.day = BCD2HEX(RTC_data[4]);			//Date
-	rtc.month = BCD2HEX(RTC_data[5]);		//Month
-	rtc.year = 0;
-	rtc.year = BCD2HEX(RTC_data[6]);		//Year
-	
-	rtc1.second = rtc.second;		//Second
-	rtc1.minute = rtc.minute;		//Minute
-	rtc1.hour = rtc.hour;	//Hour
-	rtc1.day = rtc.day;	//Date
-	rtc1.month = rtc.month;	//Month
-	rtc1.year = rtc.year + 2000;	//Year
-	
-	ep.currentEpochTime = get_epoch_time(rtc1);
-	*/
-	
-	//-------------------------------------------------------
 	//POWER ON LOG
 	//-------------------------------------------------------
 	us1=CurrentLog24Ind;
 	LogReading(POWER_UP_LOG,0,0xFFFF);
 	FillRamBuffer(POWER_UP_LOG,0,0xFFFF);
 	
-	//-------------------------------------------------------
-	//Check MinMax Day change occur
-	//-------------------------------------------------------
-	if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_LOG) && (gu16_parameterWord & ENABLE_RTC))
-	{
-		if(rtcValid && ((!FlashOVFByte && CurrentLogInd) || (FlashOVFByte && !CurrentLogInd)))
-		{
-			b.resetMinMax=0;
-	
-			//Read_DS1307(0x00,&RTC_data[0],7);
-
-			//rtc.day = BCD2HEX(RTC_data[4]);		//Date
-			//rtc.month = BCD2HEX(RTC_data[5]);	//Month
-			//rtc.year = BCD2HEX(RTC_data[6]);	//Year
-	
-			rtc1.second = 0;				//Second
-			rtc1.minute = 0;				//Minute
-			rtc1.hour = 0;					//Hour
-			rtc1.day = rtc.day;				//Date
-			rtc1.month = rtc.month;			//Month
-			rtc1.year = rtc.year + 2000;	//Year
-	
-			ep.currentEpochTime = get_epoch_time(rtc1);
-	
-			//us1=CurrentLog24Ind;
-	
-			if(us1)
-			{
-				us1--;
-			}
-			else
-			{
-				us1=LAST_LOG24_ADDR-1;
-			}
-	
-			ReadLog(LAST_LOG24_ADDR_OFFSET + us1,(unsigned char*)&ep1.currentEpochTime,4);
-	
-			#ifdef ENABLE_PRINTF
-	
-				opstr(0,"\r\nLast 24Hr Log Index:");
-				print_float(0,us1,test,0);		
-				opstr(0,"\r\n");
-	
-				opstr(0,"\r\nDay Epoch:");
-				print_Hex(0,ep.cept[3]);
-				print_Hex(0,ep.cept[2]);
-				print_Hex(0,ep.cept[1]);
-				print_Hex(0,ep.cept[0]);
-				opstr(0,"\r\n");
-	
-				opstr(0,"\r\nLast Epoch:");
-				print_Hex(0,ep1.cept[3]);
-				print_Hex(0,ep1.cept[2]);
-				print_Hex(0,ep1.cept[1]);
-				print_Hex(0,ep1.cept[0]);
-				opstr(0,"\r\n");
-	
-			#endif
-		
-			if(ep1.currentEpochTime==0xFFFFFFFF)
-			{
-				b.resetMinMax=1;
-			}
-			else
-			{
-				if(ep1.currentEpochTime < ep.currentEpochTime)
-				{
-					b.resetMinMax=1;
-				
-					if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_M3LOG))
-					{
-						memcpy(&MinMaxMeanDayLogArr[0],(unsigned char*)&ep1.currentEpochTime,4);
-				
-						//Find DP1 Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_DP1)
-						{
-							ReadMinMaxLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							DP1_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								DP1_Mean += tempfloat1;
-							}
-							DP1_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP1_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP1_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP1_Mean,4);
-							WriteLog(LAST_DP1_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-				
-						//Find DP2 Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_DP2)
-						{
-							ReadMinMaxLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							DP2_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								DP2_Mean += tempfloat1;
-							}
-							DP2_Mean /= TOTAL_MEAN_HOUR;
-
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP2_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP2_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP2_Mean,4);
-							WriteLog(LAST_DP2_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-				
-						//Find TM Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_TEMP)
-						{
-							ReadMinMaxLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							TM_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								TM_Mean += tempfloat1;
-							}
-							TM_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&TM_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&TM_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&TM_Mean,4);
-							WriteLog(LAST_TM_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-				
-						//Find RH Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_RH)
-						{
-							ReadMinMaxLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							RH_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								RH_Mean += tempfloat1;
-							}
-							RH_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&RH_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&RH_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&RH_Mean,4);
-							WriteLog(LAST_RH_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-				
-						//Clear all Hour mean value for next day
-						memset(Buffer1,0,100);
-						if(gu16_parameterWord & ENABLE_DP1)
-						{
-							WriteLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourDP1_Mean=0;
-							HrDP1SampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_DP2)
-						{
-							WriteLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourDP2_Mean=0;
-							HrDP2SampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_TEMP)
-						{
-							WriteLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourTM_Mean=0;
-							HrTMSampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_RH)
-						{
-							WriteLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourRH_Mean=0;
-							HrRHSampleInd=0;
-						}
-				
-						MinMaxMeanDayLogInd++;
-						if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG) MinMaxMeanDayLogInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
-					}
-				}
-			
-				ep.currentEpochTime = ep1.currentEpochTime;
-	
-				if(gu16_parameterWord & ENABLE_DP1)
-				{
-					//Serve Watchdog Timer
-					wdt_reset();
-			
-					if(LastDP1_Alrm_ON)
-					{
-						LogReading(DP1_ALM_RESTORE_LOG,0,0xFFFF);
-						FillRamBuffer(DP1_ALM_RESTORE_LOG,0,0xFFFF);
-				
-						LastDP1_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP1_ALRM_STAT,LastDP1_Alrm_ON);
-					}
-				}
-		
-				if(gu16_parameterWord & ENABLE_DP2)
-				{
-					//Serve Watchdog Timer
-					wdt_reset();
-			
-					if(LastDP2_Alrm_ON)
-					{
-						LogReading(DP2_ALM_RESTORE_LOG,0,0xFFFF);
-						FillRamBuffer(DP2_ALM_RESTORE_LOG,0,0xFFFF);
-				
-						LastDP2_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
-					}
-				}
-		
-				if(gu16_parameterWord & ENABLE_TEMP)
-				{
-					//Serve Watchdog Timer
-					wdt_reset();
-			
-					if(LastTM_Alrm_ON)
-					{
-						LogReading(TM_ALM_RESTORE_LOG,0,0xFFFF);
-						FillRamBuffer(TM_ALM_RESTORE_LOG,0,0xFFFF);
-				
-						LastTM_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_TM_ALRM_STAT,LastTM_Alrm_ON);
-					}
-				}
-		
-				if(gu16_parameterWord & ENABLE_RH)
-				{
-					//Serve Watchdog Timer
-					wdt_reset();
-			
-					if(LastRH_Alrm_ON)
-					{
-						LogReading(RH_ALM_RESTORE_LOG,0,0xFFFF);
-						FillRamBuffer(RH_ALM_RESTORE_LOG,0,0xFFFF);
-				
-						LastRH_Alrm_ON=NO_ALARM;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_RH_ALRM_STAT,LastRH_Alrm_ON);
-					}
-				}
-			}
-	
-			if(b.resetMinMax)
-			{
-				ResetMinMax();
-				#ifdef ENABLE_PRINTF
-				opstr(0,"DayChange Occure.Min Max Reset\r\n");
-				#endif
-				b.resetMinMax=0;
-			}
-		}
-	}
 	//-------------------------------------------------------
 	//Initialize RTC
 	//-------------------------------------------------------
@@ -2405,85 +1922,6 @@ int main(void)
 		opstr(0,"\r\n");
 		
 	#endif
-	
-	//MinMaxMeanDayLogArr[0]=0;
-	//MinMaxMeanDayLogArr[1]=0;
-	//MinMaxMeanDayLogArr[2]=1;
-	//MinMaxMeanDayLogArr[3]=10;
-	//MinMaxMeanDayLogArr[4]=5;
-	//MinMaxMeanDayLogArr[5]=15;
-	
-	/*ep1.currentEpochTime=1432590533;
-	memcpy(&MinMaxMeanDayLogArr[0],(unsigned char*)&ep1.currentEpochTime,4);
-	float TempMin=10.0;
-	float TempMax=30.0;
-	float TempMean=60.0;
-	
-	for(a1=0;a1<TOTAL_MIN_MAX_MEAN_LOG;a1++)
-	{
-		memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&TempMin,4);
-		memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&TempMax,4);
-		memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&TempMean,4);
-		WriteLog(LAST_DP1_MIN_MAX_OFFSET,a1,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-		WriteLog(LAST_DP2_MIN_MAX_OFFSET,a1,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-		WriteLog(LAST_TM_MIN_MAX_OFFSET,a1,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-		WriteLog(LAST_RH_MIN_MAX_OFFSET,a1,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-		
-		//MinMaxMeanDayLogArr[3]++;
-		ep1.currentEpochTime += 86400;
-		memcpy(&MinMaxMeanDayLogArr[0],(unsigned char*)&ep1.currentEpochTime,4);
-		TempMin+=0.2;
-		TempMax+=0.2;
-		TempMean+=0.2;
-		
-		//Serve Watchdog Timer
-		wdt_reset();
-	}
-	*/
-	
-	/*
-	float TempMean=60.0;
-	
-	TempMean=10.0;
-	for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-	{
-		WriteLog(DP1_CURR_24HR_MEAN_OFFSET,a1,(unsigned char*)&TempMean,4);
-		TempMean+=0.2;
-		
-		//Serve Watchdog Timer
-		wdt_reset();
-	}
-	
-	TempMean=20.0;
-	for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-	{
-		WriteLog(DP2_CURR_24HR_MEAN_OFFSET,a1,(unsigned char*)&TempMean,4);
-		TempMean+=0.3;
-		
-		//Serve Watchdog Timer
-		wdt_reset();
-	}
-	
-	TempMean=30.0;
-	for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-	{
-		WriteLog(TM_CURR_24HR_MEAN_OFFSET,a1,(unsigned char*)&TempMean,4);
-		TempMean+=0.4;
-		
-		//Serve Watchdog Timer
-		wdt_reset();
-	}
-	
-	TempMean=40.0;
-	for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-	{
-		WriteLog(RH_CURR_24HR_MEAN_OFFSET,a1,(unsigned char*)&TempMean,4);
-		TempMean+=0.5;
-		
-		//Serve Watchdog Timer
-		wdt_reset();
-	}
-	*/
 	
 	logTimer = LogInterval;
 	b.brodcastEnb=0;	
@@ -5025,15 +4463,15 @@ void keyboard(void)
 					
 					if(b.RTCChangeOccure==1)
 					{
-						RTC_data[0] = 0x00;	// enable oscillator (bit 7=0)
-						RTC_data[1] = HEX2BCD(Temp_RTC_ARR[1]);	// minute = 59
-						RTC_data[2] = HEX2BCD(Temp_RTC_ARR[0]);	// hour = 05 ,24-hour mode(bit 6=0)
-						RTC_data[3] = 0x00;	// day = 1 or sunday
-						RTC_data[4] = HEX2BCD(Temp_RTC_ARR[2]);	// date = 30
-						RTC_data[5] = HEX2BCD(Temp_RTC_ARR[3]);	// month = december
-						RTC_data[6] = HEX2BCD(Temp_RTC_ARR[4]);	// year = 11 or 2011
-						
-						Write_DS1307(0x00,&RTC_data[0],7);			// set RTC
+						rtc2.day = Temp_RTC_ARR[2];
+						rtc2.month = Temp_RTC_ARR[3];
+						rtc2.year = Temp_RTC_ARR[4];
+						rtc2.year += 2000;	
+						rtc2.hour = Temp_RTC_ARR[0];
+						rtc2.minute = Temp_RTC_ARR[1];
+						rtc2.second = 0;
+					
+						ep.currentEpochTime = get_epoch_time(rtc2);
 						
 						b.RTCChangeOccure=0;
 					}
@@ -5506,15 +4944,15 @@ void keyboard(void)
 				
 					if(b.RTCChangeOccure==1)
 					{
-						RTC_data[0] = 0x00;	// enable oscillator (bit 7=0)
-						RTC_data[1] = HEX2BCD(Temp_RTC_ARR[1]);	// minute = 59
-						RTC_data[2] = HEX2BCD(Temp_RTC_ARR[0]);	// hour = 05 ,24-hour mode(bit 6=0)
-						RTC_data[3] = 0x00;	// day = 1 or Sunday
-						RTC_data[4] = HEX2BCD(Temp_RTC_ARR[2]);	// date = 30
-						RTC_data[5] = HEX2BCD(Temp_RTC_ARR[3]);	// month = December
-						RTC_data[6] = HEX2BCD(Temp_RTC_ARR[4]);	// year = 11 or 2011
-						
-						Write_DS1307(0x00,&RTC_data[0],7);			// set RTC
+						rtc2.day = Temp_RTC_ARR[2];
+						rtc2.month = Temp_RTC_ARR[3];
+						rtc2.year = Temp_RTC_ARR[4];
+						rtc2.year += 2000;	
+						rtc2.hour = Temp_RTC_ARR[0];
+						rtc2.minute = Temp_RTC_ARR[1];
+						rtc2.second = 0;
+					
+						ep.currentEpochTime = get_epoch_time(rtc2);
 						
 						b.RTCChangeOccure=0;
 					}
@@ -6698,7 +6136,7 @@ void ServePCMsg(unsigned char SrcPort)
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
 		memcpy(&RxBuffer[j],&gu8ar_SrNumber[8],8);
-		j+=4;
+		j+=8;
 		
 		RxBuffer[j++] = 0xEE;	//Field Separator
 		
@@ -6828,6 +6266,7 @@ void ServePCMsg(unsigned char SrcPort)
 			break;
 			
 			case DATETIME_ID:
+			
 				a1 = (RxBuffer[4]-'0');
 				a1 *= 10;
 				a2 = (RxBuffer[5]-'0');
@@ -6865,75 +6304,8 @@ void ServePCMsg(unsigned char SrcPort)
 				a1 += a2;
 				rtc2.second = a1;//HEX2BCD(a1);
 
-				ep1.currentEpochTime = get_epoch_time(rtc2);
-				
-				rtc2.second = HEX2BCD(rtc2.second);
-				rtc2.minute = HEX2BCD(rtc2.minute);
-				rtc2.hour = HEX2BCD(rtc2.hour);
-				rtc2.day = HEX2BCD(rtc2.day);
-				rtc2.month = HEX2BCD(rtc2.month);
-				rtc2.year -= 2000;
-				rtc2.year = HEX2BCD(rtc2.year);
-							
-				//If SetDate is greater than current date then set it otherwise discard it
-				//if(ep1.currentEpochTime >= ep.currentEpochTime)
-				{
-					Write_byte_DS1307(0x00,rtc2.second); 
-					Write_byte_DS1307(0x01,rtc2.minute); 
-					Write_byte_DS1307(0x02,rtc2.hour); 
-					Write_byte_DS1307(0x04,rtc2.day); 
-					Write_byte_DS1307(0x05,rtc2.month); 
-					Write_byte_DS1307(0x06,rtc2.year); 
-					
-					rtcCorruptionCheckCnt=INIT_RTC_CORRUPTION_CHECK_CNT;
-					while(rtcCorruptionCheckCnt)
-					{
-						//Read RTC
-						Read_DS1307(0x00,&RTC_data[0],7);
-
-						rtc.second = BCD2HEX(RTC_data[0]);		//Second
-						rtc.minute = BCD2HEX(RTC_data[1]);		//Minute
-						rtc.hour = BCD2HEX(RTC_data[2]);	//Hour
-						rtc.day = BCD2HEX(RTC_data[4]);	//Date
-						rtc.month = BCD2HEX(RTC_data[5]);	//Month
-						rtc.year = BCD2HEX(RTC_data[6]);	//Year
-						
-						//If RTC corrupted then Read again 1 time
-						if((rtc.second>59) || (rtc.minute>59) || (rtc.hour>23) || (rtc.day==0) || (rtc.day>31)
-						|| (rtc.month==0) || (rtc.month>12) || (rtc.year>99))
-						{
-							rtcCorruptionCheckCnt--;
-						}
-						else
-						{
-							break;
-						}
-					}
-					
-					if(!rtcCorruptionCheckCnt)
-					{
-						rtcValid=0;
-						
-						#ifdef ENABLE_PRINTF
-						opstr(0,"RTC Corrupted\r\n");
-						#endif
-					}
-					else
-					{
-						rtcValid=1;
-						//RTCSetFlag=1;
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-						//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
-						
-						RTCCorruptDataInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)CORRUPT_RTC_IND_ADDR,RTCCorruptDataInd);
-					
-						#ifdef ENABLE_PRINTF
-						opstr(0,"RTC Working\r\n");
-						#endif
-					}
-				}
+				ep.currentEpochTime = get_epoch_time(rtc2);
+				rtcValid=1;
 
 			break;
 			case DP1UAON_ID:	
@@ -7134,22 +6506,6 @@ void ServePCMsg(unsigned char SrcPort)
 				
 				//Erase External Flash
 				b.EraseFlash=1;
-				
-				//Set Default RTC
-				RTC_data[0] = 0x00; // Second = 0
-				RTC_data[1] = 0x00;	// minute = 0
-				RTC_data[2] = 0x00;	// hour = 0 ,24-hour mode(bit 6=0)
-				RTC_data[3] = 0x05;	// day = 5 or Thursday
-				RTC_data[4] = 0x01;	// date = 01
-				RTC_data[5] = 0x01;	// month = January
-				RTC_data[6] = 0x00;	// year = 15 or 2015
-				Write_DS1307(0x00,&RTC_data[0],7);	// set RTC
-				
-				rtcValid=0;
-				//RTCSetFlag=0;
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG_ADDR,RTCSetFlag);
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG1_ADDR,RTCSetFlag);
-				//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RTC_SET_FLAG2_ADDR,RTCSetFlag);
 				
 			break;
 			
@@ -7969,7 +7325,6 @@ void ServePCMsg(unsigned char SrcPort)
 			case SRNO_ID:
 				memcpy(gu8ar_SrNumber,&RxBuffer[4],16);
 				eeprom_busy_wait();  eeprom_write_block(gu8ar_SrNumber,(unsigned char*)DEVICE_SR_NO,16);
-				//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
 				gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 			break;	
 			case BRDSTP_ID:
@@ -8547,9 +7902,6 @@ void ServePCMsg(unsigned char SrcPort)
 			rtc1.year	= RxBuffer[12] + 2000;	//Year
 			
 			EndEpochTime = get_epoch_time(rtc1);
-			
-			//memcpy((unsigned char*)&StartEpochTime,&RxBuffer[4],4);
-			//memcpy((unsigned char*)&EndEpochTime,&RxBuffer[8],4);
 
 			#ifdef DEBUG_RCV_CMD
 			
@@ -10633,12 +9985,13 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 17;
-	data[6] = 7;
+	data[6] = 8;
 						
 	disp_value();
 	
 	wdt_reset();
 	
+	//----------Just to check display segment healthiness------------
 	if(!clkmode)
 	{
 		_delay_ms(2000);
@@ -20484,330 +19837,295 @@ void delay(unsigned int cnt)
 //****************************************************************************************************************************************/
 void Check_RTC(void)
 {
-	RTC_data[0]=Read_byte_DS1307(0x00);
-	current_sec=RTC_data[0];
+	b.Sec_blink_flag ^= 1;
+
+	ep.currentEpochTime++;
+	get_date_time(&rtc,ep.currentEpochTime);
+
+	current_min = rtc.minute;
+	current_hr = rtc.hour;
 	
-	if(last_sec != current_sec)
+	//---------------------------------------------------------------
+	if(last_min != current_min)
 	{
-		last_sec = current_sec;
+		last_min = current_min;
 		
-		Read_DS1307(0x01,&RTC_data[1],6);
-		
-		b.Sec_blink_flag ^= 1;
-		
-		RTC_data[0] &= ~BIT7;
-		
-		rtc.second = BCD2HEX(RTC_data[0]);		//Second
-		rtc.minute = BCD2HEX(RTC_data[1]);		//Minute
-		rtc.hour = BCD2HEX(RTC_data[2]);		//Hour
-		rtc.day = BCD2HEX(RTC_data[4]);			//Date
-		rtc.month = BCD2HEX(RTC_data[5]);		//Month
-		rtc.year = BCD2HEX(RTC_data[6]);		//Year
-		
-		if((rtc.second>59) || (rtc.minute>59) || (rtc.hour>23) || (rtc.day==0) || (rtc.day>31)
-		|| (rtc.month==0) || (rtc.month>12) || (rtc.year>99))
+		if(logTimer)
 		{
-			#ifdef ENABLE_PRINTF
-			opstr(0,"RTC data not Proper\r\n");
-			#endif
+			logTimer--;
+			if(!logTimer)
+			{
+				LogReading(NORMAL_LOG,0,0xFFFF);
+				logTimer=LogInterval;
+			}
 		}
-		else
+		FillRamBuffer(NORMAL_LOG,0,0xFFFF);
+		
+		if(gu16_parameterWord & ENABLE_M3LOG)
 		{
-			current_min = rtc.minute;
-			current_hr = rtc.hour;
-			
-			//---------------------------------------------------------------
-			if(last_min != current_min)
+			if(gu16_parameterWord & ENABLE_DP1)
 			{
-				last_min = current_min;
-				
-				if(logTimer)
-				{
-					logTimer--;
-					if(!logTimer)
-					{
-						LogReading(NORMAL_LOG,0,0xFFFF);
-						logTimer=LogInterval;
-					}
-				}
-				FillRamBuffer(NORMAL_LOG,0,0xFFFF);
-				
-				if(gu16_parameterWord & ENABLE_M3LOG)
-				{
-					if(gu16_parameterWord & ENABLE_DP1)
-					{
-						HourDP1_Mean += Dpressure1;
-						HrDP1SampleInd++;
-					}
-				
-					if(gu16_parameterWord & ENABLE_DP2)
-					{
-						HourDP2_Mean += Dpressure2;
-						HrDP2SampleInd++;
-					}
-				
-					if(gu16_parameterWord & ENABLE_TEMP)
-					{
-						HourTM_Mean += temperatureC;
-						HrTMSampleInd++;
-					}
-				
-					if(gu16_parameterWord & ENABLE_RH)
-					{
-						HourRH_Mean += humidityRH;
-						HrRHSampleInd++;
-					}
+				HourDP1_Mean += Dpressure1;
+				HrDP1SampleInd++;
+			}
+		
+			if(gu16_parameterWord & ENABLE_DP2)
+			{
+				HourDP2_Mean += Dpressure2;
+				HrDP2SampleInd++;
+			}
+		
+			if(gu16_parameterWord & ENABLE_TEMP)
+			{
+				HourTM_Mean += temperatureC;
+				HrTMSampleInd++;
+			}
+		
+			if(gu16_parameterWord & ENABLE_RH)
+			{
+				HourRH_Mean += humidityRH;
+				HrRHSampleInd++;
+			}
 
-					/*opstr(1,"\r\nMinute: ");
-					print_float(1,HourDP1_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourDP2_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourTM_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourRH_Mean,test,1);
-					opstr(1,"\r\n");
-					*/
-				}
-			}
-			//---------------------------------------------------------------
-			if(last_hr != current_hr)
-			{
-				if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_M3LOG))
-				{
-					if(gu16_parameterWord & ENABLE_DP1)
-					{
-						HourDP1_Mean /= HrDP1SampleInd;
-						WriteLog(DP1_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourDP1_Mean,4);
-						HourDP1_Mean=0.0;
-						HrDP1SampleInd=0;
-					}
-				
-					if(gu16_parameterWord & ENABLE_DP2)
-					{
-						HourDP2_Mean /= HrDP2SampleInd;
-						WriteLog(DP2_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourDP2_Mean,4);
-						HourDP2_Mean=0.0;
-						HrDP2SampleInd=0;
-					}
-				
-					if(gu16_parameterWord & ENABLE_TEMP)
-					{
-						HourTM_Mean /= HrTMSampleInd;
-						WriteLog(TM_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourTM_Mean,4);
-						HourTM_Mean=0.0;
-						HrTMSampleInd=0;
-					}
-				
-					if(gu16_parameterWord & ENABLE_RH)
-					{
-						HourRH_Mean /= HrRHSampleInd;
-						WriteLog(RH_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourRH_Mean,4);
-						HourRH_Mean=0.0;
-						HrRHSampleInd=0;
-					}
-				
-					/*opstr(1,"\r\nAverage: ");
-					print_float(1,HourDP1_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourDP2_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourTM_Mean,test,1);	opstr(1,"      ");
-					print_float(1,HourRH_Mean,test,1);
-					opstr(1,"\r\n");
-					*/
-				}
-				
-				last_hr = current_hr;
-			}
-			
-			//---------------------------------------------------------------
-			rtc1.second = rtc.second;				//Second
-			rtc1.minute = rtc.minute;				//Minute
-			rtc1.hour = rtc.hour;					//Hour
-			rtc1.day = rtc.day;						//Date
-			rtc1.month = rtc.month;					//Month
-			rtc1.year = rtc.year + 2000;			//Year
-		
-			ep.currentEpochTime = get_epoch_time(rtc1);
-		
-			if((ep.currentEpochTime % 86400) < 5)
-			{
-				if(!b.resetMinMax)
-				{
-					if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_M3LOG))
-					{
-						//Store Last Day Epoch with less than 2 minutes
-						ep1.currentEpochTime = ep.currentEpochTime - 120;
-					
-						memcpy(&MinMaxMeanDayLogArr[0],(unsigned char*)&ep1.currentEpochTime,4);
-										
-						//Find DP1 Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_DP1)
-						{
-							ReadMinMaxLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							DP1_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								DP1_Mean += tempfloat1;
-							}
-							DP1_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP1_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP1_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP1_Mean,4);
-							WriteLog(LAST_DP1_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-					
-						//Find DP2 Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_DP2)
-						{
-							ReadMinMaxLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							DP2_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								DP2_Mean += tempfloat1;
-							}
-							DP2_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP2_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP2_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP2_Mean,4);
-							WriteLog(LAST_DP2_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-					
-						//Find TM Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_TEMP)
-						{
-							ReadMinMaxLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							TM_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								TM_Mean += tempfloat1;
-							}
-							TM_Mean /= TOTAL_MEAN_HOUR;
-						
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&TM_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&TM_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&TM_Mean,4);
-							WriteLog(LAST_TM_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-						
-						//Find RH Mean Value from last 24 Hour and Store it ---------------------------------------------
-						if(gu16_parameterWord & ENABLE_RH)
-						{
-							ReadMinMaxLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							RH_Mean=0;
-							a2=0;
-							for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
-							{
-								memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
-								a2 += 4;
-								RH_Mean += tempfloat1;
-							}
-							RH_Mean /= TOTAL_MEAN_HOUR;
-					
-							memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&RH_Min,4);
-							memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&RH_Max,4);
-							memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&RH_Mean,4);
-							WriteLog(LAST_RH_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
-						}
-					
-						//Clear all Hour mean value for next day
-						memset(Buffer1,0,100);
-						if(gu16_parameterWord & ENABLE_DP1)
-						{
-							WriteLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourDP1_Mean=0;
-							HrDP1SampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_DP2)
-						{
-							WriteLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourDP2_Mean=0;
-							HrDP2SampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_TEMP)
-						{
-							WriteLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourTM_Mean=0;
-							HrTMSampleInd=0;
-						}
-						if(gu16_parameterWord & ENABLE_RH)
-						{
-							WriteLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
-							HourRH_Mean=0;
-							HrRHSampleInd=0;
-						}
-					
-						MinMaxMeanDayLogInd++;
-						if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG) MinMaxMeanDayLogInd=0;
-						eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
-					}
-					
-					ResetMinMax();
-					#ifdef ENABLE_PRINTF
-					opstr(0,"DayChange Occure.Min Max Reset\r\n");
-					#endif
-					b.resetMinMax=1;
-				}
-			}
-			else
-			{
-				b.resetMinMax=0;
-			}
-			//---------------------------------------------------------------	
-			if(rtc.hour>=12) 
-			{
-				b.AM_PM_Flag=0;
-			}
-			else                    
-			{
-				b.AM_PM_Flag=1;
-			}
-			//---------------------------------------------------------------
-		
-			#ifdef DEBUG_RTC
-
-				opstr(0,"\r\nEpoch:");
-				print_Hex(0,ep.cept[3]);
-				print_Hex(0,ep.cept[2]);
-				print_Hex(0,ep.cept[1]);
-				print_Hex(0,ep.cept[0]);
-			
-				opstr(0,"  RTC:");
-				opchar(0,(rtc.day/10) + 0x30);
-				opchar(0,(rtc.day%10) + 0x30);
-				opchar(0,'/');
-				opchar(0,(rtc.month/10) + 0x30);
-				opchar(0,(rtc.month%10) + 0x30);
-				opchar(0,'/');
-				opchar(0,(rtc.year/10) + 0x30);
-				opchar(0,(rtc.year%10) + 0x30);
-				opchar(0,' ');
-				opchar(0,(rtc.hour/10) + 0x30);
-				opchar(0,(rtc.hour%10) + 0x30);
-				opchar(0,':');
-				opchar(0,(rtc.minute/10) + 0x30);
-				opchar(0,(rtc.minute%10) + 0x30);
-				opchar(0,':');
-				opchar(0,(rtc.second/10) + 0x30);
-				opchar(0,(rtc.second%10) + 0x30);
-			
-				opstr(0,"   ADC Reading:");
-				print_float(0,ADC_sample,&test[0],0);
-			
-				opstr(0,"   Battery Voltage:");
-				print_float(0,BatteryPercentage,&test[0],0);
-				opstr(0,"\r\n");
-			
-			#endif
+			/*opstr(1,"\r\nMinute: ");
+			print_float(1,HourDP1_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourDP2_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourTM_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourRH_Mean,test,1);
+			opstr(1,"\r\n");
+			*/
 		}
 	}
+	
+	//---------------------------------------------------------------
+	if(last_hr != current_hr)
+	{
+		if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_M3LOG))
+		{
+			if(gu16_parameterWord & ENABLE_DP1)
+			{
+				HourDP1_Mean /= HrDP1SampleInd;
+				WriteLog(DP1_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourDP1_Mean,4);
+				HourDP1_Mean=0.0;
+				HrDP1SampleInd=0;
+			}
+		
+			if(gu16_parameterWord & ENABLE_DP2)
+			{
+				HourDP2_Mean /= HrDP2SampleInd;
+				WriteLog(DP2_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourDP2_Mean,4);
+				HourDP2_Mean=0.0;
+				HrDP2SampleInd=0;
+			}
+		
+			if(gu16_parameterWord & ENABLE_TEMP)
+			{
+				HourTM_Mean /= HrTMSampleInd;
+				WriteLog(TM_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourTM_Mean,4);
+				HourTM_Mean=0.0;
+				HrTMSampleInd=0;
+			}
+		
+			if(gu16_parameterWord & ENABLE_RH)
+			{
+				HourRH_Mean /= HrRHSampleInd;
+				WriteLog(RH_CURR_24HR_MEAN_OFFSET,last_hr,(unsigned char*)&HourRH_Mean,4);
+				HourRH_Mean=0.0;
+				HrRHSampleInd=0;
+			}
+		
+			/*opstr(1,"\r\nAverage: ");
+			print_float(1,HourDP1_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourDP2_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourTM_Mean,test,1);	opstr(1,"      ");
+			print_float(1,HourRH_Mean,test,1);
+			opstr(1,"\r\n");
+			*/
+		}
+		
+		last_hr = current_hr;
+	}
+			
+	if((ep.currentEpochTime % 86400) < 5)
+	{
+		if(!b.resetMinMax)
+		{
+			if((gu16_parameterWord & ENABLE_DATAFLASH) && (gu16_parameterWord & ENABLE_M3LOG))
+			{
+				//Store Last Day Epoch with less than 2 minutes
+				ep1.currentEpochTime = ep.currentEpochTime - 120;
+			
+				memcpy(&MinMaxMeanDayLogArr[0],(unsigned char*)&ep1.currentEpochTime,4);
+								
+				//Find DP1 Mean Value from last 24 Hour and Store it ---------------------------------------------
+				if(gu16_parameterWord & ENABLE_DP1)
+				{
+					ReadMinMaxLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					DP1_Mean=0;
+					a2=0;
+					for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
+					{
+						memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
+						a2 += 4;
+						DP1_Mean += tempfloat1;
+					}
+					DP1_Mean /= TOTAL_MEAN_HOUR;
+			
+					memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP1_Min,4);
+					memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP1_Max,4);
+					memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP1_Mean,4);
+					WriteLog(LAST_DP1_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
+				}
+			
+				//Find DP2 Mean Value from last 24 Hour and Store it ---------------------------------------------
+				if(gu16_parameterWord & ENABLE_DP2)
+				{
+					ReadMinMaxLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					DP2_Mean=0;
+					a2=0;
+					for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
+					{
+						memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
+						a2 += 4;
+						DP2_Mean += tempfloat1;
+					}
+					DP2_Mean /= TOTAL_MEAN_HOUR;
+			
+					memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&DP2_Min,4);
+					memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&DP2_Max,4);
+					memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&DP2_Mean,4);
+					WriteLog(LAST_DP2_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
+				}
+			
+				//Find TM Mean Value from last 24 Hour and Store it ---------------------------------------------
+				if(gu16_parameterWord & ENABLE_TEMP)
+				{
+					ReadMinMaxLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					TM_Mean=0;
+					a2=0;
+					for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
+					{
+						memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
+						a2 += 4;
+						TM_Mean += tempfloat1;
+					}
+					TM_Mean /= TOTAL_MEAN_HOUR;
+				
+					memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&TM_Min,4);
+					memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&TM_Max,4);
+					memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&TM_Mean,4);
+					WriteLog(LAST_TM_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
+				}
+				
+				//Find RH Mean Value from last 24 Hour and Store it ---------------------------------------------
+				if(gu16_parameterWord & ENABLE_RH)
+				{
+					ReadMinMaxLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					RH_Mean=0;
+					a2=0;
+					for(a1=0;a1<TOTAL_MEAN_HOUR;a1++)
+					{
+						memcpy((unsigned char*)&tempfloat1,&Buffer1[a2],4);
+						a2 += 4;
+						RH_Mean += tempfloat1;
+					}
+					RH_Mean /= TOTAL_MEAN_HOUR;
+			
+					memcpy(&MinMaxMeanDayLogArr[4],(unsigned char*)&RH_Min,4);
+					memcpy(&MinMaxMeanDayLogArr[8],(unsigned char*)&RH_Max,4);
+					memcpy(&MinMaxMeanDayLogArr[12],(unsigned char*)&RH_Mean,4);
+					WriteLog(LAST_RH_MIN_MAX_OFFSET,MinMaxMeanDayLogInd,&MinMaxMeanDayLogArr[0],MIN_MAX_MEAN_LOG_SIZE);
+				}
+			
+				//Clear all Hour mean value for next day
+				memset(Buffer1,0,100);
+				if(gu16_parameterWord & ENABLE_DP1)
+				{
+					WriteLog(DP1_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					HourDP1_Mean=0;
+					HrDP1SampleInd=0;
+				}
+				if(gu16_parameterWord & ENABLE_DP2)
+				{
+					WriteLog(DP2_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					HourDP2_Mean=0;
+					HrDP2SampleInd=0;
+				}
+				if(gu16_parameterWord & ENABLE_TEMP)
+				{
+					WriteLog(TM_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					HourTM_Mean=0;
+					HrTMSampleInd=0;
+				}
+				if(gu16_parameterWord & ENABLE_RH)
+				{
+					WriteLog(RH_CURR_24HR_MEAN_OFFSET,0,&Buffer1[0],HOUR_MEAN_VALUE_SPACE);
+					HourRH_Mean=0;
+					HrRHSampleInd=0;
+				}
+			
+				MinMaxMeanDayLogInd++;
+				if(MinMaxMeanDayLogInd>=TOTAL_MIN_MAX_MEAN_LOG) MinMaxMeanDayLogInd=0;
+				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MIN_MAX_LOG_IND_ADDR,MinMaxMeanDayLogInd);
+			}
+			
+			ResetMinMax();
+			#ifdef ENABLE_PRINTF
+			opstr(0,"DayChange Occure.Min Max Reset\r\n");
+			#endif
+			b.resetMinMax=1;
+		}
+	}
+	else
+	{
+		b.resetMinMax=0;
+	}
+	//---------------------------------------------------------------	
+	if(rtc.hour>=12) 
+	{
+		b.AM_PM_Flag=0;
+	}
+	else                    
+	{
+		b.AM_PM_Flag=1;
+	}
+	//---------------------------------------------------------------
+		
+	#ifdef DEBUG_RTC
+
+		opstr(0,"\r\nEpoch:");
+		print_Hex(0,ep.cept[3]);
+		print_Hex(0,ep.cept[2]);
+		print_Hex(0,ep.cept[1]);
+		print_Hex(0,ep.cept[0]);
+	
+		opstr(0,"  RTC:");
+		opchar(0,(rtc.day/10) + 0x30);
+		opchar(0,(rtc.day%10) + 0x30);
+		opchar(0,'/');
+		opchar(0,(rtc.month/10) + 0x30);
+		opchar(0,(rtc.month%10) + 0x30);
+		opchar(0,'/');
+		opchar(0,(rtc.year/10) + 0x30);
+		opchar(0,(rtc.year%10) + 0x30);
+		opchar(0,' ');
+		opchar(0,(rtc.hour/10) + 0x30);
+		opchar(0,(rtc.hour%10) + 0x30);
+		opchar(0,':');
+		opchar(0,(rtc.minute/10) + 0x30);
+		opchar(0,(rtc.minute%10) + 0x30);
+		opchar(0,':');
+		opchar(0,(rtc.second/10) + 0x30);
+		opchar(0,(rtc.second%10) + 0x30);
+	
+		opstr(0,"   ADC Reading:");
+		print_float(0,ADC_sample,&test[0],0);
+	
+		opstr(0,"   Battery Voltage:");
+		print_float(0,BatteryPercentage,&test[0],0);
+		opstr(0,"\r\n");
+	
+	#endif
 }
 
 //Read SHT25
@@ -21168,9 +20486,8 @@ void boot_data(void)
 		gu8_masterEnable=0;
 		eeprom_busy_wait();  eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)MASTER_ENABLE_ADDR,gu8_masterEnable);
 		
-		memset(gu8ar_SrNumber,0,sizeof(gu8ar_SrNumber));
+		memset(gu8ar_SrNumber,'0',sizeof(gu8ar_SrNumber));
 		eeprom_busy_wait();  eeprom_write_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
-		//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
 		gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 		
 		gu8_DP1_LEDBlinkForPara=0;
@@ -21507,7 +20824,6 @@ void boot_data(void)
 		}
 		
 		eeprom_read_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
-		//memcpy((uint8_t *)&gu32_SrNumber,&gu8ar_SrNumber[12],4);
 		gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 		
 		gu8_doorSensingTime  = eeprom_read_byte ((unsigned char*)DOOR_SENSE_TIME_ADDR);
