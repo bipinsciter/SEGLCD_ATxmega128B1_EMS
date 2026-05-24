@@ -134,13 +134,14 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				800  //means 8.00
+#define SOFT_VER				810  //means 8.10
 #define NO_OF_ACKPWD			15
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
 
 #define DEFAULT_LCD_BRIGHTNESS	 26
 #define DEFAULT_AUTO_SENT_INTERVAL	 5
+#define DEFAULT_XBEE_RST_INTERVAL	 5
 
 #define DISP_PER			82.0 // PWM
  
@@ -503,8 +504,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define LCD_BRIGHT_CNT_ID			0x5E
 #define DP_SW_FACT_ID				0x5F
 #define RELAY_CNTL_ID				0x60
-#define AUTO_SENT_INTERVAL_ID		0x61
-//#define AUTO_SENT_INTERVAL_ID		0x62
+#define AUTO_SENT_INTERVAL_ID		0x69
+#define XBEE_RST_INTERVAL_ID		0x6A
 
 #define CORR_RTC_DATA_ID	0x99	
 #define PUT_DFU_ID			0xAA	
@@ -646,7 +647,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DP_FACT_ENB_ADDR				(DP_SW_FACT_ADDR+10)
 #define RELAY_STAT_ADDR					(DP_FACT_ENB_ADDR+2)
 #define AUTO_SENT_INTERVAL_ADDR			(RELAY_STAT_ADDR+1)
-
+#define XBEE_RST_INTERVAL_ADDR			(AUTO_SENT_INTERVAL_ADDR+1)
 
 
 #if DISPLAY_MODE==SMALL_FONT_DISPLAY_OLD
@@ -1549,7 +1550,8 @@ unsigned char rxMode=0;
 unsigned long LowEpoch=0,MidEpoch=0,MidEpoch1=0,HighEpoch=0,MidLogInd=0;
 unsigned long InitLogInd=0,LastLogInd=0,StartEpoch=0,EndEpoch=0,StartEpochTime=0,EndEpochTime=0,TotalLog=0,StartLogInd=0,EndLogInd=0;
 
-unsigned short logtransfer=0, gu16_triggerXbeeResetTimer = 300;
+unsigned short logtransfer=0, gu16_XbeeRstInterval=0;
+unsigned long gu32_triggerXbeeResetTimer = 0;
 signed short su16_dp_sw_factor[5]={0,0,0,0,0};
 
 volatile unsigned long templong=0;
@@ -7495,6 +7497,14 @@ void ServePCMsg(unsigned char SrcPort)
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 				}
 			break;
+			case XBEE_RST_INTERVAL_ID:
+				if((tempshort!=0) && (tempshort <= 1440))
+				{
+					gu16_XbeeRstInterval=tempshort;
+					gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
+					eeprom_busy_wait();  eeprom_write_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR,gu16_XbeeRstInterval);
+				}
+			break;
 			case DP1_ALM_SENSE_TIME_ID:
 				if(tempshort<=250)
 				{
@@ -7772,6 +7782,7 @@ void ServePCMsg(unsigned char SrcPort)
 			case DOOR_SENSE_TIME_ID:		tempshort = gu8_doorSensingTime;		break;
 			case LCD_BRIGHT_CNT_ID:			tempshort = gu8_LCDBrigthnessCnt;		break;
 			case AUTO_SENT_INTERVAL_ID:			tempshort = gu8_AutoSentInterval;		break;
+			case XBEE_RST_INTERVAL_ID:			tempshort = gu16_XbeeRstInterval;		break;
 			case DP1_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp1AlarmSensingTime;	break;
 			case DP2_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp2AlarmSensingTime;	break;
 			case SRNO_ID:												break;
@@ -9873,7 +9884,7 @@ void Init_variables(void)
 	
 	b.autoSendResponse = false;
 	b.triggerXbeeReset = false;
-	gu16_triggerXbeeResetTimer = 300;
+	gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
 }
 
 //**************************************************************************************************************************************
@@ -9889,12 +9900,13 @@ void SecondTick(void)
 		SendToSlave();
 	}
 	
-	if(gu16_triggerXbeeResetTimer)
+	if(gu32_triggerXbeeResetTimer)
 	{
-		gu16_triggerXbeeResetTimer--;
-		if(!gu16_triggerXbeeResetTimer)
+		gu32_triggerXbeeResetTimer--;
+		if(!gu32_triggerXbeeResetTimer)
 		{
-			gu16_triggerXbeeResetTimer = 300;
+			gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
+			
 			b.triggerXbeeReset = true;
 		}
 	}
@@ -10278,7 +10290,7 @@ void InitLCDController(void)
 	data[3] = r;
 		
 	data[5] = 18;
-	data[6] = 0;
+	data[6] = 1;
 						
 	disp_value();
 	
@@ -21120,6 +21132,9 @@ void boot_data(void)
 		
 		gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
+		
+		gu16_XbeeRstInterval=DEFAULT_XBEE_RST_INTERVAL;
+		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR,gu16_XbeeRstInterval);
 		//EraseWholeFlash();
 	}
 	else
@@ -21143,6 +21158,13 @@ void boot_data(void)
 		{
 			gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
+		}
+		
+		gu16_XbeeRstInterval  = eeprom_read_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR);
+		if((!gu16_XbeeRstInterval) || (gu16_XbeeRstInterval > 1440))
+		{
+			gu16_XbeeRstInterval=DEFAULT_XBEE_RST_INTERVAL;
+			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR,gu16_XbeeRstInterval);
 		}
 		
 		eeprom_read_block(&gu8ar_SrNumber[0],(void*)DEVICE_SR_NO,sizeof(gu8ar_SrNumber));
