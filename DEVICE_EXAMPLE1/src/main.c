@@ -6624,7 +6624,7 @@ void ServePCMsg(unsigned char SrcPort)
 			case DP_SW_FACT_ID:
 			
 				tempshort = findValue(&RxBuffer[5],5);
-				if(RxBuffer[4]=='-'); tempshort *= (-1);	
+				if(RxBuffer[4]=='-') tempshort *= (-1);	
 				
 			break;
 			
@@ -7030,61 +7030,63 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			case DFLT_CAL_ID:
 			
-				switch(RxBuffer[4])
+				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
 				{
-					case '0':
+					switch(RxBuffer[4])
+					{
+						case '0':
 					
-						DP1_Cal_Value_F=0;
-						eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
+							//DP1_Cal_Value_F=0;
+							//eeprom_write_word ((unsigned int*)DP1_CAL_VAL_F_ADDR,DP1_Cal_Value_F);
 
-						DP1_Cal_Value_C=0;
-						eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+							DP1_Cal_Value_C=0;
+							eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
 
-						DP1_Cal_float_Value_F = 0.0;
-						DP1_Cal_float_Value_C = 0.0;
+							//DP1_Cal_float_Value_F = 0.0;
+							DP1_Cal_float_Value_C = 0.0;
 						
-					break;
+						break;
 					
-					case '1':
+						case '1':
 					
-						DP2_Cal_Value_F=0;
-						eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
+							//DP2_Cal_Value_F=0;
+							//eeprom_write_word ((unsigned int*)DP2_CAL_VAL_F_ADDR,DP2_Cal_Value_F);
 						
-						DP2_Cal_Value_C=0;
-						eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+							DP2_Cal_Value_C=0;
+							eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
 						
-						DP2_Cal_float_Value_F = 0.0;
-						DP2_Cal_float_Value_C = 0.0;
+							//DP2_Cal_float_Value_F = 0.0;
+							DP2_Cal_float_Value_C = 0.0;
 					
-					break;
+						break;
 					
-					case '2':
+						case '2':
 					
-						TM_Cal_Value_F=0;
-						eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
+							//TM_Cal_Value_F=0;
+							//eeprom_write_word ((unsigned int*)TM_CAL_VAL_F_ADDR,TM_Cal_Value_F);
 						
-						TM_Cal_Value_C=0;
-						eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
+							TM_Cal_Value_C=0;
+							eeprom_write_word ((unsigned int*)TM_CAL_VAL_C_ADDR,TM_Cal_Value_C);
 						
-						TM_Cal_float_Value_F = 0.0;
-						TM_Cal_float_Value_C = 0.0;
+							//TM_Cal_float_Value_F = 0.0;
+							TM_Cal_float_Value_C = 0.0;
 					
-					break;
+						break;
 					
-					case '3':
+						case '3':
 					
-						RH_Cal_Value_F=0;
-						eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
+							//RH_Cal_Value_F=0;
+							//eeprom_write_word ((unsigned int*)RH_CAL_VAL_F_ADDR,RH_Cal_Value_F);
 						
-						RH_Cal_Value_C=0;
-						eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
+							RH_Cal_Value_C=0;
+							eeprom_write_word ((unsigned int*)RH_CAL_VAL_C_ADDR,RH_Cal_Value_C);
 						
-						RH_Cal_float_Value_F = 0.0;
-						RH_Cal_float_Value_C = 0.0;
+							//RH_Cal_float_Value_F = 0.0;
+							RH_Cal_float_Value_C = 0.0;
 					
-					break;
+						break;
+					}
 				}
-				
 			break;
 
 			case BZROFF_ID:		
@@ -7125,9 +7127,12 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			case DP_SW_FACT_ID:
 			
-				su16_dp_sw_factor=tempshort;
-				f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
-				eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+				if(b.CustmerCalibrationOn==1)
+				{
+					su16_dp_sw_factor=tempshort;
+					f32_dp_sw_factor=(float)su16_dp_sw_factor/100.0;
+					eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor);
+				}	
 				
 			break;
 			
@@ -7251,6 +7256,14 @@ void ServePCMsg(unsigned char SrcPort)
 					DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
 					DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
 				}
+			
+				//opstr(SrcPort,"\r\nDP2_Cal_float_Value_F:");
+				//print_float(SrcPort,DP2_Cal_float_Value_F,test,1);
+				//opstr(SrcPort,"\r\n");
+				//
+				//opstr(SrcPort,"\r\nDP2_Cal_float_Value_C:");
+				//print_float(SrcPort,DP2_Cal_float_Value_C,test,1);
+				//opstr(SrcPort,"\r\n");
 			
 				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
 				{
@@ -7379,6 +7392,15 @@ void ServePCMsg(unsigned char SrcPort)
 					}
 				}
 				
+				//opstr(SrcPort,"\r\nTM_Cal_float_Value_F:");
+				//print_float(SrcPort,TM_Cal_float_Value_F,test,1);
+				//opstr(SrcPort,"\r\n");
+				
+				//opstr(SrcPort,"\r\nTM_Cal_float_Value_C:");
+				//print_float(SrcPort,TM_Cal_float_Value_C,test,1);
+				//opstr(SrcPort,"\r\n");
+				
+				
 				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
 				{
 					PCCalibrationTimer=60;
@@ -7493,23 +7515,14 @@ void ServePCMsg(unsigned char SrcPort)
 					RH_Cal_Value_C = 0;
 					RH_Cal_float_Value_C = 0;
 				}
-				
-				//else if(b.CustmerCalibrationOn==1)
+				else if(b.CustmerCalibrationOn==1)
 				{
 					ss1 = (RealhumidityRH - RH_Cal_float_Value_F)*10.0;
 					RH_Cal_Value_C = ss1 - tempshort;
 					RH_Cal_float_Value_C = (float)RH_Cal_Value_C/10.0;
 				}
 				
-				opstr(0,"\r\nRH_Cal_float_Value_F:");
-				print_float(0,RH_Cal_float_Value_F,test,1);		
-				opstr(0,"\r\n");
-					
-				opstr(0,"\r\nRH_Cal_float_Value_C:");
-				print_float(0,RH_Cal_float_Value_C,test,1);		
-				opstr(0,"\r\n");
-				
-				//if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
+				if((b.FactoryCalibrationOn==1) || (b.CustmerCalibrationOn==1))
 				{
 					PCCalibrationTimer=60;
 					
@@ -22451,7 +22464,7 @@ ISR(USARTE0_RXC_vect)
 				
 				rxMode=0;
 				RxTimeout=0;
-				//if(RxBuffer1[RxInd-2]==crcVal)
+				if(RxBuffer1[RxInd-2]==crcVal) 
 				{
 					if(!b.FlashReadCmd && !b.Flash24ReadCmd && !b.MinMaxMeanLogReadCmd && !b.MeanHrLogReadCmd && !b.RamReadCmd && !b.RamAllReadCmd)
 					{
