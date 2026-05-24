@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				860  //means 8.60
+#define SOFT_VER				870  //means 8.70
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			5
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -6208,52 +6208,43 @@ void ServePCMsg(unsigned char SrcPort)
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
-	unsigned char index=0,j=0,lu8_sendResponse=0,lu8_GroupDelay=0;
+	unsigned char index=0,j=0,lu8_sendResponse=0,lu8_GroupDelay=0,m=0;
 	
 	b.paraIdNotValid=0;
 	
 	if(RxBuffer[2]==PARA_WITH_ALM_READ_CMD)
-	{
-		//gu8_AutoSentTimeout = 60;
-		//gu8_AutoSentTimer = 0;
-		
+	{	
 		if(RxInd==6)
 		{
 			if((RxBuffer[3]==0x00) || (RxBuffer[3]==gu8_groupID))
 			{
 				lu8_sendResponse = 1;
 				
-				if(gu8_groupID>1)
-				{
-					for(unsigned char m=0;m<gu8_groupID;m++)
-					{
-						_delay_ms(100);
-					}
-				}
+				//if(gu8_groupID>1)
+				//{
+					//for(m=0;m<gu8_groupID;m++)
+					//{
+						//_delay_ms(100);
+					//}
+				//}
 				
 				lu8_GroupDelay = (DeviceID - 1)%gu8_DeviceInGroup;
 				
-				if(lu8_GroupDelay) 
+				if(lu8_GroupDelay)
 				{
-					for(unsigned char m=0;m<lu8_GroupDelay;m++)
+					for(m=0;m<lu8_GroupDelay;m++)
 					{
-						_delay_ms(10);
+						_delay_ms(1);
 					}
 				}
 			}
 			else
 			{
-				
 				lu8_sendResponse = 0;
 			}
 		}
 		else
-		{
-			for(unsigned char m=0;m<DeviceID;m++)
-			{
-				_delay_ms(100);
-			}
-	
+		{	
 			lu8_sendResponse = 1;
 		}
 		
@@ -6445,8 +6436,9 @@ void ServePCMsg(unsigned char SrcPort)
 			j++;
 			
 			RxBuffer[j++]=0xFC;
-			
-			SetTxmode(SrcPort,RxBuffer,j);
+		
+			SendToUART(SrcPort,RxBuffer,j);
+			//SetTxmode(SrcPort,RxBuffer,j);
 		}
 	}
 	else if(RxBuffer[2]==PARA_WRITE_CMD)
@@ -10403,7 +10395,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 18;
-	data[6] = 6;
+	data[6] = 7;
 						
 	disp_value();
 	
