@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				920  //means 9.20
+#define SOFT_VER				930  //means 9.30
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -2000,8 +2000,7 @@ int main(void)
 		
 	#endif
 	
-	logTimer = LogInterval;
-	b.brodcastEnb=0;	
+	logTimer = LogInterval;	
 	logtransfer=0;
 	b.logtransferStart=0;
 	DP_StartUpTimer=S_STABLE_TIME;
@@ -2068,12 +2067,12 @@ int main(void)
 	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
 	{
 		b.doorStatus=OPEN;
-		gu8_dp_sw_enb = 1;
+		//gu8_dp_sw_enb = 1;
 	}
 	else
 	{
 		b.doorStatus=CLOSE;
-		gu8_dp_sw_enb = 0;
+		//gu8_dp_sw_enb = 0;
 	}
 		
 	#endif
@@ -6093,23 +6092,6 @@ void LogReading(unsigned char logtype,unsigned char userID,unsigned short passwo
 
 		sei();
 	}
-	
-	#ifdef ENABLE_BROADCAST
-	
-		if(b.brodcastEnb && !b.FlashReadCmd && !b.Flash24ReadCmd && !b.MinMaxMeanLogReadCmd && !b.MeanHrLogReadCmd && !b.RamReadCmd && !b.RamAllReadCmd)
-		{
-			Buffer1[0]=0xFD;
-			memcpy(&Buffer1[1],&Buffer1[4],58);
-			Buffer1[59]=CalCRC(&Buffer1[1],58);
-			Buffer1[60]=0xFC;
-		
-			if(clkmode==1)
-				SendToUART(2,&Buffer1[0],61);
-			else
-				SendToUART(0,&Buffer1[0],61);
-		}
-	
-	#endif
 }
 
 void AutoSendDataResponse(unsigned char SrcPort)
@@ -7697,7 +7679,7 @@ void ServePCMsg(unsigned char SrcPort)
 				}
 			break;
 			case DEVICES_IN_GROUP_ID:
-				if((tempshort>=2) && (tempshort <= 100))
+				if((tempshort>=1) && (tempshort <= 100))
 				{
 					gu8_DeviceInGroup=tempshort;
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
@@ -7791,13 +7773,11 @@ void ServePCMsg(unsigned char SrcPort)
 				gu32_SrNumber = ascii2hex(&gu8ar_SrNumber[8],8);
 			break;	
 			case BRDSTP_ID:
-				b.brodcastEnb=0;
 				StartBroadcastTimer=0;
 				gu8_broadcast=0;
 				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
 			break;
 			case BRDSTR_ID:
-				b.brodcastEnb=1;
 				tempshort=findValue(&RxBuffer[4],RxInd-6);
 				StartBroadcastTimer=(unsigned long)tempshort*60; 
 				gu8_broadcast=1;
@@ -9175,7 +9155,7 @@ void ReadDiffPressure1(void)
 		
 		//if(!DP_CHANGE_SENSE) //ENABLE for switch
 		{
-			if(!gu8_dp_sw_enb)
+			/*if(!gu8_dp_sw_enb)
 			{
 				if(Dpressure1>-1.0) Dpressure1 += f32_dp_sw_factor[0]; //MINUS LIMIT
 				else Dpressure1 -= f32_dp_sw_factor[0];
@@ -9186,6 +9166,15 @@ void ReadDiffPressure1(void)
 				{
 					if(Dpressure1>0.03) Dpressure1 += f32_dp_sw_factor[0];
 					if(Dpressure1<-0.03) Dpressure1 -= f32_dp_sw_factor[0];
+				}
+			}*/
+			
+			if(b.doorStatus==CLOSE)
+			{
+				if((Dpressure1>0.03) || (Dpressure1<-0.03))
+				{
+					if(Dpressure1>0.03) Dpressure1 += f32_dp_sw_factor[0];
+					if(Dpressure1<-1.5) Dpressure1 -= f32_dp_sw_factor[0];
 				}
 			}
 		}
@@ -9419,7 +9408,7 @@ void ReadDiffPressure2(void)
 		
 		//if(!DP_CHANGE_SENSE) //ENABLE for switch
 		{
-			if(!gu8_dp_sw_enb)
+			/*if(!gu8_dp_sw_enb)
 			{
 				if(Dpressure2>-1.0) Dpressure2 += f32_dp_sw_factor[1];  
 				else Dpressure2 -= f32_dp_sw_factor[1];
@@ -9430,6 +9419,15 @@ void ReadDiffPressure2(void)
 				{
 					if(Dpressure2>0.03) Dpressure2 += f32_dp_sw_factor[1];
 					if(Dpressure2<-0.03) Dpressure2 -= f32_dp_sw_factor[1];
+				}
+			}*/
+			
+			if(b.doorStatus==CLOSE)
+			{
+				if((Dpressure2>0.03) || (Dpressure2<-0.03))
+				{
+					if(Dpressure2>0.03) Dpressure2 += f32_dp_sw_factor[1];
+					if(Dpressure2<-1.5) Dpressure2 -= f32_dp_sw_factor[1];
 				}
 			}
 		}
@@ -9902,7 +9900,7 @@ void SecondTick(void)
 		gu16_DPAutoCalTimer10Sec[0]--;
 		if(!gu16_DPAutoCalTimer10Sec[0])
 		{
-			if(gu8_DPAutoCalDoorCnt[0] >= 3)
+			if(gu8_DPAutoCalDoorCnt[0] >= 5)
 			{
 				if(b.doorStatus==OPEN)
 				{
@@ -9934,7 +9932,7 @@ void SecondTick(void)
 		gu16_DPAutoCalTimer10Sec[1]--;
 		if(!gu16_DPAutoCalTimer10Sec[1])
 		{
-			if(gu8_DPAutoCalDoorCnt[1] >= 6)
+			if(gu8_DPAutoCalDoorCnt[1] >= 7)
 			{
 				if(b.doorStatus==OPEN)
 				{
@@ -10148,14 +10146,14 @@ void SecondTick(void)
 		}
 	}
 	//--------------------------------------------
-	if(StartBroadcastTimer)
+	/*if(StartBroadcastTimer)
 	{
 		StartBroadcastTimer--;
 		if(!StartBroadcastTimer)
 		{
-			b.brodcastEnb=0;
+			gu8_broadcast=0;
 		}
-	}
+	}*/
 	//--------------------------------------------
 	if(AlarmAckTimer)
 	{
@@ -10195,13 +10193,15 @@ void SecondTick(void)
 		{
 			b.doorStatus=OPEN;
 			b.autoSendResponse = true;
+		
+			//gu8_dp_sw_enb = 1;
 			//opstr(1,"DoorOpen\n");
 			//StartBuzzer();
 			if(!gu16_DPAutoCalTimer5Min[0])
 			{
 				if(!gu16_DPAutoCalTimer10Sec[0]) 
 				{
-					gu16_DPAutoCalTimer10Sec[0] = 10;
+					gu16_DPAutoCalTimer10Sec[0] = 3;
 					gu8_DPAutoCalDoorCnt[0] = 1;
 				}
 				else
@@ -10214,7 +10214,7 @@ void SecondTick(void)
 			{
 				if(!gu16_DPAutoCalTimer10Sec[1]) 
 				{
-					gu16_DPAutoCalTimer10Sec[1] = 10;
+					gu16_DPAutoCalTimer10Sec[1] = 5;
 					gu8_DPAutoCalDoorCnt[1] = 1;
 				}
 				else
@@ -10230,7 +10230,7 @@ void SecondTick(void)
 		{
 			b.doorStatus=CLOSE;
 			b.autoSendResponse = true;
-			gu8_dp_sw_enb = 0;
+			//gu8_dp_sw_enb = 0;
 			gu16_DPAutoCalTimer5Min[0] = 0;
 			gu16_DPAutoCalTimer5Min[1] = 0;
 			//opstr(1,"DoorClose\n");
@@ -10345,7 +10345,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 19;
-	data[6] = 2;
+	data[6] = 3;
 						
 	disp_value();
 	
@@ -21345,7 +21345,7 @@ void boot_data(void)
 		}
 		
 		gu8_DeviceInGroup  = eeprom_read_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR);
-		if((gu8_DeviceInGroup < 2) || (gu8_DeviceInGroup > 100))
+		if((gu8_DeviceInGroup < 1) || (gu8_DeviceInGroup > 100))
 		{
 			gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP;
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
