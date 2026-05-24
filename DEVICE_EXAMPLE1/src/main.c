@@ -76,7 +76,7 @@
 #define SMALL_FONT_DISPLAY_COLOR	2
 #define BIG_FONT_DISPLAY_OLD		3
 #define BIG_FONT_DISPLAY_NEW		4
-#define DISPLAY_MODE				SMALL_FONT_DISPLAY_COLOR
+#define DISPLAY_MODE				SMALL_FONT_DISPLAY_OLD
 
 
 #define DP_ZERO_DISP_LIMIT_LOW		(-1.9)
@@ -114,7 +114,7 @@ static volatile bool main_b_cdc_enable = false;
 #elif ((DISPLAY_MODE==BIG_FONT_DISPLAY_OLD) || (DISPLAY_MODE==BIG_FONT_DISPLAY_NEW))
 
 	#define NO_DIGIT	7
-	#define PARAMETER_WORD	(ENABLE_DP1 | ENABLE_DP2 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_LCD | ENABLE_ALERT)
+	#define PARAMETER_WORD	(ENABLE_DP1 | ENABLE_DP2 | DIFP1_ABSP1 | ENABLE_TEMP | ENABLE_RH | ENABLE_LOGO | ENABLE_RTC | ENABLE_LCD | ENABLE_ALERT)
 
 #endif
 
@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				880  //means 8.80
+#define SOFT_VER				890  //means 8.90
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -2033,8 +2033,6 @@ int main(void)
 	#endif
 
 	SetMAC2Xbee(&gu8arr_XbeeMac[0][0],1);
-	
-	//ReadXbeeMAC();
 
  	while(1)
  	{	
@@ -2679,6 +2677,8 @@ int main(void)
 
 void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
 {
+	unsigned char buffer[5]={0};
+	
 	_delay_ms(1000);
 	//-------------------------
 	opstr(1,"+++");
@@ -2692,9 +2692,6 @@ void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
 	opstr(1,"ATDL");
 	SendToUART(1,&mac[8],8);
 	opchar(1,'\r');
-	_delay_ms(50);
-	//-------------------------
-	opstr(1,"ATWR\r");
 	_delay_ms(50);
 	//-------------------------
 	if(ReadSelfMac==1)
@@ -2711,7 +2708,18 @@ void SetMAC2Xbee(unsigned char *mac,unsigned char ReadSelfMac)
 		opstr(1,"ATSL?\r");
 		_delay_ms(50);
 		memcpy(&gu8arr_XbeeSelfMac[8],&XbeeRxBuffer[0],8);
+		//-------------------------
+		chartostr(DeviceID,&buffer[0],3);
+		opstr(1,"ATBISAP");
+		SendToUART(1,&buffer[0],3);
+		opchar(1,'-');
+		SendToUART(1,&gu8ar_SrNumber[8],8);
+		opchar(1,'\r');
+		_delay_ms(50);
 	}
+	//-------------------------
+	opstr(1,"ATWR\r");
+	_delay_ms(50);
 	//-------------------------
 	opstr(1,"ATCN\r");
 	_delay_ms(50);
@@ -10507,7 +10515,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 18;
-	data[6] = 8;
+	data[6] = 9;
 						
 	disp_value();
 	
