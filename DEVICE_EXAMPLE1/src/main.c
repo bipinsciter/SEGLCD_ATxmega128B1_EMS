@@ -134,9 +134,10 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				820  //means 8.20
+#define SOFT_VER				830  //means 8.30
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			5
+#define NO_OF_DEVICES_IN_GROUP	5
 #define XBEE_MAC_SIZE			16
 #define FACT_ACK_PWD			1
 #define NO_OF_USER_CAL_DATE		10
@@ -144,6 +145,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define DEFAULT_LCD_BRIGHTNESS	 26
 #define DEFAULT_AUTO_SENT_INTERVAL	 5
 #define DEFAULT_XBEE_RST_INTERVAL	 5
+#define DEFAULT_DEVICES_IN_GROUP	 5
+
 
 #define DISP_PER			82.0 // PWM
  
@@ -509,6 +512,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define AUTO_SENT_INTERVAL_ID		0x69
 #define XBEE_RST_INTERVAL_ID		0x6A
 #define XBEE_MAC_ADDR_ID			0x6B
+#define DEVICES_IN_GROUP_ID			0x6C
 
 #define CORR_RTC_DATA_ID			0x99	
 #define PUT_DFU_ID					0xAA	
@@ -651,7 +655,9 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define RELAY_STAT_ADDR					(DP_FACT_ENB_ADDR+2)
 #define AUTO_SENT_INTERVAL_ADDR			(RELAY_STAT_ADDR+1)
 #define XBEE_RST_INTERVAL_ADDR			(AUTO_SENT_INTERVAL_ADDR+1)
-#define XBEE_MAC_ADDR					(XBEE_RST_INTERVAL_ADDR+2)
+#define BROADCAST_ENB_ADDR				(XBEE_RST_INTERVAL_ADDR+2)
+#define DEVICES_IN_GROUP_ADDR			(BROADCAST_ENB_ADDR+1)
+#define XBEE_MAC_ADDR					(DEVICES_IN_GROUP_ADDR+1)
 
 
 
@@ -1606,7 +1612,7 @@ unsigned char gu8arr_XbeeMac[NO_OF_XBEE_MAC][XBEE_MAC_SIZE]={0};
 
 unsigned char *p_SrNumber;
 unsigned long gu32_SrNumber;
-unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_AutoSentTimer=0,gu8_groupID=0;
+unsigned char gu8_AutoSentTimeout=60,gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL,gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP,gu8_AutoSentTimer=0,gu8_groupID=0,gu8_broadcast=0;
 //************************************************************************************************************************************
 //													FUNCTION PROTOTYPES
 //************************************************************************************************************************************
@@ -1941,7 +1947,7 @@ int main(void)
 	#endif
 	
 	logTimer = LogInterval;
-	b.brodcastEnb=1;	
+	b.brodcastEnb=0;	
 	logtransfer=0;
 	b.logtransferStart=0;
 	DP_StartUpTimer=S_STABLE_TIME;
@@ -2002,6 +2008,20 @@ int main(void)
 	#endif
 	
 	//WHITE_BLIT_ON;
+	
+	#ifndef DISABLE_DOOR_SENSING
+
+	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+	{
+		b.doorSense=1;
+	}
+	else
+	{
+		b.doorSense=0;
+	}
+		
+	#endif
+	
 
  	while(1)
  	{	
@@ -4225,7 +4245,7 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/10)+1;
+								gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 							}
 						break;
@@ -4678,7 +4698,7 @@ void keyboard(void)
 							if(DeviceID != dummy)
 							{
 								DeviceID = dummy;
-								gu8_groupID = ((DeviceID - 1)/10)+1;
+								gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 								eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BACKLIT_ON_OFF_ADDR,DeviceID);
 							}
 						break;
@@ -6188,7 +6208,7 @@ void ServePCMsg(unsigned char SrcPort)
 	#ifdef DEBUG_RCV_CMD
 		opstr(0,"\r\nMsg OK");
 	#endif
-	unsigned char index=0,j=0,lu8_sendResponse=0;
+	unsigned char index=0,j=0,lu8_sendResponse=0,lu8_GroupDelay=0;
 	
 	b.paraIdNotValid=0;
 	
@@ -6199,22 +6219,28 @@ void ServePCMsg(unsigned char SrcPort)
 		
 		if(RxInd==6)
 		{
-			if(RxBuffer[3]==0x00)
+			if((RxBuffer[3]==0x00) || (RxBuffer[3]==gu8_groupID))
 			{
-				lu8_sendResponse=1;
-			}
-			else if(RxBuffer[3]==gu8_groupID)
-			{
-				lu8_sendResponse=1;
+				lu8_sendResponse = 1;
+				
+				lu8_GroupDelay = (DeviceID - 1)%gu8_DeviceInGroup;
+				
+				if(lu8_GroupDelay) 
+				{
+					for(unsigned char m=0;m<lu8_GroupDelay;m++)
+					{
+						_delay_ms(4);
+					}
+				}
 			}
 			else
 			{
-				lu8_sendResponse=0;
+				lu8_sendResponse = 0;
 			}
 		}
 		else
 		{
-			lu8_sendResponse=1;
+			lu8_sendResponse = 1;
 		}
 		
 		if(lu8_sendResponse==1)
@@ -6722,7 +6748,7 @@ void ServePCMsg(unsigned char SrcPort)
 			break;
 			case DVCID_ID:		
 				DeviceID=tempshort;
-				gu8_groupID = ((DeviceID - 1)/10)+1;
+				gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICE_ID,DeviceID);
 			break;
 			case BZRON_ID:		
@@ -7532,6 +7558,13 @@ void ServePCMsg(unsigned char SrcPort)
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 				}
 			break;
+			case DEVICES_IN_GROUP_ID:
+				if((tempshort>=2) && (tempshort <= 100))
+				{
+					gu8_DeviceInGroup=tempshort;
+					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
+				}
+			break;
 			case XBEE_RST_INTERVAL_ID:
 				if((tempshort!=0) && (tempshort <= 1440))
 				{
@@ -7616,11 +7649,15 @@ void ServePCMsg(unsigned char SrcPort)
 			case BRDSTP_ID:
 				b.brodcastEnb=0;
 				StartBroadcastTimer=0;
+				gu8_broadcast=0;
+				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
 			break;
 			case BRDSTR_ID:
 				b.brodcastEnb=1;
 				tempshort=findValue(&RxBuffer[4],RxInd-6);
 				StartBroadcastTimer=(unsigned long)tempshort*60; 
+				gu8_broadcast=1;
+				eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
 			break;
 			default:
 				b.paraIdNotValid=1;
@@ -7828,6 +7865,7 @@ void ServePCMsg(unsigned char SrcPort)
 			case DOOR_SENSE_TIME_ID:		tempshort = gu8_doorSensingTime;		break;
 			case LCD_BRIGHT_CNT_ID:			tempshort = gu8_LCDBrigthnessCnt;		break;
 			case AUTO_SENT_INTERVAL_ID:			tempshort = gu8_AutoSentInterval;		break;
+			case DEVICES_IN_GROUP_ID:			tempshort = gu8_DeviceInGroup;			break;
 			case XBEE_RST_INTERVAL_ID:			tempshort = gu16_XbeeRstInterval;		break;
 			case DP1_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp1AlarmSensingTime;	break;
 			case DP2_ALM_SENSE_TIME_ID:			tempshort = gu8_Dp2AlarmSensingTime;	break;
@@ -9956,7 +9994,7 @@ void Init_variables(void)
 	gu32_triggerXbeeResetTimer = (unsigned long)gu16_XbeeRstInterval*60;
 	
 	//gu8_AutoSentTimer=gu8_AutoSentInterval;
-	gu8_groupID = ((DeviceID - 1)/10)+1;
+	gu8_groupID = ((DeviceID - 1)/gu8_DeviceInGroup)+1;
 }
 
 //**************************************************************************************************************************************
@@ -9983,7 +10021,7 @@ void SecondTick(void)
 		}
 	}
 	
-	if(b.brodcastEnb)
+	if(gu8_broadcast)
 	{
 		if(gu8_AutoSentTimer)
 		{
@@ -10349,9 +10387,9 @@ void InitLCDController(void)
 	data[1] = V;
 	data[2] = E;
 	data[3] = r;
-		
+	
 	data[5] = 18;
-	data[6] = 2;
+	data[6] = 3;
 						
 	disp_value();
 	
@@ -10469,7 +10507,7 @@ void InitLCDController(void)
 	//ID_on;
 	data[2] = 9;
 	data[3] = r;
-	convert_char(gu8_groupID,&data[4],3);
+	convert_char(gu8_DeviceInGroup,&data[4],3);
 	disp_value();
 	
 	wdt_reset();
@@ -21028,6 +21066,9 @@ void boot_data(void)
 		gu8_dp_sw_enb = 0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
 		
+		gu8_broadcast = 0;
+		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
+		
 		gu8_rly_stat = 0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)RELAY_STAT_ADDR,gu8_rly_stat);
 		
@@ -21215,6 +21256,9 @@ void boot_data(void)
 		gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
 		
+		gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP;
+		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
+		
 		gu16_XbeeRstInterval=DEFAULT_XBEE_RST_INTERVAL;
 		eeprom_busy_wait();  eeprom_write_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR,gu16_XbeeRstInterval);
 		
@@ -21247,6 +21291,13 @@ void boot_data(void)
 		{
 			gu8_AutoSentInterval=DEFAULT_AUTO_SENT_INTERVAL;
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)AUTO_SENT_INTERVAL_ADDR,gu8_AutoSentInterval);
+		}
+		
+		gu8_DeviceInGroup  = eeprom_read_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR);
+		if((gu8_DeviceInGroup < 2) || (gu8_DeviceInGroup > 100))
+		{
+			gu8_DeviceInGroup=DEFAULT_DEVICES_IN_GROUP;
+			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DEVICES_IN_GROUP_ADDR,gu8_DeviceInGroup);
 		}
 		
 		gu16_XbeeRstInterval  = eeprom_read_word ((unsigned int*)XBEE_RST_INTERVAL_ADDR);
@@ -21592,6 +21643,14 @@ void boot_data(void)
 			gu8_dp_sw_enb=0;
 			eeprom_busy_wait();  eeprom_write_byte((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
 		}
+		
+		gu8_broadcast = eeprom_read_byte ((unsigned char*)BROADCAST_ENB_ADDR);
+		if(gu8_broadcast>1)
+		{	
+			gu8_broadcast=0;
+			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
+		}
+		
 		
 		for(unsigned char i=0; i<MAX_SUPPORTED_DP; i++)
 		{
