@@ -122,7 +122,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 //***********************************************************************************
 // USER CONFIGUARATION MODE END
 //***********************************************************************************
-#define ENABLE_BROADCAST
+//#define ENABLE_BROADCAST
 //#define ENABLE_PRINTF
 //#define DEBUG_DP1
 //#define DEBUG_DP2
@@ -134,7 +134,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define FACTORY_PARASET_PWD		1234
 #define FACTORY_PASSWORD		1000
 #define DFU_PASSWORD			3123
-#define SOFT_VER				900  //means 9.00
+#define SOFT_VER				910  //means 9.10
 #define NO_OF_ACKPWD			15
 #define NO_OF_XBEE_MAC			2
 #define NO_OF_DEVICES_IN_GROUP	5
@@ -516,6 +516,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define XBEE_MAC_ADDR_ID			0x6B
 #define DEVICES_IN_GROUP_ID			0x6C
 #define XBEE_SELF_MAC_ADDR_ID		0x6D
+#define DP_LIMIT_ID					0x6E
+
 
 #define CORR_RTC_DATA_ID			0x99	
 #define PUT_DFU_ID					0xAA	
@@ -661,6 +663,7 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 #define BROADCAST_ENB_ADDR				(XBEE_RST_INTERVAL_ADDR+2)
 #define DEVICES_IN_GROUP_ADDR			(BROADCAST_ENB_ADDR+1)
 #define XBEE_MAC_ADDR					(DEVICES_IN_GROUP_ADDR+1)
+#define DP_LIMIT_ADDR					(XBEE_MAC_ADDR+6)
 
 
 
@@ -1306,7 +1309,8 @@ unsigned short gu16_parameterWord = PARAMETER_WORD;
 
 #endif
 
-
+#define OPEN			1
+#define CLOSE			0
 //Display Mode ---------------------------------------------------------------------------------------------
 #define NORMAL_MODE			0
 #define PROG_MODE			1
@@ -1368,7 +1372,7 @@ volatile static struct bits
 	unsigned char MinMaxMeanLogReadCmd : 1;
 	unsigned char MeanHrLogReadCmd : 1;
 	unsigned char noData : 1;
-	unsigned char doorSense : 1;
+	unsigned char doorStatus : 1;
 	unsigned char AlarmLED : 1;
 	unsigned char buzzeralert : 1;
 	unsigned char autoSendResponse : 1;
@@ -1458,6 +1462,8 @@ unsigned short ConfiguPassword=0;
 unsigned char test[20];
 unsigned char Temp_RTC_ARR[5]={0};
 //unsigned char gu8_DPAutoCalFlag=0,gu8_DPAutoCalTimer=0;
+unsigned short gu16_DPAutoCalTimer10Sec[2] = {0},gu16_DPAutoCalTimer5Min[2] = {0};
+unsigned char gu8_DPAutoCalDoorCnt[2] = {0};
 
 struct RTCData
 {
@@ -1515,7 +1521,7 @@ unsigned char mode=NORMAL_MODE;
 unsigned char keybyte=0;
 unsigned char debounce=DEBOUNCE;
 
-float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor[5]={0,0,0,0,0};
+float tempfloat=0.0,tempfloat1=0.0,tempfloat2=0.0,f32_dp_sw_factor[5]={0},f32_dp_limit[5]={0};
 short tempshort=0;
 unsigned char tempchar=0;
 unsigned char a1=0,a2=0,a3=0;
@@ -1569,8 +1575,8 @@ unsigned long InitLogInd=0,LastLogInd=0,StartEpoch=0,EndEpoch=0,StartEpochTime=0
 
 unsigned short logtransfer=0, gu16_XbeeRstInterval=0;
 unsigned long gu32_triggerXbeeResetTimer = 0;
-signed short su16_dp_sw_factor[5]={0,0,0,0,0};
-
+signed short su16_dp_sw_factor[5]={0};
+unsigned short u16_dp_limit[3]={0};
 volatile unsigned long templong=0;
 volatile unsigned short flash24_StartInd=0,flash24_EndInd=0;
 volatile unsigned short NoOf24Log=0;
@@ -2058,11 +2064,13 @@ int main(void)
 
 	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
 	{
-		b.doorSense=1;
+		b.doorStatus=OPEN;
+		gu8_dp_sw_enb = 1;
 	}
 	else
 	{
-		b.doorSense=0;
+		b.doorStatus=CLOSE;
+		gu8_dp_sw_enb = 0;
 	}
 		
 	#endif
@@ -2165,7 +2173,7 @@ int main(void)
 				StopBuzzer();
 			}
 			//====================================================
-			/*if((!DP1_Alrm_ON) && (!DP2_Alrm_ON) && (!TM_Alrm_ON) && (!RH_Alrm_ON) && (b.doorSense==0))
+			/*if((!DP1_Alrm_ON) && (!DP2_Alrm_ON) && (!TM_Alrm_ON) && (!RH_Alrm_ON) && (b.doorStatus==CLOSE))
 			{
 				if(b.alarmAutorestore)
 				{
@@ -2181,7 +2189,7 @@ int main(void)
 				b.alarmAutorestore=1;
 			}*/
 			
-			if((DP1_Alrm_ON!=NO_ALARM)||(DP2_Alrm_ON!=NO_ALARM)||(TM_Alrm_ON!=NO_ALARM)||(RH_Alrm_ON!=NO_ALARM)||(b.doorSense==1))
+			if((DP1_Alrm_ON!=NO_ALARM)||(DP2_Alrm_ON!=NO_ALARM)||(TM_Alrm_ON!=NO_ALARM)||(RH_Alrm_ON!=NO_ALARM)||(b.doorStatus==OPEN))
 			{	
 				if(b.buzzeralert==0)
 				{	
@@ -2206,42 +2214,6 @@ int main(void)
 			
 			b.sec_flag=0;
 		}
-		
-		//TM_Alrm_ON=UPPER_ALARM;
-		
-		/*if(b.AlarmLED)
-		{
-			if(b.doorSense==1)
-			{
-				static unsigned char i11=0;
-				
-				i11++;
-				if(i11>2) i11=0;
-				switch(i11)
-				{
-					case 0:		WHITE_BLIT_ON;	RED_BLIT_OFF;	break;
-					case 1:		WHITE_BLIT_OFF;	RED_BLIT_ON;	break;
-					case 2:		WHITE_BLIT_ON;	RED_BLIT_ON;	break;
-				}
-			}
-			else
-			{
-				if((DP1_Alrm_ON==UPPER_ALARM)||(DP2_Alrm_ON==UPPER_ALARM)||(TM_Alrm_ON==UPPER_ALARM)||(RH_Alrm_ON==UPPER_ALARM))
-				{
-					RED_BLIT_ON;		WHITE_BLIT_OFF;
-				}
-				else if((DP1_Alrm_ON==LOWER_ALARM)||(DP2_Alrm_ON==LOWER_ALARM)||(TM_Alrm_ON==LOWER_ALARM)||(RH_Alrm_ON==LOWER_ALARM))
-				{
-					WHITE_BLIT_ON;		RED_BLIT_ON;
-				}
-				else
-				{
-					WHITE_BLIT_ON;		RED_BLIT_OFF;
-				}
-			}
-
-			b.AlarmLED=0;
-		}*/
 		
 		
 		// Check for any USB Command ================================================
@@ -6298,7 +6270,7 @@ void AutoSendDataResponse(unsigned char SrcPort)
 	
 	#else
 		
-	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
+	if(b.doorStatus==OPEN)
 	{
 		//Door Open
 		Buffer1[j++] = 0x0E;
@@ -6537,8 +6509,7 @@ void ServePCMsg(unsigned char SrcPort)
 			
 			#else
 				
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				//Door Open
 				RxBuffer[j++] = 0x0E;
@@ -6607,6 +6578,12 @@ void ServePCMsg(unsigned char SrcPort)
 				tempshort = findValue(&RxBuffer[6],5);
 				if(RxBuffer[5]=='-') tempshort *= (-1);	
 				
+			break;
+			
+			case DP_LIMIT_ID:
+			
+				tempshort = findValue(&RxBuffer[5],5);
+			
 			break;
 			
 			default: 
@@ -7023,7 +7000,7 @@ void ServePCMsg(unsigned char SrcPort)
 					b.CustmerCalibrationOn=1;
 					PCCalibrationTimer=60;
 					
-					if(tempshort==989)
+					/*if(tempshort==989)
 					{
 						gu8_dp_sw_enb = 0;
 					}
@@ -7032,6 +7009,7 @@ void ServePCMsg(unsigned char SrcPort)
 						gu8_dp_sw_enb = 1;
 					}
 					eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
+					*/
 				}
 
 			break;
@@ -7064,6 +7042,19 @@ void ServePCMsg(unsigned char SrcPort)
 					}
 				}	
 				
+			break;
+			
+			case DP_LIMIT_ID:
+			
+				index=RxBuffer[4]-'0';
+				
+				if(index<MAX_SUPPORTED_DP)
+				{
+					u16_dp_limit[index]=tempshort;
+					f32_dp_limit[index]=(float)u16_dp_limit[index]/10.0;
+					eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_LIMIT_ADDR+(index*2)),u16_dp_limit[index]);
+				}
+			
 			break;
 			
 			case RELAY_CNTL_ID:
@@ -7137,7 +7128,6 @@ void ServePCMsg(unsigned char SrcPort)
 					su16_dp_sw_factor[0]=0;
 					f32_dp_sw_factor[0]=0.0;
 					eeprom_busy_wait();  eeprom_write_word((unsigned int*)DP_SW_FACT_ADDR,su16_dp_sw_factor[0]);
-					
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7240,7 +7230,6 @@ void ServePCMsg(unsigned char SrcPort)
 					su16_dp_sw_factor[1]=0;
 					f32_dp_sw_factor[1]=0.0;
 					eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+2),su16_dp_sw_factor[1]);
-					
 				}
 				else if(b.CustmerCalibrationOn==1)
 				{
@@ -7922,6 +7911,17 @@ void ServePCMsg(unsigned char SrcPort)
 				}
 				
 			break;
+			
+			case DP_LIMIT_ID:
+			
+				index=RxBuffer[4]-'0';
+				if(index<MAX_SUPPORTED_DP)
+				{
+					tempshort = u16_dp_limit[index];
+				}
+			
+			break;
+
 			case DP1CAL_ID:		
 					if(b.FactoryCalibrationOn==1)
 					{
@@ -9207,7 +9207,7 @@ void ReadDiffPressure1(void)
 			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
 			else if(f32_temp > 800) f32_temp -= 7;
 			
-			if((f32_temp<1.0) && (Dpressure1>-1.0))
+			if((f32_temp<1.0) && (f32_temp>-1.0))
 			{
 				f32_temp = 0;
 			}
@@ -9217,7 +9217,6 @@ void ReadDiffPressure1(void)
 			Dpressure1 = Kalman_Update(&Kalman[0], Dpressure1);
 			
 			//if(!DP_CHANGE_SENSE) //ENABLE for switch
-			if(b.doorSense)
 			{
 				if(!gu8_dp_sw_enb)
 				{
@@ -9233,6 +9232,9 @@ void ReadDiffPressure1(void)
 					}
 				}
 			}
+			
+			if(Dpressure1 > f32_dp_limit[0]) Dpressure1 = f32_dp_limit[0];
+			if(Dpressure1 < -f32_dp_limit[0]) Dpressure1 = -f32_dp_limit[0];
 			
 			if(!DP_StartUpTimer)
 			{
@@ -9620,7 +9622,7 @@ void ReadDiffPressure2(void)
 			else if((f32_temp > 700) && (f32_temp <= 800)) f32_temp -= 6;
 			else if(f32_temp > 800) f32_temp -= 7;
 			
-			if((f32_temp<1.0) && (Dpressure1>-1.0))
+			if((f32_temp<1.0) && (f32_temp>-1.0))
 			{
 				f32_temp = 0;
 			}
@@ -9630,7 +9632,6 @@ void ReadDiffPressure2(void)
 			Dpressure2 = Kalman_Update(&Kalman[1], Dpressure2);
 			
 			//if(!DP_CHANGE_SENSE) //ENABLE for switch
-			if(b.doorSense)
 			{
 				if(!gu8_dp_sw_enb)
 				{
@@ -9646,6 +9647,9 @@ void ReadDiffPressure2(void)
 					}
 				}
 			}
+			
+			if(Dpressure2 > f32_dp_limit[1]) Dpressure2 = f32_dp_limit[1];
+			if(Dpressure2 < -f32_dp_limit[1]) Dpressure2 = -f32_dp_limit[1];
 			
 			if(!DP_StartUpTimer)
 			{
@@ -10187,7 +10191,7 @@ void Init_variables(void)
 
 void SecondTick(void)
 {
-	static unsigned char acnt1=0;
+	//static unsigned char acnt1=0;
 	
 	b.batteryPerBlink ^= 1;
 	
@@ -10195,6 +10199,71 @@ void SecondTick(void)
 	{
 		SendToSlave();
 	}
+	
+	
+	if(gu16_DPAutoCalTimer10Sec[0])
+	{
+		gu16_DPAutoCalTimer10Sec[0]--;
+		if(!gu16_DPAutoCalTimer10Sec[0])
+		{
+			if(gu8_DPAutoCalDoorCnt[0] >= 3)
+			{
+				if(b.doorStatus==OPEN)
+				{
+					gu16_DPAutoCalTimer5Min[0] = 300;
+				}
+			}
+			else
+			{
+				gu8_DPAutoCalDoorCnt[0] = 0;
+			}
+		}
+	}
+	
+	if(gu16_DPAutoCalTimer5Min[0])
+	{
+		gu16_DPAutoCalTimer5Min[0]--;
+		if(!gu16_DPAutoCalTimer5Min[0])
+		{
+			//Auto cal DP1
+			DP1_Cal_Value_C = (RealDpressure1 - DP1_Cal_float_Value_F)*10.0;
+			DP1_Cal_float_Value_C = (float)DP1_Cal_Value_C/10.0;
+			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP1_CAL_VAL_C_ADDR,DP1_Cal_Value_C);
+		}
+	}
+	
+	//-----------------------------------------------------------------------------------------------------------
+	if(gu16_DPAutoCalTimer10Sec[1])
+	{
+		gu16_DPAutoCalTimer10Sec[1]--;
+		if(!gu16_DPAutoCalTimer10Sec[1])
+		{
+			if(gu8_DPAutoCalDoorCnt[1] >= 6)
+			{
+				if(b.doorStatus==OPEN)
+				{
+					gu16_DPAutoCalTimer5Min[1] = 300;
+				}
+			}
+			else
+			{
+				gu8_DPAutoCalDoorCnt[1] = 0;
+			}
+		}
+	}
+	
+	if(gu16_DPAutoCalTimer5Min[1])
+	{
+		gu16_DPAutoCalTimer5Min[1]--;
+		if(!gu16_DPAutoCalTimer5Min[1])
+		{
+			//Auto cal DP2
+			DP2_Cal_Value_C = (RealDpressure2 - DP2_Cal_float_Value_F)*10.0;
+			DP2_Cal_float_Value_C = (float)DP2_Cal_Value_C/10.0;
+			eeprom_busy_wait();  eeprom_write_word ((unsigned int*)DP2_CAL_VAL_C_ADDR,DP2_Cal_Value_C);
+		}
+	}
+	//-----------------------------------------------------------------------------------------------------------
 	
 	if(gu8_deviceIDChangeTryTimer)
 	{
@@ -10426,25 +10495,48 @@ void SecondTick(void)
 
 	if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
 	{
-		if(!b.doorSense)
+		if(b.doorStatus==CLOSE)
 		{
-			//gu8_doorSensingTimer++;
-			//if(gu8_doorSensingTimer>=gu8_doorSensingTime)
+			b.doorStatus=OPEN;
+			b.autoSendResponse = true;
+			//opstr(1,"DoorOpen\n");
+			//StartBuzzer();
+			if(!gu16_DPAutoCalTimer5Min[0])
 			{
-			//	gu8_doorSensingTimer=0;
-				b.doorSense=1;
-				b.autoSendResponse = true;
-				//opstr(1,"DoorOpen\n");
-				//StartBuzzer();
+				if(!gu16_DPAutoCalTimer10Sec[0]) 
+				{
+					gu16_DPAutoCalTimer10Sec[0] = 10;
+					gu8_DPAutoCalDoorCnt[0] = 1;
+				}
+				else
+				{
+					gu8_DPAutoCalDoorCnt[0]++;
+				}
+			}
+			
+			if(!gu16_DPAutoCalTimer5Min[1])
+			{
+				if(!gu16_DPAutoCalTimer10Sec[1]) 
+				{
+					gu16_DPAutoCalTimer10Sec[1] = 10;
+					gu8_DPAutoCalDoorCnt[1] = 1;
+				}
+				else
+				{
+					gu8_DPAutoCalDoorCnt[1]++;
+				}
 			}
 		}
 	}
 	else
 	{
-		if(b.doorSense)
+		if(b.doorStatus==OPEN)
 		{
-			b.doorSense=0;
+			b.doorStatus=CLOSE;
 			b.autoSendResponse = true;
+			gu8_dp_sw_enb = 0;
+			gu16_DPAutoCalTimer5Min[0] = 0;
+			gu16_DPAutoCalTimer5Min[1] = 0;
 			//opstr(1,"DoorClose\n");
 			//gu8_doorSensingTimer=0;
 		}
@@ -10557,7 +10649,7 @@ void InitLCDController(void)
 	data[3] = r;
 	
 	data[5] = 19;
-	data[6] = 0;
+	data[6] = 1;
 						
 	disp_value();
 	
@@ -10961,8 +11053,7 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			//if((!DOOR_SENSE && !gu8_doorSensingPolarity) || (DOOR_SENSE && gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				if(b.led_toggle)
 				{
@@ -12630,8 +12721,7 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				if(b.led_toggle)
 				{
@@ -14341,8 +14431,7 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				if(b.led_toggle)
 				{
@@ -16011,8 +16100,7 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				if(b.led_toggle)
 				{
@@ -18213,8 +18301,7 @@ void AllSegment(unsigned char state)
 		{
 			#ifndef DISABLE_DOOR_SENSING
 
-			//if((!DOOR_SENSE && gu8_doorSensingPolarity) || (DOOR_SENSE && !gu8_doorSensingPolarity))
-			if(b.doorSense)
+			if(b.doorStatus==OPEN)
 			{
 				if(b.led_toggle)
 				{
@@ -21235,8 +21322,8 @@ void boot_data(void)
 			eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)LAST_DP2_ALRM_STAT,LastDP2_Alrm_ON);
 		}
 		
-		gu8_dp_sw_enb = 0;
-		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
+		//gu8_dp_sw_enb = 0;
+		//eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
 		
 		gu8_broadcast = 0;
 		eeprom_busy_wait();  eeprom_write_byte ((unsigned char*)BROADCAST_ENB_ADDR,gu8_broadcast);
@@ -21249,6 +21336,10 @@ void boot_data(void)
 			su16_dp_sw_factor[i]=0;
 			f32_dp_sw_factor[i]=0.0;
 			eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(i*2)),su16_dp_sw_factor[i]);
+			
+			u16_dp_limit[i]=10000;
+			f32_dp_limit[i]=1000.0;
+			eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_LIMIT_ADDR+(i*2)),u16_dp_limit[i]);
 		}
 
 		if(gu16_parameterWord & ENABLE_TEMP)
@@ -21811,12 +21902,12 @@ void boot_data(void)
 		
 		gu8_rly_stat = eeprom_read_byte ((unsigned char*)RELAY_STAT_ADDR);
 
-		gu8_dp_sw_enb = eeprom_read_byte ((unsigned char*)DP_FACT_ENB_ADDR);
+		/*gu8_dp_sw_enb = eeprom_read_byte ((unsigned char*)DP_FACT_ENB_ADDR);
 		if(gu8_dp_sw_enb>1)
 		{	
 			gu8_dp_sw_enb=0;
 			eeprom_busy_wait();  eeprom_write_byte((unsigned char*)DP_FACT_ENB_ADDR,gu8_dp_sw_enb);
-		}
+		}*/
 		
 		gu8_broadcast = eeprom_read_byte ((unsigned char*)BROADCAST_ENB_ADDR);
 		if(gu8_broadcast>1)
@@ -21835,6 +21926,14 @@ void boot_data(void)
 				eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_SW_FACT_ADDR+(i*2)),su16_dp_sw_factor[i]);
 			}
 			f32_dp_sw_factor[i]=(float)su16_dp_sw_factor[i]/100.0;
+			
+			u16_dp_limit[i]  = eeprom_read_word ((unsigned int*)(DP_LIMIT_ADDR+(i*2)));
+			if((u16_dp_limit[i]<500) || (u16_dp_limit[i]>10000))
+			{
+				u16_dp_limit[i]=10000;
+				eeprom_busy_wait();  eeprom_write_word((unsigned int*)(DP_LIMIT_ADDR+(i*2)),u16_dp_limit[i]);
+			}
+			f32_dp_limit[i]=(float)u16_dp_limit[i]/10.0;
 		}
 		
 		if(gu16_parameterWord & ENABLE_TEMP)
